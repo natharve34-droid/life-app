@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Harvey — Personal Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.0/lib/msal-browser.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0ede8;
+    --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+    --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;
+    --green:#3B6D11;--green-bg:#EAF3DE;--green-text:#27500A;
+    --amber:#BA7517;--amber-bg:#FAEEDA;--amber-text:#633806;
+    --red:#A32D2D;--red-bg:#FCEBEB;--red-text:#791F1F;
+    --purple:#534AB7;--purple-bg:#EEEDFE;--purple-text:#3C3489;
+    --radius:8px;--radius-lg:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1e1e1c;--bg2:#252523;--bg3:#2c2c2a;
+      --text:#e8e6e0;--text2:#a8a69e;--text3:#6a6860;
+      --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+      --blue:#378ADD;--blue-bg:#0c2a4a;--blue-text:#85B7EB;
+      --green:#639922;--green-bg:#1a2e0a;--green-text:#97C459;
+      --amber:#EF9F27;--amber-bg:#2e1e08;--amber-text:#FAC775;
+      --red:#E24B4A;--red-bg:#2e0f0f;--red-text:#F09595;
+      --purple:#7F77DD;--purple-bg:#1e1c3a;--purple-text:#AFA9EC;
+    }
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg3);color:var(--text);font-size:14px;}
+  .app{display:flex;height:100vh;overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform .25s;}
+  .sb-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border);}
+  .sb-logo h1{font-size:15px;font-weight:600;color:var(--text);}
+  .sb-logo p{font-size:11px;color:var(--text3);margin-top:2px;}
+  .nav-sec{padding:8px 0 4px;}
+  .nav-lbl{font-size:10px;font-weight:600;color:var(--text3);padding:0 14px 4px;letter-spacing:.07em;text-transform:uppercase;}
+  .ni{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--text2);border-radius:0;transition:background .1s;}
+  .ni:hover{background:var(--bg);color:var(--text);}
+  .ni.active{background:var(--bg);color:var(--text);font-weight:600;}
+  .ni-ico{font-size:14px;width:18px;text-align:center;}
+
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .page{display:none;padding:28px 28px 48px;max-width:1020px;}
+  .page.active{display:block;}
+  .ph{margin-bottom:22px;}
+  .pt{font-size:22px;font-weight:600;color:var(--text);}
+  .ps{font-size:13px;color:var(--text2);margin-top:3px;}
+
+  /* CARDS */
+  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:0;}
+  .mc{background:var(--bg2);border-radius:var(--radius);padding:13px 15px;}
+  .ml{font-size:11px;color:var(--text2);margin-bottom:4px;}
+  .mv{font-size:20px;font-weight:600;color:var(--text);}
+  .ms{font-size:11px;color:var(--text3);margin-top:2px;}
+
+  /* GRID */
+  .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  .mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}.mb20{margin-bottom:20px;}
+
+  /* TAGS */
+  .tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;}
+  .tg{background:var(--green-bg);color:var(--green-text);}
+  .tb{background:var(--blue-bg);color:var(--blue-text);}
+  .ta{background:var(--amber-bg);color:var(--amber-text);}
+  .tr{background:var(--red-bg);color:var(--red-text);}
+  .tp{background:var(--purple-bg);color:var(--purple-text);}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;transition:background .1s;}
+  .btn:hover{background:var(--bg2);}
+  .btnp{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .btnp:hover{opacity:.9;}
+  .btnd{background:transparent;color:var(--red);border-color:var(--red-text);}
+  .btnd:hover{background:var(--red-bg);}
+  .btn-icon{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;font-family:inherit;}
+  .btn-icon:hover{color:var(--text);}
+
+  /* INPUTS */
+  .inp{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;}
+  .inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.15);}
+  textarea.inp{resize:vertical;min-height:72px;}
+
+  /* LAYOUT HELPERS */
+  .rb{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .fl{display:flex;align-items:center;gap:8px;}
+  .fl-end{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+  .flb{display:flex;align-items:center;justify-content:space-between;}
+  .st{font-size:13px;font-weight:600;color:var(--text);margin-bottom:11px;}
+  .pb{width:100%;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+  .pbf{height:100%;border-radius:3px;}
+  .pi{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
+  .pi:last-child{border-bottom:none;}
+  .pn{font-size:13px;font-weight:500;color:var(--text);}
+  .pv{font-size:14px;font-weight:600;color:var(--blue);}
+
+  /* MONTH SELECTOR */
+  .month-sel{padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;}
+  .month-sel:focus{outline:none;border-color:var(--blue);}
+
+  /* EXERCISE ROWS */
+  .ex-hdr{display:grid;grid-template-columns:minmax(0,2fr) 80px 55px 70px 30px;gap:6px;padding:0 0 6px;border-bottom:0.5px solid var(--border);margin-bottom:4px;}
+  .ex-hdr span{font-size:11px;color:var(--text3);}
+  .ex-row{display:grid;grid-template-columns:minmax(0,2fr) 80px 55px 70px 30px;gap:6px;padding:7px 0;border-bottom:0.5px solid var(--border);align-items:center;}
+  .ex-row:last-child{border-bottom:none;}
+  .ex-name{font-size:12px;color:var(--text);}
+  .ex-best{font-size:10px;color:var(--text3);margin-top:1px;}
+  .inp-sm{padding:5px 7px;font-size:12px;}
+
+  /* WEEK BUTTONS */
+  .wk-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;}
+  .wkb{padding:5px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;}
+  .wkb.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+  /* BILL ROWS */
+  .bill-row{display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 62px 80px 54px;gap:6px;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--border);}
+  .bill-row:last-child{border-bottom:none;}
+
+  /* NOTES */
+  .note-card{background:var(--bg2);border-radius:var(--radius);padding:11px 14px;margin-bottom:8px;}
+  .note-date{font-size:11px;color:var(--text3);margin-bottom:3px;}
+  .note-text{font-size:13px;color:var(--text);line-height:1.55;}
+
+  /* SESSION LOG */
+  .ses-row{display:flex;align-items:flex-start;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
+  .ses-row:last-child{border-bottom:none;}
+  .sync-badge{position:fixed;bottom:14px;right:16px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;z-index:400;transition:opacity .4s;pointer-events:none;}
+  .sync-badge:empty{opacity:0;}
+  .sync-saving{background:var(--amber-bg);color:var(--amber-text);}
+  .sync-ok{background:var(--green-bg);color:var(--green-text);}
+  .sync-err{background:var(--red-bg);color:var(--red-text);}
+  .sync-warn{background:var(--amber-bg);color:var(--amber-text);}
+
+  /* MODAL */
+  .mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
+  .mo-box{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:440px;max-width:100%;max-height:88vh;overflow-y:auto;}
+  .mo-box h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text);}
+  .fr{margin-bottom:11px;}
+  .fl2{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;}
+
+  /* SUMMARY BOXES */
+  .sum-box{padding:13px;background:var(--bg2);border-radius:var(--radius);}
+  .sum-label{font-size:12px;color:var(--text2);margin-bottom:3px;}
+  .sum-val{font-size:19px;font-weight:600;}
+
+  /* MOBILE HAMBURGER */
+  .hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;cursor:pointer;font-size:18px;line-height:1;}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;}
+
+  /* RESPONSIVE */
+  @media(max-width:720px){
+    .app{flex-direction:column;}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);width:240px;}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-overlay.open{display:block;}
+    .hamburger{display:block;}
+    .main{width:100%;}
+    .page{padding:56px 16px 40px;}
+    .g4{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .g3{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .g2{grid-template-columns:1fr;}
+    .ex-hdr,.ex-row{grid-template-columns:minmax(0,1.5fr) 70px 50px 65px 28px;}
+    .bill-row{grid-template-columns:minmax(0,1fr) 70px auto;}.bill-row .hide-mobile{display:none;}
+    .pt{font-size:19px;}
+  }
+</style>
+</head>
+<body>
+
+<button class="hamburger" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo"><h1>Harvey</h1><p>Personal dashboard</p></div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Overview</div>
+    <div class="ni active" onclick="nav('home',this)"><span class="ni-ico">⌂</span>Home</div>
+    <div class="ni" onclick="nav('notes',this)"><span class="ni-ico">✎</span>Daily notes</div>
+    <div class="ni" onclick="nav('important',this)"><span class="ni-ico">★</span>Important</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Finance</div>
+    <div class="ni" onclick="nav('budget',this)"><span class="ni-ico">◈</span>Budget</div>
+    <div class="ni" onclick="nav('bills',this)"><span class="ni-ico">◉</span>Bills</div>
+    <div class="ni" onclick="nav('savings',this)"><span class="ni-ico">◇</span>Savings</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Work</div>
+    <div class="ni" onclick="nav('projects',this)"><span class="ni-ico">▦</span>Projects</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Life</div>
+    <div class="ni" onclick="nav('wishlist',this)"><span class="ni-ico">✦</span>Wishlist</div>
+    <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
+    <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">App</div>
+    <div class="ni" onclick="nav('settings',this)"><span class="ni-ico">⚙</span>Settings & sync</div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="ph"><div class="pt">Good morning, Harvey</div><div class="ps" id="home-date"></div></div>
+  <div class="g4 mb16" id="hm"></div>
+  <div class="g2 mb16">
+    <div class="card"><div class="st">Upcoming bills</div><div id="h-bills"></div></div>
+    <div class="card">
+      <div class="st">Today's note</div>
+      <div id="h-note"></div>
+      <textarea class="inp" id="h-note-inp" placeholder="Write something about today..." style="margin-top:8px;min-height:60px;font-size:13px;"></textarea>
+      <div style="margin-top:8px;"><button class="btn btnp" onclick="saveHomeNote()">Save note</button></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="st">Project progress</div><div id="h-proj"></div></div>
+    <div class="card"><div class="st">Weight trend</div><div style="position:relative;height:150px"><canvas id="wc-home" role="img" aria-label="Weight trend chart">Weight over time</canvas></div></div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="page-notes" class="page">
+  <div class="ph rb"><div><div class="pt">Daily notes</div><div class="ps">A note for every day</div></div><button class="btn btnp" onclick="openModal('note')">+ Add note</button></div>
+  <div id="notes-list"></div>
+</div>
+
+<!-- IMPORTANT -->
+<div id="page-important" class="page">
+  <div class="ph rb"><div><div class="pt">Important</div><div class="ps">Pinned tasks</div></div><button class="btn btnp" onclick="openModal('important')">+ Add</button></div>
+  <div id="imp-list"></div>
+</div>
+
+<!-- BUDGET -->
+<div id="page-budget" class="page">
+  <div class="ph">
+    <div class="rb mb16">
+      <div><div class="pt">Budget</div><div class="ps" id="budget-month-label">Monthly overview</div></div>
+      <div class="fl" style="flex-wrap:wrap;gap:6px;">
+        <select class="month-sel" id="budget-month-sel" onchange="onBudgetMonthChange()"></select>
+        <button class="btn btnp" onclick="openModal('pocket')">+ Pocket</button>
+        <button class="btn btnp" onclick="openModal('income')">+ Income</button>
+      </div>
+    </div>
+  </div>
+  <div class="g4 mb16" id="bm"></div>
+  <div class="g2 mb16">
+    <div class="card">
+      <div class="flb mb12"><div class="st" style="margin:0">Revolut pockets</div></div>
+      <div id="pockets-list"></div>
+    </div>
+    <div class="card">
+      <div class="flb mb12"><div class="st" style="margin:0">Income this month</div></div>
+      <div id="income-list"></div>
+    </div>
+  </div>
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Bills this month</div><span id="budget-bills-total" class="tag tr"></span></div>
+    <div id="budget-bills-list"></div>
+  </div>
+  <div class="card">
+    <div class="st">Monthly summary</div>
+    <div id="budget-summary"></div>
+  </div>
+</div>
+
+<!-- BILLS -->
+<div id="page-bills" class="page">
+  <div class="ph rb"><div><div class="pt">Bills</div><div class="ps">Edit, add or remove bills</div></div><button class="btn btnp" onclick="openModal('bill')">+ Add bill</button></div>
+  <div class="g3 mb16" id="bills-m"></div>
+  <div class="card">
+    <div class="bill-row" style="padding-bottom:8px;border-bottom:0.5px solid var(--border);margin-bottom:4px;">
+      <span style="font-size:11px;color:var(--text3)">Name</span>
+      <span style="font-size:11px;color:var(--text3)" class="hide-mobile">Amount (€)</span>
+      <span style="font-size:11px;color:var(--text3)" class="hide-mobile">Category</span>
+      <span style="font-size:11px;color:var(--text3)" class="hide-mobile">Due day</span>
+      <span style="font-size:11px;color:var(--text3)">Status</span>
+      <span></span>
+    </div>
+    <div id="bills-list"></div>
+  </div>
+</div>
+
+<!-- SAVINGS -->
+<div id="page-savings" class="page">
+  <div class="ph rb"><div><div class="pt">Savings</div></div><button class="btn btnp" onclick="openModal('saving')">+ Log</button></div>
+  <div class="g3 mb16" id="sav-m"></div>
+  <div class="card mb16"><div class="st">Savings over time</div><div style="position:relative;height:200px"><canvas id="sav-chart" role="img" aria-label="Savings chart">Savings data</canvas></div></div>
+  <div class="card"><div id="sav-list"></div></div>
+</div>
+
+<!-- PROJECTS -->
+<div id="page-projects" class="page">
+  <div class="ph rb"><div><div class="pt">Work projects</div></div><button class="btn btnp" onclick="openModal('project')">+ Project</button></div>
+  <div class="card mb16"><div class="st">Completion overview</div><div style="position:relative;height:190px"><canvas id="proj-chart" role="img" aria-label="Project chart">Project data</canvas></div></div>
+  <div id="proj-list"></div>
+</div>
+
+<!-- WISHLIST -->
+<div id="page-wishlist" class="page">
+  <div class="ph rb"><div><div class="pt">Wishlist</div></div><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div>
+  <div class="g2" id="wish-list"></div>
+</div>
+
+<!-- FITNESS -->
+<div id="page-fitness" class="page">
+  <div class="ph rb"><div><div class="pt">Fitness</div><div class="ps">Workout tracker</div></div><button class="btn btnp" onclick="openModal('workout')">+ Log session</button></div>
+  <div class="g3 mb16" id="fit-m"></div>
+  <div class="wk-btns" id="wk-btns"></div>
+  <div class="g2 mb16">
+    <div class="card"><div class="st">Push</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="push-list"></div></div>
+    <div class="card"><div class="st">Pull</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="pull-list"></div></div>
+  </div>
+  <div class="g2 mb16">
+    <div class="card"><div class="st">Legs</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="legs-list"></div></div>
+    <div class="card"><div class="st">Session log</div><div id="ses-log"></div></div>
+  </div>
+</div>
+
+<!-- WEIGHT TRACKER -->
+<div id="page-weight" class="page">
+  <div class="ph rb"><div><div class="pt">Weight tracker</div><div class="ps">Log and visualise your progress</div></div><button class="btn btnp" onclick="openModal('weight')">+ Log weight</button></div>
+  <div class="g4 mb16" id="wt-metrics"></div>
+  <div class="card mb16"><div class="st">Progress chart</div><div style="position:relative;height:240px"><canvas id="wt-chart-main" role="img" aria-label="Weight progress">Weight data</canvas></div></div>
+  <div class="card">
+    <div class="st">Weight log</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding-bottom:8px;border-bottom:0.5px solid var(--border);margin-bottom:4px;">
+      <span style="font-size:11px;color:var(--text3)">Date</span>
+      <span style="font-size:11px;color:var(--text3)">Weight (kg)</span>
+      <span></span>
+    </div>
+    <div id="wt-log"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+  <div class="ph"><div class="pt">Settings & sync</div><div class="ps">Sync via Microsoft OneDrive</div></div>
+
+  <div class="card mb16">
+    <div class="st">OneDrive sync</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Sign in with your Microsoft account to sync your data across all devices via OneDrive. Do this once per device.</p>
+    <div class="fl" style="gap:8px;flex-wrap:wrap;">
+      <button class="btn btnp" id="od-signin-btn" onclick="odSignIn()">Sign in &amp; pull from OneDrive</button>
+      <button class="btn" onclick="pushToOD(getStateToSave())">Sign in &amp; push to OneDrive</button>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">Each button signs you in fresh with Microsoft, then immediately pulls or pushes your data. No session is saved.</p>
+    <div id="settings-msg" style="margin-top:10px;font-size:13px;"></div>
+  </div>
+
+  <div class="card mb16">
+    <div class="st">How it works</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.8">Click <strong>Sign in &amp; pull</strong> to load your latest data from OneDrive, or <strong>Sign in &amp; push</strong> to save your current data to OneDrive. Each button redirects you to Microsoft to sign in fresh — no password is remembered. Works identically on every device and browser.</p>
+  </div>
+
+  <div class="card">
+    <div class="st">Data management</div>
+    <div class="fl" style="gap:8px;flex-wrap:wrap;">
+      <button class="btn" onclick="exportData()">Export data as JSON</button>
+      <button class="btn btnd" onclick="clearAllData()">Clear all local data</button>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:10px">Export saves a backup file to your device. Clear removes local browser data only — your Gist copy is unaffected.</p>
+  </div>
+</div>
+
+</main>
+
+<div id="sync-status" class="sync-badge"></div>
+</div>
+
+<!-- MODAL -->
+<div class="mo-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="mo-box">
+    <h3 id="modal-title">Add</h3>
+    <div id="modal-body"></div>
+    <div class="fl-end" style="margin-top:14px;gap:8px;">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btnp" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TODAY=new Date();
+const TODAYSTR=TODAY.toISOString().split('T')[0];
+const mkKey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
+const curKey=mkKey(TODAY.getFullYear(),TODAY.getMonth()+1);
+
+// ── STATE (loads from localStorage if available) ──
+const DEFAULT_STATE = {
+  activeModal:null,
+  currentWeek:6,
+  budgetViewMonth:curKey,
+  bills:[
+    {id:1,name:'Rent',amount:1200,due:1,cat:'Housing',active:true},
+    {id:2,name:'Electricity',amount:80,due:5,cat:'Utilities',active:true},
+    {id:3,name:'Phone',amount:35,due:10,cat:'Utilities',active:true},
+    {id:4,name:'Netflix',amount:16,due:15,cat:'Entertainment',active:true},
+    {id:5,name:'Gym',amount:45,due:1,cat:'Health',active:true},
+    {id:6,name:'Spotify',amount:11,due:20,cat:'Entertainment',active:true},
+  ],
+  pockets:[
+    {id:1,name:'Main account',color:'#185FA5'},
+    {id:2,name:'Holidays',color:'#1D9E75'},
+    {id:3,name:'Emergency',color:'#BA7517'},
+    {id:4,name:'Groceries',color:'#D85A30'},
+  ],
+  monthlyData:{},
+  savings:[
+    {id:1,label:'Jan 2026',amount:400},
+    {id:2,label:'Feb 2026',amount:550},
+    {id:3,label:'Mar 2026',amount:480},
+    {id:4,label:'Apr 2026',amount:600},
+  ],
+  projects:[
+    {id:1,name:'Client Website',color:'#185FA5',todos:[
+      {id:1,text:'Set up dev environment',done:true,important:false},
+      {id:2,text:'Design homepage',done:true,important:true},
+      {id:3,text:'Build navigation',done:false,important:false},
+      {id:4,text:'Integrate CMS',done:false,important:true},
+    ]},
+    {id:2,name:'Internal App',color:'#1D9E75',todos:[
+      {id:1,text:'Write API spec',done:true,important:false},
+      {id:2,text:'Build auth',done:false,important:true},
+      {id:3,text:'Dashboard UI',done:false,important:false},
+    ]},
+    {id:3,name:'Portfolio',color:'#BA7517',todos:[
+      {id:1,text:'Update case studies',done:false,important:false},
+      {id:2,text:'Write about me',done:false,important:false},
+    ]},
+  ],
+  wishlist:[
+    {id:1,name:'Trip to Japan',cat:'Travel',ico:'✈'},
+    {id:2,name:'Learn piano',cat:'Skills',ico:'♪'},
+    {id:3,name:'Visit Amalfi Coast',cat:'Travel',ico:'⛵'},
+    {id:4,name:'Read 12 books',cat:'Personal',ico:'◉'},
+    {id:5,name:'Run a 10k',cat:'Fitness',ico:'◈'},
+  ],
+  important:[],
+  notes:[
+    {id:1,date:'2026-04-07',text:'Good day overall. Hit all workouts and stayed on budget.'},
+  ],
+  weightLog:[
+    {id:1,date:'2026-02-20',kg:97.1},{id:2,date:'2026-02-24',kg:96.5},
+    {id:3,date:'2026-03-03',kg:95.8},{id:4,date:'2026-03-10',kg:94.8},
+    {id:5,date:'2026-03-17',kg:95.2},{id:6,date:'2026-03-24',kg:93.0},
+    {id:7,date:'2026-03-31',kg:92.2},{id:8,date:'2026-04-07',kg:91.7},
+  ],
+  workoutDef:{
+    push:[
+      {name:'Side Lateral Raise',weeks:['15–13–12','15','12-12/-10','12','13','13','14–13–13'],weights:['7.5','7.5','10','9','9','9','9']},
+      {name:"Fly's",weeks:['12-12','12','12–12-12','12','11-10','11-11','10–10–10'],weights:['59','59','64','—','73','73','73']},
+      {name:'Incline Barbell Press',weeks:['10-9-9','12–12–9','7','8','9','10-10–9','9'],weights:['50','50','55','50','50','50','50']},
+      {name:'Flat Barbell Press',weeks:['10-10-9','8–8–10','10–10–8','10–10-10','10-9-10','10-8-8','10–9–9'],weights:['60','60','60','60','60','65','65']},
+      {name:'Smith Machine Press',weeks:['—','8–8–8','8–8–7','8','8','9','9–8–8'],weights:['—','30','30','30','30','30','32.5']},
+      {name:'Tricep Push Down',weeks:['12–10-8','10','12-10–10','12-12-8','12-12-8','10.10.10','8–7–8'],weights:['36','36','36','36','36','36','—']},
+    ],
+    pull:[
+      {name:'Rear Delt Fly',weeks:['—','10','10','10–9–8','10','10-10-9','10'],weights:['—','41','45','50','50','55','58']},
+      {name:'Bent Over Row',weeks:['10-9-9','10','7-8–7','10–8–8','10–9–8','8','8'],weights:['70','70','75','70','70','75','75']},
+      {name:'Wide Grip Pulldown',weeks:['10–9–9','10','9-9-8','10–7–9','10-8-8','10','6-10-9'],weights:['50','50','55','55','55','55','60']},
+      {name:'T-Bar Row',weeks:['10–10–10','8','10','8','10','8','8'],weights:['25','27.5','27.5','30','30','32.5','32.5']},
+      {name:'Neutral Grip Pulldown',weeks:['10','10','12','12–9–10','10-10-9','12','12'],weights:['50','50','50','55','55','55','60']},
+      {name:'Bicep Curl',weeks:['10','12','10','10–9–10','11-10','12-12','7–6–6'],weights:['25','25','32.5','32.5','32.5','32.5','35']},
+    ],
+    legs:[
+      {name:'Hamstring Curl',weeks:['12','12','12','12','12-12-11','10','10'],weights:['54','59','64','68','73','77','77']},
+      {name:'Quad Extension',weeks:['12','12','12','12','12-12','12','12'],weights:['69','74','77','82','86','92','95']},
+      {name:'Bulgarian Split Squat',weeks:['10','10','10','10','10','8','8'],weights:['40','42.5','45','47.5','50','52.5','52.5']},
+    ],
+  },
+  sessions:[],
+  customSets:{},
+};
+
+// ── ONEDRIVE SYNC ──
+const LS={
+  get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}},
+  set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}},
+};
+
+const OD={
+  clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
+  redirectUri:window.location.origin+window.location.pathname,
+  scopes:['https://graph.microsoft.com/Files.ReadWrite','https://graph.microsoft.com/User.Read'],
+  uploadUrl:'https://graph.microsoft.com/v1.0/me/drive/root:/HarveyApp/harvey-data.json:/content',
+  downloadUrl:'https://graph.microsoft.com/v1.0/me/drive/root:/HarveyApp/harvey-data.json:/content',
+};
+
+// MSAL configured with NO cache — sign in fresh every time
+let _msal=null, _msalInit=false;
+let syncTimer=null, syncStatus='idle';
+
+function getMsalApp(){
+  if(_msal)return _msal;
+  if(typeof msalBrowser==='undefined'&&typeof window.msal==='undefined')return null;
+  const lib=typeof msalBrowser!=='undefined'?msalBrowser:window.msal;
+  _msal=new lib.PublicClientApplication({
+    auth:{
+      clientId:OD.clientId,
+      authority:'https://login.microsoftonline.com/common',
+      redirectUri:OD.redirectUri,
+    },
+    cache:{
+      cacheLocation:'sessionStorage',  // sessionStorage clears when tab closes
+      storeAuthStateInCookie:false,
+    },
+  });
+  return _msal;
+}
+
+function setSyncStatus(status,msg){
+  syncStatus=status;
+  const el=document.getElementById('sync-status');if(!el)return;
+  const map={
+    idle:       {text:'',cls:''},
+    saving:     {text:'↑ Syncing…',cls:'sync-saving'},
+    saved:      {text:'✓ Synced',cls:'sync-ok'},
+    error:      {text:'✕ Sync failed',cls:'sync-err'},
+    'no-creds': {text:'⚠ Sign in to sync — go to Settings',cls:'sync-warn'},
+  };
+  const s=map[status]||map.idle;
+  el.textContent=msg||s.text;
+  el.className='sync-badge '+s.cls;
+}
+
+// Get token — always via redirect, no silent attempts, no caching
+async function getToken(){
+  const app=getMsalApp();
+  if(!app)throw new Error('MSAL library not loaded');
+  if(!_msalInit){
+    await app.initialize();
+    _msalInit=true;
+  }
+  // Check if we just came back from a redirect login
+  const rr=await app.handleRedirectPromise().catch(()=>null);
+  if(rr&&rr.accessToken)return rr.accessToken;
+  // No token — redirect to Microsoft login now
+  // Save app data to localStorage first so it survives the redirect
+  try{localStorage.setItem('harvey-pending-sync','1');}catch(e){}
+  try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+  await app.loginRedirect({
+    scopes:OD.scopes,
+    prompt:'select_account',  // always show account picker — no remembered sessions
+  });
+  return null; // page redirects, this never runs
+}
+
+async function pushToOD(data){
+  setSyncStatus('saving');
+  try{
+    const token=await getToken();
+    if(!token)return;
+    const res=await fetch(OD.uploadUrl,{
+      method:'PUT',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify(data),
+    });
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+res.status);}
+    setSyncStatus('saved');
+    setTimeout(()=>setSyncStatus('idle'),3000);
+  }catch(e){
+    console.error('push:',e.message);
+    setSyncStatus('error','✕ '+e.message);
+    setTimeout(()=>setSyncStatus('idle'),5000);
+  }
+}
+
+// Direct token versions used by init (avoids triggering redirect again)
+async function pullWithToken(token){
+  const res=await fetch(OD.downloadUrl,{headers:{'Authorization':'Bearer '+token}});
+  if(res.status===404)return null;
+  if(!res.ok)return null;
+  const data=await res.json().catch(()=>null);
+  return(data&&Object.keys(data).length>0)?data:null;
+}
+
+async function pushWithToken(token,data){
+  await fetch(OD.uploadUrl,{
+    method:'PUT',
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify(data),
+  });
+}
+
+async function pullFromOD(){
+  setSyncStatus('saving');
+  try{
+    const token=await getToken();
+    if(!token)return null;
+    const res=await fetch(OD.downloadUrl,{
+      headers:{'Authorization':'Bearer '+token},
+    });
+    if(res.status===404){
+      // File doesn't exist yet — first time use
+      setSyncStatus('saved');
+      setTimeout(()=>setSyncStatus('idle'),3000);
+      return null;
+    }
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+res.status);}
+    const data=await res.json();
+    if(!data||Object.keys(data).length===0){
+      setSyncStatus('saved');
+      setTimeout(()=>setSyncStatus('idle'),3000);
+      return null;
+    }
+    setSyncStatus('saved');
+    setTimeout(()=>setSyncStatus('idle'),3000);
+    return data;
+  }catch(e){
+    console.error('pull:',e.message);
+    setSyncStatus('error','✕ '+e.message);
+    setTimeout(()=>setSyncStatus('idle'),5000);
+    return null;
+  }
+}
+
+
+// Load from localStorage or use defaults
+function loadState() {
+  try {
+    const saved = LS.get('harvey-data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return Object.assign({}, DEFAULT_STATE, parsed, {workoutDef: DEFAULT_STATE.workoutDef});
+    }
+  } catch(e) {}
+  return Object.assign({}, DEFAULT_STATE);
+}
+
+function saveState() {
+  try {
+    const toSave = Object.assign({}, S);
+    delete toSave.activeModal;
+    LS.set('harvey-data', JSON.stringify(toSave));
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => pushToOD(toSave), 1500);
+  } catch(e) {}
+}
+
+const S = loadState();
+// Set initial pocket amounts for current month if not set
+if (!S.monthlyData[curKey]) {
+  S.monthlyData[curKey] = {
+    pocketAmounts:{1:2840,2:650,3:1200,4:180},
+    income:[{id:1,name:'Salary',amount:3800,freq:'Monthly'},{id:2,name:'Freelance',amount:400,freq:'Variable'}]
+  };
+}
+
+function getMonthData(key) {
+  if (!S.monthlyData[key]) {
+    S.monthlyData[key] = {
+      pocketAmounts: {},
+      income: [{id:Date.now(),name:'Salary',amount:3800,freq:'Monthly'}],
+    };
+    S.pockets.forEach(p => { S.monthlyData[key].pocketAmounts[p.id] = 0; });
+  }
+  return S.monthlyData[key];
+}
+
+async function syncFromOD(){
+  // This triggers a Microsoft login redirect, then pulls data on return
+  const m=document.getElementById('settings-msg');
+  if(m){m.textContent='Redirecting to Microsoft to sign in…';m.style.color='var(--text2)';}
+  await pullFromOD(); // pullFromOD calls getToken() which redirects if needed
+}
+
+
+let charts = {};
+function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
+function euro(n){return '€'+Math.round(n).toLocaleString('en-IE');}
+function fmtDate(d){const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('open');
+}
+
+function nav(id, el) {
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  // Close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  ({home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
+    bills:renderBills,savings:renderSavings,projects:renderProjects,
+    wishlist:renderWishlist,fitness:renderFitness,weight:renderWeightPage})[id]?.();
+}
+
+// ── HOME ──
+function renderHome(){
+  const d=new Date();
+  document.getElementById('home-date').textContent=d.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const md=getMonthData(curKey);
+  const totalPockets=S.pockets.reduce((a,p)=>a+(md.pocketAmounts[p.id]||0),0);
+  const totalIncome=md.income.reduce((a,i)=>a+i.amount,0);
+  const totalBills=S.bills.filter(b=>b.active).reduce((a,b)=>a+b.amount,0);
+  const allT=S.projects.flatMap(p=>p.todos);
+  document.getElementById('hm').innerHTML=`
+    <div class="mc"><div class="ml">Pockets (${MONTHS[d.getMonth()].slice(0,3)})</div><div class="mv">${euro(totalPockets)}</div></div>
+    <div class="mc"><div class="ml">Income (${MONTHS[d.getMonth()].slice(0,3)})</div><div class="mv">${euro(totalIncome)}</div></div>
+    <div class="mc"><div class="ml">Bills</div><div class="mv">${euro(totalBills)}</div></div>
+    <div class="mc"><div class="ml">Tasks done</div><div class="mv">${allT.filter(t=>t.done).length}/${allT.length}</div></div>`;
+  document.getElementById('h-bills').innerHTML=S.bills.filter(b=>b.active).slice(0,4).map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag tb">Due ${b.due}th</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
+  const tn=S.notes.find(n=>n.date===TODAYSTR);
+  document.getElementById('h-note').innerHTML=tn?`<div style="font-size:13px;color:var(--text2);font-style:italic;line-height:1.5">"${tn.text}"</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Today</div>`:'<div style="font-size:13px;color:var(--text3)">No note yet for today.</div>';
+  document.getElementById('h-proj').innerHTML=S.projects.map(p=>{const d=p.todos.filter(t=>t.done).length,tot=p.todos.length,pct=tot?Math.round(d/tot*100):0;return `<div style="margin-bottom:10px"><div class="flb" style="margin-bottom:4px"><span style="font-size:13px;font-weight:500">${p.name}</span><span style="font-size:12px;color:var(--text2)">${d}/${tot}</span></div><div class="pb"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div></div>`;}).join('');
+  setTimeout(()=>{
+    destroyChart('wc-home');
+    const ctx=document.getElementById('wc-home');if(!ctx)return;
+    const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
+    charts['wc-home']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'kg',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
+  },80);
+}
+function saveHomeNote(){
+  const val=document.getElementById('h-note-inp').value.trim();if(!val)return;
+  const ex=S.notes.findIndex(n=>n.date===TODAYSTR);
+  if(ex>=0)S.notes[ex].text=val;else S.notes.unshift({id:Date.now(),date:TODAYSTR,text:val});
+  document.getElementById('h-note-inp').value='';
+  saveState();renderHome();
+}
+
+// ── NOTES ──
+function renderNotes(){
+  const sorted=[...S.notes].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('notes-list').innerHTML=sorted.length?sorted.map(n=>`<div class="note-card"><div class="flb"><div class="note-date">${fmtDate(n.date)}</div><button class="btn-icon" onclick="deleteNote(${n.id})">✕</button></div><div class="note-text">${n.text}</div></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No notes yet.</div>';
+}
+function deleteNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveState();renderNotes();}
+
+// ── IMPORTANT ──
+function renderImportant(){
+  const el=document.getElementById('imp-list');if(!el)return;
+  const all=[...S.important];
+  S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
+  el.innerHTML=all.length?all.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--blue);min-width:6px"></div><span style="flex:1;font-size:13px">${i.text}</span><span class="tag tp">${i.source}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
+}
+
+// ── BUDGET ──
+function buildMonthOptions(selId){
+  const sel=document.getElementById(selId);if(!sel)return;
+  const cur=new Date();sel.innerHTML='';
+  for(let i=-4;i<=9;i++){
+    const d=new Date(cur.getFullYear(),cur.getMonth()+i,1);
+    const key=mkKey(d.getFullYear(),d.getMonth()+1);
+    const opt=document.createElement('option');
+    opt.value=key;opt.textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    if(key===S.budgetViewMonth)opt.selected=true;
+    sel.appendChild(opt);
+  }
+}
+function onBudgetMonthChange(){
+  S.budgetViewMonth=document.getElementById('budget-month-sel').value;
+  saveState();renderBudget();
+}
+function renderBudget(){
+  if(!S.budgetViewMonth)S.budgetViewMonth=curKey;
+  buildMonthOptions('budget-month-sel');
+  const [yr,mo]=S.budgetViewMonth.split('-').map(Number);
+  const mLabel=`${MONTHS[mo-1]} ${yr}`;
+  document.getElementById('budget-month-label').textContent=mLabel;
+  const md=getMonthData(S.budgetViewMonth);
+  const totalPockets=S.pockets.reduce((a,p)=>a+(md.pocketAmounts[p.id]||0),0);
+  const totalIncome=md.income.reduce((a,i)=>a+i.amount,0);
+  const activeBills=S.bills.filter(b=>b.active);
+  const totalBills=activeBills.reduce((a,b)=>a+b.amount,0);
+  const net=totalIncome-totalBills;
+  document.getElementById('bm').innerHTML=`
+    <div class="mc"><div class="ml">Pockets total</div><div class="mv">${euro(totalPockets)}</div><div class="ms">${mLabel}</div></div>
+    <div class="mc"><div class="ml">Income</div><div class="mv">${euro(totalIncome)}</div><div class="ms">${mLabel}</div></div>
+    <div class="mc"><div class="ml">Bills</div><div class="mv">${euro(totalBills)}</div><div class="ms">Active recurring</div></div>
+    <div class="mc"><div class="ml">Net (income − bills)</div><div class="mv" style="color:${net>=0?'#3B6D11':'#A32D2D'}">${net>=0?'':'-'}${euro(Math.abs(net))}</div></div>`;
+  document.getElementById('pockets-list').innerHTML=S.pockets.map(p=>`
+    <div class="pi">
+      <div class="fl"><div style="width:9px;height:9px;border-radius:50%;background:${p.color}"></div><span class="pn">${p.name}</span></div>
+      <div class="fl">
+        <input type="number" class="inp" style="width:100px;text-align:right;padding:5px 8px;font-size:13px" value="${md.pocketAmounts[p.id]||0}" onchange="updatePocketAmount(${p.id},this.value)">
+        <span style="font-size:12px;color:var(--text3)">€</span>
+      </div>
+    </div>`).join('');
+  document.getElementById('income-list').innerHTML=md.income.map(i=>`
+    <div class="pi">
+      <span class="pn">${i.name}</span>
+      <div class="fl">
+        <span class="tag tg">${i.freq}</span>
+        <span class="pv">${euro(i.amount)}</span>
+        <button class="btn-icon" onclick="removeMonthIncome('${S.budgetViewMonth}',${i.id})">✕</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('budget-bills-total').textContent=euro(totalBills);
+  document.getElementById('budget-bills-list').innerHTML=activeBills.map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag ${catTag(b.cat)}">${b.cat}</span><span style="font-size:12px;color:var(--text2)">Due ${b.due}th</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
+  document.getElementById('budget-summary').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="sum-box"><div class="sum-label">Total income</div><div class="sum-val" style="color:#3B6D11">${euro(totalIncome)}</div></div>
+      <div class="sum-box"><div class="sum-label">Total bills</div><div class="sum-val" style="color:#A32D2D">${euro(totalBills)}</div></div>
+      <div class="sum-box" style="grid-column:span 2"><div class="sum-label">Money left after bills</div><div class="sum-val" style="color:${net>=0?'#185FA5':'#A32D2D'};font-size:22px">${net>=0?'':'-'}${euro(Math.abs(net))}</div></div>
+    </div>`;
+}
+function updatePocketAmount(pid,val){
+  getMonthData(S.budgetViewMonth||curKey).pocketAmounts[pid]=parseFloat(val)||0;
+  saveState();renderBudget();
+}
+function removeMonthIncome(key,id){
+  getMonthData(key).income=getMonthData(key).income.filter(i=>i.id!==id);
+  saveState();renderBudget();
+}
+function catTag(cat){return {Housing:'tb',Utilities:'ta',Entertainment:'tp',Health:'tg',Transport:'tg'}[cat]||'tr';}
+
+// ── BILLS ──
+function renderBills(){
+  const active=S.bills.filter(b=>b.active),inactive=S.bills.filter(b=>!b.active);
+  const tot=active.reduce((a,b)=>a+b.amount,0);
+  document.getElementById('bills-m').innerHTML=`
+    <div class="mc"><div class="ml">Monthly total</div><div class="mv">${euro(tot)}</div></div>
+    <div class="mc"><div class="ml">Yearly total</div><div class="mv">${euro(tot*12)}</div></div>
+    <div class="mc"><div class="ml">Active bills</div><div class="mv">${active.length}</div><div class="ms">${inactive.length} paused</div></div>`;
+  document.getElementById('bills-list').innerHTML=S.bills.map(b=>`
+    <div class="bill-row" style="${!b.active?'opacity:0.5':''}">
+      <input class="inp" style="font-size:12px;padding:5px 8px;font-weight:500" value="${b.name}" onchange="editBill(${b.id},'name',this.value)">
+      <input type="number" class="inp hide-mobile" style="font-size:12px;padding:5px 8px" value="${b.amount}" onchange="editBill(${b.id},'amount',this.value)">
+      <select class="inp hide-mobile" style="font-size:12px;padding:5px 8px" onchange="editBill(${b.id},'cat',this.value)">
+        ${['Housing','Utilities','Entertainment','Health','Transport','Other'].map(c=>`<option${b.cat===c?' selected':''}>${c}</option>`).join('')}
+      </select>
+      <input type="number" class="inp hide-mobile" style="font-size:12px;padding:5px 8px;width:58px" value="${b.due}" min="1" max="31" onchange="editBill(${b.id},'due',this.value)">
+      <button onclick="toggleBillActive(${b.id})" class="btn" style="font-size:11px;white-space:nowrap;padding:5px 8px">${b.active?'Pause':'Resume'}</button>
+      <button onclick="deleteBill(${b.id})" class="btn btnd" style="font-size:11px;padding:5px 8px">Del</button>
+    </div>`).join('');
+}
+function editBill(id,field,val){
+  const b=S.bills.find(x=>x.id===id);if(!b)return;
+  b[field]=(field==='amount'||field==='due')?parseFloat(val)||0:val;
+  saveState();renderBills();
+}
+function toggleBillActive(id){const b=S.bills.find(x=>x.id===id);if(b)b.active=!b.active;saveState();renderBills();}
+function deleteBill(id){if(confirm('Delete this bill?')){S.bills=S.bills.filter(x=>x.id!==id);saveState();renderBills();}}
+
+// ── SAVINGS ──
+function renderSavings(){
+  const tot=S.savings.reduce((a,b)=>a+b.amount,0);
+  const last=S.savings[S.savings.length-1]?.amount||0,prev=S.savings[S.savings.length-2]?.amount||0,diff=last-prev;
+  document.getElementById('sav-m').innerHTML=`
+    <div class="mc"><div class="ml">Total saved</div><div class="mv">${euro(tot)}</div></div>
+    <div class="mc"><div class="ml">Last entry</div><div class="mv">${euro(last)}</div></div>
+    <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#3B6D11':'#A32D2D'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
+  setTimeout(()=>{
+    destroyChart('sav-chart');
+    const ctx=document.getElementById('sav-chart');if(!ctx)return;
+    charts['sav-chart']=new Chart(ctx,{type:'bar',data:{labels:S.savings.map(s=>s.label),datasets:[{label:'Saved',data:S.savings.map(s=>s.amount),backgroundColor:'rgba(24,95,165,.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},callback:v=>'€'+v},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  },80);
+  document.getElementById('sav-list').innerHTML=[...S.savings].reverse().map(s=>`<div class="pi"><span class="pn">${s.label}</span><div class="fl"><span class="pv">${euro(s.amount)}</span><button class="btn-icon" onclick="S.savings=S.savings.filter(x=>x.id!==${s.id});saveState();renderSavings();">✕</button></div></div>`).join('');
+}
+
+// ── PROJECTS ──
+function renderProjects(){
+  setTimeout(()=>{
+    destroyChart('proj-chart');
+    const ctx=document.getElementById('proj-chart');if(!ctx)return;
+    charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>p.todos.filter(t=>t.done).length),backgroundColor:'rgba(24,95,165,.75)',borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>p.todos.filter(t=>!t.done).length),backgroundColor:'rgba(180,180,180,.25)',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12}}},y:{stacked:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(128,128,128,.1)'}}}}});
+  },80);
+  document.getElementById('proj-list').innerHTML=S.projects.map(p=>{
+    const d=p.todos.filter(t=>t.done).length,tot=p.todos.length,pct=tot?Math.round(d/tot*100):0;
+    return `<div class="card mb12"><div class="flb mb12"><div class="fl"><div style="width:11px;height:11px;border-radius:50%;background:${p.color}"></div><span style="font-size:14px;font-weight:600">${p.name}</span><span class="tag tb">${pct}%</span></div><button class="btn" style="font-size:11px" onclick="addTodoModal(${p.id})">+ Task</button></div><div class="pb mb12"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>${p.todos.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);"><div onclick="toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;${t.done?'background:var(--blue);border-color:var(--blue);color:#fff;font-size:9px;':''}">${t.done?'✓':''}</div><span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span><button onclick="pinTodo(${p.id},${t.id},'${p.name.replace(/'/g,"\\'")}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'}">★</button></div>`).join('')}</div>`;
+  }).join('');
+}
+function toggleTodo(pid,tid){const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);t.done=!t.done;saveState();renderProjects();}
+function pinTodo(pid,tid,pname){
+  const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
+  t.important=!t.important;
+  const ref=`${pid}-${tid}`;
+  if(t.important){if(!S.important.find(x=>x.ref===ref))S.important.push({id:ref,ref,text:t.text,source:pname});}
+  else S.important=S.important.filter(x=>x.ref!==ref);
+  saveState();renderProjects();
+}
+function addTodoModal(pid){S.activeModal={type:'todo',pid};document.getElementById('modal-title').textContent='Add task';document.getElementById('modal-body').innerHTML=`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`;document.getElementById('modal').style.display='flex';}
+
+// ── WISHLIST ──
+function renderWishlist(){
+  const cats=[...new Set(S.wishlist.map(w=>w.cat))];
+  document.getElementById('wish-list').innerHTML=cats.map(cat=>{
+    const items=S.wishlist.filter(w=>w.cat===cat);
+    return `<div class="card mb12"><div class="flb mb12"><div class="st" style="margin:0">${cat}</div><span class="tag tb">${items.length}</span></div>${items.map(w=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);"><span style="font-size:15px">${w.ico}</span><span style="flex:1;font-size:13px">${w.name}</span><button class="btn-icon" onclick="S.wishlist=S.wishlist.filter(x=>x.id!==${w.id});saveState();renderWishlist();">✕</button></div>`).join('')}</div>`;
+  }).join('');
+}
+
+// ── FITNESS ──
+function renderFitness(){
+  const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
+  const cur=sorted[sorted.length-1]?.kg||0,start=sorted[0]?.kg||0;
+  document.getElementById('fit-m').innerHTML=`
+    <div class="mc"><div class="ml">Current weight</div><div class="mv">${cur} kg</div></div>
+    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${(start-cur).toFixed(1)} kg</div></div>
+    <div class="mc"><div class="ml">Sessions logged</div><div class="mv">${S.sessions.length+7}</div></div>`;
+  document.getElementById('wk-btns').innerHTML=['W0','W1','W2','W3','W4','W5','W6','W7'].map((w,i)=>`<button class="wkb ${S.currentWeek===i?'active':''}" onclick="selWeek(${i})">${w}</button>`).join('');
+  ['push','pull','legs'].forEach(type=>{
+    document.getElementById(type+'-list').innerHTML=S.workoutDef[type].map(ex=>{
+      const key=`${type}|${ex.name}|w${S.currentWeek}`;
+      const c=S.customSets[key];
+      const reps=c?c.reps:(ex.weeks[S.currentWeek]||'—');
+      const wt=c?c.weight:(ex.weights?ex.weights[S.currentWeek]||'—':'—');
+      const sets=c?c.sets:'3';
+      const bestWt=ex.weights?Math.max(...ex.weights.map(w=>parseFloat(w)).filter(n=>!isNaN(n))):0;
+      const nm=ex.name.replace(/'/g,"\\'");
+      return `<div class="ex-row"><div><div class="ex-name">${ex.name}</div>${bestWt?`<div class="ex-best">Best: ${bestWt}kg</div>`:''}</div><input class="inp inp-sm" value="${reps}" style="width:76px" onchange="upSet('${type}','${nm}',${S.currentWeek},'reps',this.value)"><input class="inp inp-sm" value="${sets}" style="width:48px" onchange="upSet('${type}','${nm}',${S.currentWeek},'sets',this.value)"><input class="inp inp-sm" value="${wt}" style="width:64px" onchange="upSet('${type}','${nm}',${S.currentWeek},'weight',this.value)"><button onclick="clearSet('${type}','${nm}',${S.currentWeek})" class="btn-icon" title="Reset">↺</button></div>`;
+    }).join('');
+  });
+  document.getElementById('ses-log').innerHTML=S.sessions.length?[...S.sessions].reverse().map(s=>`<div class="ses-row"><div><div style="font-size:13px;font-weight:500">${s.type} session</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${s.notes||'No notes'}</div></div><span class="tag tb">${s.date}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions logged yet.</div>';
+}
+function selWeek(i){S.currentWeek=i;saveState();renderFitness();}
+function upSet(type,name,week,field,val){
+  const key=`${type}|${name}|w${week}`;
+  if(!S.customSets[key]){const ex=S.workoutDef[type].find(e=>e.name===name);S.customSets[key]={reps:ex.weeks[week]||'',sets:'3',weight:ex.weights?ex.weights[week]||'':''};}
+  S.customSets[key][field]=val;
+  saveState();
+}
+function clearSet(type,name,week){delete S.customSets[`${type}|${name}|w${week}`];saveState();renderFitness();}
+
+// ── WEIGHT PAGE ──
+function renderWeightPage(){
+  const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
+  const latest=sorted[sorted.length-1]?.kg||0,first=sorted[0]?.kg||0;
+  const lost=+(first-latest).toFixed(1),goal=85,toGoal=+(latest-goal).toFixed(1);
+  document.getElementById('wt-metrics').innerHTML=`
+    <div class="mc"><div class="ml">Current</div><div class="mv">${latest} kg</div></div>
+    <div class="mc"><div class="ml">Starting</div><div class="mv">${first} kg</div></div>
+    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${lost} kg</div></div>
+    <div class="mc"><div class="ml">To goal (${goal}kg)</div><div class="mv" style="color:${toGoal<=0?'#3B6D11':'#185FA5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
+  setTimeout(()=>{
+    destroyChart('wt-chart-main');
+    const ctx=document.getElementById('wt-chart-main');if(!ctx)return;
+    charts['wt-chart-main']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'Weight (kg)',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:4,fill:true},{label:'Goal',data:sorted.map(()=>goal),borderColor:'#3B6D11',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'},min:83},x:{ticks:{font:{size:10}},grid:{display:false}}}}});
+  },80);
+  document.getElementById('wt-log').innerHTML=[...sorted].reverse().map(e=>`<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);align-items:center;"><span style="font-size:13px;color:var(--text2)">${fmtDate(e.date)}</span><span style="font-size:14px;font-weight:600;color:var(--blue)">${e.kg} kg</span><button class="btn-icon" onclick="deleteWeight(${e.id})">✕</button></div>`).join('');
+}
+function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState();renderWeightPage();}
+
+// ── MODAL ──
+function openModal(type,extra){
+  S.activeModal={type,...(extra||{})};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task'};
+  document.getElementById('modal-title').textContent=titles[type]||'Add';
+  const bodies={
+    pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
+    income:`<div class="fr"><label class="fl2">Source name</label><input class="inp" id="m-name" placeholder="e.g. Salary"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Frequency</label><select class="inp" id="m-freq"><option>Monthly</option><option>Weekly</option><option>Variable</option></select></div>`,
+    bill:`<div class="fr"><label class="fl2">Name</label><input class="inp" id="m-name" placeholder="e.g. Netflix"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Due day</label><input type="number" class="inp" id="m-due" placeholder="1–31" min="1" max="31"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Transport</option><option>Other</option></select></div>`,
+    saving:`<div class="fr"><label class="fl2">Label (e.g. May 2026)</label><input class="inp" id="m-label" placeholder="Month Year"></div><div class="fr"><label class="fl2">Amount saved (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div>`,
+    project:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-name" placeholder="e.g. Client App"></div>`,
+    wish:`<div class="fr"><label class="fl2">What do you want to do?</label><input class="inp" id="m-name" placeholder="e.g. Visit Lisbon"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Travel</option><option>Skills</option><option>Personal</option><option>Fitness</option><option>Other</option></select></div>`,
+    important:`<div class="fr"><label class="fl2">Task</label><input class="inp" id="m-text" placeholder="Important task..."></div><div class="fr"><label class="fl2">Source</label><input class="inp" id="m-src" placeholder="e.g. Work, Personal"></div>`,
+    note:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-note" placeholder="Write your note..."></textarea></div>`,
+    workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
+    weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
+    todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
+  };
+  document.getElementById('modal-body').innerHTML=bodies[type]||'';
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>{const f=document.querySelector('#modal-body input,#modal-body textarea');if(f)f.focus();},60);
+}
+function closeModal(){document.getElementById('modal').style.display='none';S.activeModal=null;}
+function g(id){const el=document.getElementById(id);return el?el.value:'';}
+const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
+const wicos={'Travel':'✈','Skills':'♪','Personal':'◉','Fitness':'◈','Other':'★'};
+
+function saveModal(){
+  const m=S.activeModal;if(!m)return;
+  if(m.type==='pocket'){
+    const n=g('m-name');if(!n)return;
+    const p={id:Date.now(),name:n,color:pcolors[S.pockets.length%pcolors.length]};
+    S.pockets.push(p);
+    Object.keys(S.monthlyData).forEach(k=>{S.monthlyData[k].pocketAmounts[p.id]=0;});
+    saveState();renderBudget();
+  } else if(m.type==='income'){
+    const n=g('m-name'),a=parseFloat(g('m-amount'))||0,f=g('m-freq');if(!n)return;
+    getMonthData(S.budgetViewMonth||curKey).income.push({id:Date.now(),name:n,amount:a,freq:f});
+    saveState();renderBudget();
+  } else if(m.type==='bill'){
+    const n=g('m-name'),a=parseFloat(g('m-amount'))||0,d=parseInt(g('m-due'))||1,c=g('m-cat');if(!n)return;
+    S.bills.push({id:Date.now(),name:n,amount:a,due:d,cat:c,active:true});
+    saveState();renderBills();
+  } else if(m.type==='saving'){
+    const l=g('m-label'),a=parseFloat(g('m-amount'))||0;if(!l)return;
+    S.savings.push({id:Date.now(),label:l,amount:a});saveState();renderSavings();
+  } else if(m.type==='project'){
+    const n=g('m-name');if(!n)return;
+    S.projects.push({id:Date.now(),name:n,color:pcolors[S.projects.length%pcolors.length],todos:[]});saveState();renderProjects();
+  } else if(m.type==='wish'){
+    const n=g('m-name'),c=g('m-cat');if(!n)return;
+    S.wishlist.push({id:Date.now(),name:n,cat:c,ico:wicos[c]||'★'});saveState();renderWishlist();
+  } else if(m.type==='important'){
+    const t=g('m-text'),src=g('m-src')||'Manual';if(!t)return;
+    S.important.push({id:Date.now(),text:t,source:src});saveState();renderImportant();
+  } else if(m.type==='note'){
+    const d=g('m-date'),t=g('m-note');if(!d||!t)return;
+    const ex=S.notes.findIndex(n=>n.date===d);
+    if(ex>=0)S.notes[ex].text=t;else S.notes.unshift({id:Date.now(),date:d,text:t});
+    saveState();renderNotes();
+  } else if(m.type==='workout'){
+    const d=g('m-date'),tp=g('m-type'),nt=g('m-notes');if(!d)return;
+    S.sessions.push({id:Date.now(),date:d,type:tp,notes:nt});saveState();renderFitness();
+  } else if(m.type==='weight'){
+    const d=g('m-date'),kg=parseFloat(g('m-kg'));if(!d||isNaN(kg))return;
+    const ex=S.weightLog.findIndex(e=>e.date===d);
+    if(ex>=0)S.weightLog[ex].kg=kg;else S.weightLog.push({id:Date.now(),date:d,kg});
+    saveState();renderWeightPage();renderHome();
+  } else if(m.type==='todo'){
+    const t=g('m-text');if(!t)return;
+    const p=S.projects.find(x=>x.id===m.pid);
+    p.todos.push({id:Date.now(),text:t,done:false,important:false});saveState();renderProjects();
+  }
+  closeModal();renderHome();
+}
+
+function getStateToSave(){const t=Object.assign({},S);delete t.activeModal;return t;}
+
+function renderSettings(){
+  // No session to display — always show fresh sign in
+  const btn=document.getElementById('od-signin-btn');
+  if(btn)btn.textContent='Sign in with Microsoft';
+  const el=document.getElementById('od-account');
+  if(el)el.style.display='none';
+}
+
+async function odSignIn(){
+  const m=document.getElementById('settings-msg');
+  if(m){m.textContent='Redirecting to Microsoft…';m.style.color='var(--text2)';}
+  try{
+    const token=await getToken();
+    if(token){
+      renderSettings();
+      if(m){m.textContent='✓ Signed in! Pulling data…';m.style.color='var(--green)';}
+      await syncFromOD();
+      if(m)m.textContent='✓ Signed in and synced!';
+    }
+  }catch(e){
+    if(m){m.textContent='✕ '+e.message;m.style.color='var(--red)';}
+  }
+}
+
+function odSignOut(){
+  // No persistent session to sign out of
+  const m=document.getElementById('settings-msg');
+  if(m){m.textContent='Not signed in — sign in when you want to sync.';m.style.color='var(--text2)';}
+}
+
+function exportData(){
+  const a=document.createElement('a');
+  a.href='data:application/json,'+encodeURIComponent(JSON.stringify(getStateToSave(),null,2));
+  a.download='harvey-backup-'+TODAYSTR+'.json';a.click();
+}
+
+function clearAllData(){
+  if(!confirm('Clear all local data? Your OneDrive copy is not affected.'))return;
+  localStorage.removeItem('harvey-data');location.reload();
+}
+
+// Nav — includes settings
+window.nav = function(id, el){
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
+    bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings};
+  handlers[id]?.();
+};
+
+// Init — render page immediately, then check if returning from MS login
+renderHome();
+setTimeout(async()=>{
+  try{
+    const app=getMsalApp();
+    if(!app){setSyncStatus('no-creds');return;}
+    await app.initialize();
+    _msalInit=true;
+    // Check if we just came back from Microsoft login redirect
+    const rr=await app.handleRedirectPromise().catch(()=>null);
+    if(rr&&rr.accessToken){
+      // Coming back from login — sync data now
+      setSyncStatus('saving');
+      // Pull first
+      const remote=await pullWithToken(rr.accessToken);
+      if(remote){
+        const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
+          'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth'];
+        keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
+        S.workoutDef=DEFAULT_STATE.workoutDef;
+        try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+        renderHome();
+      }
+      // Check if we came from a push action
+      const pending=localStorage.getItem('harvey-pending-push');
+      if(pending){
+        localStorage.removeItem('harvey-pending-push');
+        await pushWithToken(rr.accessToken,getStateToSave());
+      }
+      setSyncStatus('saved');
+      setTimeout(()=>setSyncStatus('idle'),3000);
+      localStorage.removeItem('harvey-pending-sync');
+    }else{
+      // Normal load — no redirect, just show sign in prompt
+      setSyncStatus('no-creds');
+      setTimeout(()=>setSyncStatus('idle'),6000);
+    }
+  }catch(e){
+    console.error('init:',e);
+    setSyncStatus('idle');
+  }
+},300);
+</script>
+</body>
+</html>
