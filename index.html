@@ -203,6 +203,7 @@
     <div class="ni" onclick="nav('wishlist',this)"><span class="ni-ico">✦</span>Wishlist</div>
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
+    <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -375,6 +376,45 @@
   </div>
 </div>
 
+
+<div id="page-time" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Time tracker</div><div class="ps">Track time across work projects</div></div>
+    <div class="fl" style="flex-wrap:wrap;gap:6px;">
+      <button class="btn btnp" onclick="openModal('timeLog')">+ Log time</button>
+      <button class="btn" onclick="openModal('timeProject')">+ Project</button>
+    </div>
+  </div>
+
+  <div class="g3 mb16" id="time-metrics"></div>
+
+  <div class="g2 mb16">
+    <div class="card">
+      <div class="st">Hours by project</div>
+      <div style="position:relative;height:220px"><canvas id="time-chart" role="img" aria-label="Hours per project">Time data</canvas></div>
+    </div>
+    <div class="card">
+      <div class="st">Projects</div>
+      <div id="time-projects-list"></div>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="flb mb12">
+      <div class="st" style="margin:0">Time log</div>
+      <div class="fl" style="gap:8px">
+        <label style="font-size:12px;color:var(--text2)">Filter by</label>
+        <select class="month-sel" id="time-filter" onchange="renderTimePage()" style="font-size:12px;padding:5px 8px">
+          <option value="week">This week</option>
+          <option value="month">This month</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+    </div>
+    <div id="time-log-list"></div>
+  </div>
+</div>
+
 </main>
 
 <div id="sync-status" class="sync-badge"></div>
@@ -404,61 +444,15 @@ const DEFAULT_STATE = {
   activeModal:null,
   currentWeek:6,
   budgetViewMonth:curKey,
-  bills:[
-    {id:1,name:'Rent',amount:1200,due:1,cat:'Housing',active:true},
-    {id:2,name:'Electricity',amount:80,due:5,cat:'Utilities',active:true},
-    {id:3,name:'Phone',amount:35,due:10,cat:'Utilities',active:true},
-    {id:4,name:'Netflix',amount:16,due:15,cat:'Entertainment',active:true},
-    {id:5,name:'Gym',amount:45,due:1,cat:'Health',active:true},
-    {id:6,name:'Spotify',amount:11,due:20,cat:'Entertainment',active:true},
-  ],
-  pockets:[
-    {id:1,name:'Main account',color:'#185FA5'},
-    {id:2,name:'Holidays',color:'#1D9E75'},
-    {id:3,name:'Emergency',color:'#BA7517'},
-    {id:4,name:'Groceries',color:'#D85A30'},
-  ],
+  bills:[],
+  pockets:[],
   monthlyData:{},
-  savings:[
-    {id:1,label:'Jan 2026',amount:400},
-    {id:2,label:'Feb 2026',amount:550},
-    {id:3,label:'Mar 2026',amount:480},
-    {id:4,label:'Apr 2026',amount:600},
-  ],
-  projects:[
-    {id:1,name:'Client Website',color:'#185FA5',todos:[
-      {id:1,text:'Set up dev environment',done:true,important:false},
-      {id:2,text:'Design homepage',done:true,important:true},
-      {id:3,text:'Build navigation',done:false,important:false},
-      {id:4,text:'Integrate CMS',done:false,important:true},
-    ]},
-    {id:2,name:'Internal App',color:'#1D9E75',todos:[
-      {id:1,text:'Write API spec',done:true,important:false},
-      {id:2,text:'Build auth',done:false,important:true},
-      {id:3,text:'Dashboard UI',done:false,important:false},
-    ]},
-    {id:3,name:'Portfolio',color:'#BA7517',todos:[
-      {id:1,text:'Update case studies',done:false,important:false},
-      {id:2,text:'Write about me',done:false,important:false},
-    ]},
-  ],
-  wishlist:[
-    {id:1,name:'Trip to Japan',cat:'Travel',ico:'✈'},
-    {id:2,name:'Learn piano',cat:'Skills',ico:'♪'},
-    {id:3,name:'Visit Amalfi Coast',cat:'Travel',ico:'⛵'},
-    {id:4,name:'Read 12 books',cat:'Personal',ico:'◉'},
-    {id:5,name:'Run a 10k',cat:'Fitness',ico:'◈'},
-  ],
+  savings:[],
+  projects:[],
+  wishlist:[],
   important:[],
-  notes:[
-    {id:1,date:'2026-04-07',text:'Good day overall. Hit all workouts and stayed on budget.'},
-  ],
-  weightLog:[
-    {id:1,date:'2026-02-20',kg:97.1},{id:2,date:'2026-02-24',kg:96.5},
-    {id:3,date:'2026-03-03',kg:95.8},{id:4,date:'2026-03-10',kg:94.8},
-    {id:5,date:'2026-03-17',kg:95.2},{id:6,date:'2026-03-24',kg:93.0},
-    {id:7,date:'2026-03-31',kg:92.2},{id:8,date:'2026-04-07',kg:91.7},
-  ],
+  notes:[],
+  weightLog:[],
   workoutDef:{
     push:[
       {name:'Side Lateral Raise',weeks:['15–13–12','15','12-12/-10','12','13','13','14–13–13'],weights:['7.5','7.5','10','9','9','9','9']},
@@ -480,10 +474,15 @@ const DEFAULT_STATE = {
       {name:'Hamstring Curl',weeks:['12','12','12','12','12-12-11','10','10'],weights:['54','59','64','68','73','77','77']},
       {name:'Quad Extension',weeks:['12','12','12','12','12-12','12','12'],weights:['69','74','77','82','86','92','95']},
       {name:'Bulgarian Split Squat',weeks:['10','10','10','10','10','8','8'],weights:['40','42.5','45','47.5','50','52.5','52.5']},
+      {name:'Leg Press',weeks:['10','10','10','10','10','9','9-9-9'],weights:['180','200','210','220','230','240','240']},
+      {name:'Single Leg Seated Calf Raise',weeks:['10','8','10','8--7--7','8','8-8-6','8'],weights:['60','65','35','35','35','40','40']},
+      {name:'Calf Raises Smith Machine (2x drop)',weeks:['—','10','10','8–8–7','10','9','9'],weights:['—','100','50','60','60','65','65']},
     ],
   },
   sessions:[],
   customSets:{},
+  timeProjects:[],
+  timeLog:[],
 };
 
 // ── ONEDRIVE SYNC ──
@@ -653,18 +652,13 @@ function saveState() {
 
 const S = loadState();
 // Set initial pocket amounts for current month if not set
-if (!S.monthlyData[curKey]) {
-  S.monthlyData[curKey] = {
-    pocketAmounts:{1:2840,2:650,3:1200,4:180},
-    income:[{id:1,name:'Salary',amount:3800,freq:'Monthly'},{id:2,name:'Freelance',amount:400,freq:'Variable'}]
-  };
-}
+// monthlyData initialised empty per month via getMonthData()
 
 function getMonthData(key) {
   if (!S.monthlyData[key]) {
     S.monthlyData[key] = {
       pocketAmounts: {},
-      income: [{id:Date.now(),name:'Salary',amount:3800,freq:'Monthly'}],
+      income: [],
     };
     S.pockets.forEach(p => { S.monthlyData[key].pocketAmounts[p.id] = 0; });
   }
@@ -963,6 +957,8 @@ function openModal(type,extra){
     note:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-note" placeholder="Write your note..."></textarea></div>`,
     workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
     weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
+    timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00"></div></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
+    timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
@@ -1020,6 +1016,22 @@ function saveModal(){
     const p=S.projects.find(x=>x.id===m.pid);
     p.todos.push({id:Date.now(),text:t,done:false,important:false});saveState();renderProjects();
   }
+  else if(m.type==='timeLog'){
+    const proj=parseInt(g('m-tproj')),date=g('m-tdate'),start=g('m-tstart'),end=g('m-tend'),notes=g('m-tnotes');
+    if(!date||!start||!end)return;
+    // Calculate duration in minutes
+    const [sh,sm]=start.split(':').map(Number);
+    const [eh,em]=end.split(':').map(Number);
+    const mins=(eh*60+em)-(sh*60+sm);
+    if(mins<=0){alert('End time must be after start time');return;}
+    S.timeLog.push({id:Date.now(),projectId:proj,date,start,end,mins,notes});
+    saveState();renderTimePage();
+  } else if(m.type==='timeProject'){
+    const name=g('m-tpname'),color=g('m-tpcolor');
+    if(!name)return;
+    S.timeProjects.push({id:Date.now(),name,color});
+    saveState();renderTimePage();
+  }
   closeModal();renderHome();
 }
 
@@ -1066,6 +1078,105 @@ function clearAllData(){
   localStorage.removeItem('harvey-data');location.reload();
 }
 
+
+// ── TIME TRACKER ──
+function renderTimePage(){
+  if(!S.timeProjects)S.timeProjects=[];
+  if(!S.timeLog)S.timeLog=[];
+
+  const filter=document.getElementById('time-filter')?.value||'week';
+  const now=new Date();
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay()+1);weekStart.setHours(0,0,0,0);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+
+  const filtered=S.timeLog.filter(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    if(filter==='week')return d>=weekStart;
+    if(filter==='month')return d>=monthStart;
+    return true;
+  });
+
+  // Metrics
+  const totalMins=filtered.reduce((a,b)=>a+b.mins,0);
+  const todayMins=S.timeLog.filter(e=>e.date===TODAYSTR).reduce((a,b)=>a+b.mins,0);
+  const weekMins=S.timeLog.filter(e=>{const d=new Date(e.date+'T12:00:00');return d>=weekStart;}).reduce((a,b)=>a+b.mins,0);
+  const fmtHrs=m=>{const h=Math.floor(m/60),mn=m%60;return h>0?`${h}h ${mn>0?mn+'m':''}`:`${mn}m`;};
+
+  document.getElementById('time-metrics').innerHTML=`
+    <div class="mc"><div class="ml">Today</div><div class="mv">${fmtHrs(todayMins)||'0m'}</div></div>
+    <div class="mc"><div class="ml">This week</div><div class="mv">${fmtHrs(weekMins)||'0m'}</div></div>
+    <div class="mc"><div class="ml">Entries logged</div><div class="mv">${S.timeLog.length}</div></div>`;
+
+  // Project totals
+  const projMins={};
+  filtered.forEach(e=>{projMins[e.projectId]=(projMins[e.projectId]||0)+e.mins;});
+
+  // Chart
+  setTimeout(()=>{
+    destroyChart('time-chart');
+    const ctx=document.getElementById('time-chart');if(!ctx)return;
+    const labels=S.timeProjects.map(p=>p.name);
+    const data=S.timeProjects.map(p=>+((projMins[p.id]||0)/60).toFixed(1));
+    const colors=S.timeProjects.map(p=>p.color);
+    charts['time-chart']=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{label:'Hours',data,backgroundColor:colors.map(c=>c+'bb'),borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{font:{size:11},callback:v=>v+'h'},grid:{color:'rgba(128,128,128,.1)'},beginAtZero:true},
+                x:{ticks:{font:{size:12}},grid:{display:false}}}}
+    });
+  },80);
+
+  // Projects list
+  document.getElementById('time-projects-list').innerHTML=S.timeProjects.length?
+    S.timeProjects.map(p=>`
+      <div class="pi">
+        <div class="fl">
+          <div style="width:10px;height:10px;border-radius:50%;background:${p.color};min-width:10px"></div>
+          <span class="pn">${p.name}</span>
+        </div>
+        <div class="fl" style="gap:10px;">
+          <span style="font-size:13px;font-weight:600;color:var(--blue)">${fmtHrs(projMins[p.id]||0)}</span>
+          <button onclick="deleteTimeProject(${p.id})" class="btn-icon">✕</button>
+        </div>
+      </div>`).join('')
+    :'<div style="color:var(--text3);font-size:13px">No projects yet — add one above.</div>';
+
+  // Log list
+  const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date)||b.start.localeCompare(a.start));
+  document.getElementById('time-log-list').innerHTML=sorted.length?
+    sorted.map(e=>{
+      const p=S.timeProjects.find(x=>x.id===e.projectId)||{name:'Unknown',color:'#888'};
+      return `<div style="display:grid;grid-template-columns:90px 1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
+        <span style="font-size:12px;color:var(--text3)">${e.date}</span>
+        <div>
+          <div class="fl" style="gap:6px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${p.color}"></div>
+            <span style="font-size:13px;font-weight:500">${p.name}</span>
+          </div>
+          ${e.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${e.notes}</div>`:''}
+        </div>
+        <span style="font-size:12px;color:var(--text2)">${e.start}–${e.end}</span>
+        <div class="fl" style="gap:6px;">
+          <span class="tag tb">${fmtHrs(e.mins)}</span>
+          <button onclick="deleteTimeEntry(${e.id})" class="btn-icon">✕</button>
+        </div>
+      </div>`;
+    }).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No entries for this period.</div>';
+}
+
+function deleteTimeEntry(id){
+  S.timeLog=S.timeLog.filter(e=>e.id!==id);
+  saveState();renderTimePage();
+}
+
+function deleteTimeProject(id){
+  if(!confirm('Delete this project? Time entries for it will remain.'))return;
+  S.timeProjects=S.timeProjects.filter(p=>p.id!==id);
+  saveState();renderTimePage();
+}
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -1076,7 +1187,7 @@ window.nav = function(id, el){
   document.getElementById('sb-overlay').classList.remove('open');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage};
   handlers[id]?.();
 };
 
@@ -1097,7 +1208,8 @@ setTimeout(async()=>{
       const remote=await pullWithToken(rr.accessToken);
       if(remote){
         const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
-          'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth'];
+          'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
+          'timeProjects','timeLog'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
