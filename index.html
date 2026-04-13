@@ -204,6 +204,7 @@
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
+    <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -328,6 +329,18 @@
     <div class="card"><div class="st">Legs</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="legs-list"></div></div>
     <div class="card"><div class="st">Session log</div><div id="ses-log"></div></div>
   </div>
+  <div class="card mb16">
+    <div class="flb mb12">
+      <div class="st" style="margin:0">Lifting trends</div>
+      <div class="fl" style="gap:8px">
+        <select class="month-sel" id="trend-type" onchange="renderTrend()" style="font-size:12px;padding:5px 8px">
+          <option value="">Select exercise…</option>
+        </select>
+      </div>
+    </div>
+    <div style="position:relative;height:220px"><canvas id="trend-chart" role="img" aria-label="Lifting trend chart">Trend data</canvas></div>
+    <div id="trend-empty" style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0;display:none">Select an exercise above to see its weight trend across weeks.</div>
+  </div>
 </div>
 
 <!-- WEIGHT TRACKER -->
@@ -415,6 +428,30 @@
   </div>
 </div>
 
+
+<div id="page-calories" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Calories burned</div><div class="ps">Track activity and calories throughout the week</div></div>
+    <button class="btn btnp" onclick="openModal('calorie')">+ Log activity</button>
+  </div>
+  <div class="g4 mb16" id="cal-metrics"></div>
+  <div class="card mb16">
+    <div class="st">This week</div>
+    <div style="position:relative;height:200px"><canvas id="cal-chart" role="img" aria-label="Calories burned this week">Calorie data</canvas></div>
+  </div>
+  <div class="card">
+    <div class="flb mb12">
+      <div class="st" style="margin:0">Activity log</div>
+      <select class="month-sel" id="cal-filter" onchange="renderCaloriesPage()" style="font-size:12px;padding:5px 8px">
+        <option value="week">This week</option>
+        <option value="month">This month</option>
+        <option value="all">All time</option>
+      </select>
+    </div>
+    <div id="cal-log"></div>
+  </div>
+</div>
+
 </main>
 
 <div id="sync-status" class="sync-badge"></div>
@@ -483,6 +520,7 @@ const DEFAULT_STATE = {
   customSets:{},
   timeProjects:[],
   timeLog:[],
+  calorieLog:[],
 };
 
 // ── ONEDRIVE SYNC ──
@@ -870,7 +908,24 @@ function renderProjects(){
     return `<div class="card mb12"><div class="flb mb12"><div class="fl"><div style="width:11px;height:11px;border-radius:50%;background:${p.color}"></div><span style="font-size:14px;font-weight:600">${p.name}</span><span class="tag tb">${pct}%</span></div><button class="btn" style="font-size:11px" onclick="addTodoModal(${p.id})">+ Task</button></div><div class="pb mb12"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>${p.todos.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);"><div onclick="toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;${t.done?'background:var(--blue);border-color:var(--blue);color:#fff;font-size:9px;':''}">${t.done?'✓':''}</div><span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span><button onclick="pinTodo(${p.id},${t.id},'${p.name.replace(/'/g,"\\'")}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'}">★</button></div>`).join('')}</div>`;
   }).join('');
 }
-function toggleTodo(pid,tid){const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);t.done=!t.done;saveState();renderProjects();}
+function toggleTodo(pid,tid){
+  const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
+  t.done=!t.done;
+  saveState();
+  renderProjects();
+  // If just marked done and there are time projects, ask how long it took
+  if(t.done && S.timeProjects.length>0){
+    S.activeModal={type:'taskTime',pid,tid,pname:p.name,defaultProjId:p.id};
+    document.getElementById('modal-title').textContent='Task completed!';
+    // Find matching time project by name, or use first
+    const matchProj=S.timeProjects.find(tp=>tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+    const selProj=matchProj?matchProj.id:S.timeProjects[0].id;
+    document.getElementById('modal-body').innerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Nice work! How long did <strong>${t.text}</strong> take?</div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to time project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(tp=>`<option value="${tp.id}"${tp.id===selProj?' selected':''}>${tp.name}</option>`).join('')}</select></div>`;
+    // Override save button label
+    document.querySelector('#modal .fl-end .btnp').textContent='Log time';
+    document.getElementById('modal').style.display='flex';
+  }
+}
 function pinTodo(pid,tid,pname){
   const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
   t.important=!t.important;
@@ -912,6 +967,8 @@ function renderFitness(){
     }).join('');
   });
   document.getElementById('ses-log').innerHTML=S.sessions.length?[...S.sessions].reverse().map(s=>`<div class="ses-row"><div><div style="font-size:13px;font-weight:500">${s.type} session</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${s.notes||'No notes'}</div></div><span class="tag tb">${s.date}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions logged yet.</div>';
+  // Init trend dropdown
+  setTimeout(()=>renderTrend(),120);
 }
 function selWeek(i){S.currentWeek=i;saveState();renderFitness();}
 function upSet(type,name,week,field,val){
@@ -944,7 +1001,7 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -959,6 +1016,8 @@ function openModal(type,extra){
     weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
     timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00"></div></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
     timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
+    calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
+    taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
@@ -1031,6 +1090,24 @@ function saveModal(){
     if(!name)return;
     S.timeProjects.push({id:Date.now(),name,color});
     saveState();renderTimePage();
+  }
+  else if(m.type==='calorie'){
+    const act=g('m-cact'),date=g('m-cdate'),dur=parseInt(g('m-cdur'))||0,cal=parseInt(g('m-ccal'))||0;
+    if(!act||!date)return;
+    S.calorieLog.push({id:Date.now(),activity:act,date,duration:dur,calories:cal});
+    saveState();renderCaloriesPage();
+  } else if(m.type==='taskTime'){
+    const hrs=parseInt(g('m-th'))||0,mins=parseInt(g('m-tm'))||0;
+    const totalMins=hrs*60+mins;
+    if(totalMins>0){
+      const projId=parseInt(g('m-ttproj'));
+      S.timeLog.push({id:Date.now(),projectId:projId,date:TODAYSTR,
+        start:'00:00',end:'00:00',mins:totalMins,
+        notes:`From task: ${S.projects.find(p=>p.id===m.pid)?.todos.find(t=>t.id===m.tid)?.text||''}`});
+      saveState();
+    }
+    // Reset save button label
+    document.querySelector('#modal .fl-end .btnp').textContent='Save';
   }
   closeModal();renderHome();
 }
@@ -1177,6 +1254,143 @@ function deleteTimeProject(id){
   saveState();renderTimePage();
 }
 
+// ── CALORIES PAGE ──
+function renderCaloriesPage(){
+  if(!S.calorieLog)S.calorieLog=[];
+  const filter=document.getElementById('cal-filter')?.value||'week';
+  const now=new Date();
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay()+1);weekStart.setHours(0,0,0,0);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+
+  const filtered=S.calorieLog.filter(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    if(filter==='week')return d>=weekStart;
+    if(filter==='month')return d>=monthStart;
+    return true;
+  });
+
+  const totalCal=filtered.reduce((a,b)=>a+b.calories,0);
+  const totalDur=filtered.reduce((a,b)=>a+b.duration,0);
+  const todayCal=S.calorieLog.filter(e=>e.date===TODAYSTR).reduce((a,b)=>a+b.calories,0);
+  const weekCal=S.calorieLog.filter(e=>{const d=new Date(e.date+'T12:00:00');return d>=weekStart;}).reduce((a,b)=>a+b.calories,0);
+
+  document.getElementById('cal-metrics').innerHTML=`
+    <div class="mc"><div class="ml">Today</div><div class="mv">${todayCal.toLocaleString()} cal</div></div>
+    <div class="mc"><div class="ml">This week</div><div class="mv">${weekCal.toLocaleString()} cal</div></div>
+    <div class="mc"><div class="ml">Total duration</div><div class="mv">${Math.floor(totalDur/60)}h ${totalDur%60}m</div></div>
+    <div class="mc"><div class="ml">Activities</div><div class="mv">${S.calorieLog.length}</div></div>`;
+
+  // Build weekly bar chart — last 7 days
+  const days=[];const dayLabels=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(now);d.setDate(now.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    days.push(ds);
+    dayLabels.push(d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric'}));
+  }
+  const dayCals=days.map(ds=>S.calorieLog.filter(e=>e.date===ds).reduce((a,b)=>a+b.calories,0));
+
+  setTimeout(()=>{
+    destroyChart('cal-chart');
+    const ctx=document.getElementById('cal-chart');if(!ctx)return;
+    charts['cal-chart']=new Chart(ctx,{
+      type:'bar',
+      data:{labels:dayLabels,datasets:[{label:'Calories',data:dayCals,backgroundColor:'rgba(186,117,23,.7)',borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{font:{size:11},callback:v=>v+' cal'},grid:{color:'rgba(128,128,128,.1)'},beginAtZero:true},
+                x:{ticks:{font:{size:11}},grid:{display:false}}}}
+    });
+  },80);
+
+  const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('cal-log').innerHTML=sorted.length?sorted.map(e=>`
+    <div style="display:grid;grid-template-columns:90px 1fr auto auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
+      <span style="font-size:12px;color:var(--text3)">${e.date}</span>
+      <span style="font-size:13px;font-weight:500">${e.activity}</span>
+      <span style="font-size:12px;color:var(--text2)">${e.duration?e.duration+'min':''}</span>
+      <span class="tag ta">${e.calories.toLocaleString()} cal</span>
+      <button onclick="S.calorieLog=S.calorieLog.filter(x=>x.id!==${e.id});saveState();renderCaloriesPage();" class="btn-icon">✕</button>
+    </div>`).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No activities logged yet.</div>';
+}
+
+// ── LIFTING TREND ──
+function renderTrend(){
+  const sel=document.getElementById('trend-type');if(!sel)return;
+  const exName=sel.value;
+  const emptyEl=document.getElementById('trend-empty');
+
+  // Populate dropdown if empty
+  if(sel.options.length<=1){
+    const all=[...S.workoutDef.push,...S.workoutDef.pull,...S.workoutDef.legs];
+    all.forEach(ex=>{
+      const opt=document.createElement('option');
+      opt.value=ex.name;opt.textContent=ex.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  destroyChart('trend-chart');
+  if(!exName){
+    if(emptyEl)emptyEl.style.display='block';
+    return;
+  }
+  if(emptyEl)emptyEl.style.display='none';
+
+  // Find exercise in workoutDef
+  const all=[...S.workoutDef.push,...S.workoutDef.pull,...S.workoutDef.legs];
+  const ex=all.find(e=>e.name===exName);
+  if(!ex)return;
+
+  // Build data — use customSets overrides where available, fall back to workoutDef
+  const labels=['W0','W1','W2','W3','W4','W5','W6','W7'];
+  const type=S.workoutDef.push.find(e=>e.name===exName)?'push':S.workoutDef.pull.find(e=>e.name===exName)?'pull':'legs';
+
+  const weightData=labels.map((w,i)=>{
+    const key=`${type}|${exName}|w${i}`;
+    const custom=S.customSets[key];
+    const wtStr=custom?custom.weight:(ex.weights?ex.weights[i]||'':null);
+    if(!wtStr||wtStr==='—')return null;
+    // Handle compound weights like "60,65,65" — take max
+    const nums=wtStr.toString().split(/[,x]/).map(v=>parseFloat(v)).filter(n=>!isNaN(n));
+    return nums.length?Math.max(...nums):null;
+  });
+
+  const hasData=weightData.some(v=>v!==null);
+  if(!hasData){
+    if(emptyEl){emptyEl.style.display='block';emptyEl.textContent='No weight data recorded for this exercise yet.';}
+    return;
+  }
+
+  setTimeout(()=>{
+    const ctx=document.getElementById('trend-chart');if(!ctx)return;
+    charts['trend-chart']=new Chart(ctx,{
+      type:'line',
+      data:{
+        labels:labels,
+        datasets:[{
+          label:'Weight (kg)',
+          data:weightData,
+          borderColor:'#185FA5',
+          backgroundColor:'rgba(24,95,165,.1)',
+          tension:.3,
+          pointRadius:5,
+          pointBackgroundColor:weightData.map(v=>v!==null?'#185FA5':'transparent'),
+          fill:true,
+          spanGaps:true,
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}kg`}}},
+        scales:{
+          y:{ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},
+          x:{ticks:{font:{size:12}},grid:{display:false}}
+        }
+      }
+    });
+  },80);
+}
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -1187,7 +1401,7 @@ window.nav = function(id, el){
   document.getElementById('sb-overlay').classList.remove('open');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage};
   handlers[id]?.();
 };
 
@@ -1209,7 +1423,7 @@ setTimeout(async()=>{
       if(remote){
         const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
-          'timeProjects','timeLog'];
+          'timeProjects','timeLog','calorieLog'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
