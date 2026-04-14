@@ -901,20 +901,68 @@ function renderProjects(){
   setTimeout(()=>{
     destroyChart('proj-chart');
     const ctx=document.getElementById('proj-chart');if(!ctx)return;
-    charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>p.todos.filter(t=>t.done).length),backgroundColor:'rgba(24,95,165,.75)',borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>p.todos.filter(t=>!t.done).length),backgroundColor:'rgba(180,180,180,.25)',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12}}},y:{stacked:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(128,128,128,.1)'}}}}});
+    // Count including subtasks for progress
+    const doneCount=p=>{
+      const td=p.todos.filter(t=>t.done).length;
+      const sd=p.todos.reduce((a,t)=>(a+(t.subtasks||[]).filter(s=>s.done).length),0);
+      return td+sd;
+    };
+    const totalCount=p=>{
+      const tt=p.todos.length;
+      const st=p.todos.reduce((a,t)=>(a+(t.subtasks||[]).length),0);
+      return tt+st;
+    };
+    charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>doneCount(p)),backgroundColor:'rgba(24,95,165,.75)',borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>totalCount(p)-doneCount(p)),backgroundColor:'rgba(180,180,180,.25)',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12}}},y:{stacked:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(128,128,128,.1)'}}}}});
   },80);
+
   document.getElementById('proj-list').innerHTML=S.projects.map(p=>{
+    if(!p.todos)p.todos=[];
     const active=p.todos.filter(t=>!t.done);
     const done=p.todos.filter(t=>t.done);
-    const pct=p.todos.length?Math.round(done.length/p.todos.length*100):0;
+    // Total items inc subtasks for progress bar
+    const totalItems=p.todos.length+p.todos.reduce((a,t)=>a+(t.subtasks||[]).length,0);
+    const doneItems=p.todos.filter(t=>t.done).length+p.todos.reduce((a,t)=>a+(t.subtasks||[]).filter(s=>s.done).length,0);
+    const pct=totalItems?Math.round(doneItems/totalItems*100):0;
     const pnSafe=p.name.replace(/'/g,"\\'");
+
+    const renderSubtasks=(t)=>{
+      if(!t.subtasks||t.subtasks.length===0)return '';
+      const activeSubs=t.subtasks.filter(s=>!s.done);
+      const doneSubs=t.subtasks.filter(s=>s.done);
+      return `
+        <div style="margin-left:24px;border-left:2px solid var(--border);padding-left:10px;margin-top:2px;">
+          ${activeSubs.map(s=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);">
+              <div onclick="toggleSubtask(${p.id},${t.id},${s.id})" style="width:13px;height:13px;min-width:13px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
+              <span style="flex:1;font-size:12px;color:var(--text2);">${s.text}</span>
+              <button onclick="deleteSubtask(${p.id},${t.id},${s.id})" class="btn-icon" style="font-size:11px;">✕</button>
+            </div>`).join('')}
+          ${doneSubs.length?`
+            <details>
+              <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:4px 0;list-style:none;">${doneSubs.length} done</summary>
+              ${doneSubs.map(s=>`
+                <div style="display:flex;align-items:center;gap:8px;padding:4px 0;opacity:0.6;">
+                  <div style="width:13px;height:13px;min-width:13px;background:var(--blue);border-radius:3px;display:flex;align-items:center;justify-content:center;color:white;font-size:8px;">✓</div>
+                  <span style="flex:1;font-size:12px;text-decoration:line-through;color:var(--text3);">${s.text}</span>
+                  <button onclick="toggleSubtask(${p.id},${t.id},${s.id})" class="btn-icon" style="font-size:11px;color:var(--text3);">↩</button>
+                  <button onclick="deleteSubtask(${p.id},${t.id},${s.id})" class="btn-icon" style="font-size:11px;">✕</button>
+                </div>`).join('')}
+            </details>` : ''}
+        </div>`;
+    };
+
     const activeTasks=active.map(t=>`
-      <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);">
-        <div onclick="toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
-        <span style="flex:1;font-size:13px;">${t.text}</span>
-        <button onclick="pinTodo(${p.id},${t.id},'${pnSafe}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'}">★</button>
-        <button onclick="deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
-      </div>`).join('');
+      <details style="border-bottom:0.5px solid var(--border);" ${(t.subtasks&&t.subtasks.length)?'open':''}>
+        <summary style="display:flex;align-items:center;gap:9px;padding:8px 0;list-style:none;cursor:default;">
+          <div onclick="event.stopPropagation();toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
+          <span style="flex:1;font-size:13px;cursor:pointer;" onclick="this.closest('details').open=!this.closest('details').open">${t.text}${t.subtasks&&t.subtasks.length?` <span style="font-size:11px;color:var(--text3);">(${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length})</span>`:''}</span>
+          <button onclick="event.stopPropagation();addSubtaskModal(${p.id},${t.id})" class="btn-icon" title="Add subtask" style="font-size:11px;color:var(--blue);">+ Sub</button>
+          <button onclick="event.stopPropagation();pinTodo(${p.id},${t.id},'${pnSafe}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'};">★</button>
+          <button onclick="event.stopPropagation();deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
+        </summary>
+        ${renderSubtasks(t)}
+      </details>`).join('');
+
     const doneTasks=done.length?`
       <details style="margin-top:8px;">
         <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px;">
@@ -922,15 +970,16 @@ function renderProjects(){
           <span>${done.length} completed task${done.length>1?'s':''}</span>
         </summary>
         <div style="margin-top:4px;">
-        ${done.map(t=>`
-          <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);opacity:0.65;">
-            <div style="width:15px;height:15px;min-width:15px;background:var(--blue);border:1.5px solid var(--blue);border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;">✓</div>
-            <span style="flex:1;font-size:13px;text-decoration:line-through;color:var(--text3);">${t.text}</span>
-            <button onclick="toggleTodo(${p.id},${t.id})" class="btn-icon" title="Mark incomplete" style="color:var(--text3);font-size:12px;">↩</button>
-            <button onclick="deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
-          </div>`).join('')}
+          ${done.map(t=>`
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);opacity:0.65;">
+              <div style="width:15px;height:15px;min-width:15px;background:var(--blue);border:1.5px solid var(--blue);border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;">✓</div>
+              <span style="flex:1;font-size:13px;text-decoration:line-through;color:var(--text3);">${t.text}${t.subtasks&&t.subtasks.length?` <span style="font-size:11px;">(${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length} subs)</span>`:''}</span>
+              <button onclick="toggleTodo(${p.id},${t.id})" class="btn-icon" title="Mark incomplete" style="color:var(--text3);font-size:12px;">↩</button>
+              <button onclick="deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
+            </div>`).join('')}
         </div>
       </details>` : '';
+
     return `<div class="card mb12">
       <div class="flb mb12">
         <div class="fl">
@@ -962,6 +1011,36 @@ function deleteTodo(pid,tid){
   const p=S.projects.find(x=>x.id===pid);if(!p)return;
   p.todos=p.todos.filter(t=>t.id!==tid);
   S.important=S.important.filter(x=>x.ref!==`${pid}-${tid}`);
+  saveState();renderProjects();
+}
+
+function addSubtaskModal(pid,tid){
+  const p=S.projects.find(x=>x.id===pid);
+  const t=p?.todos.find(x=>x.id===tid);
+  if(!t)return;
+  S.activeModal={type:'subtask',pid,tid};
+  document.getElementById('modal-title').textContent='Add subtask';
+  document.getElementById('modal-body').innerHTML=`
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Under: <strong>${t.text}</strong></div>
+    <div class="fr"><label class="fl2">Subtask name</label><input class="inp" id="m-subtext" placeholder="What needs doing?"></div>`;
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('m-subtext')?.focus(),60);
+}
+
+function toggleSubtask(pid,tid,sid){
+  const p=S.projects.find(x=>x.id===pid);
+  const t=p?.todos.find(x=>x.id===tid);
+  const s=t?.subtasks?.find(x=>x.id===sid);
+  if(!s)return;
+  s.done=!s.done;
+  saveState();renderProjects();
+}
+
+function deleteSubtask(pid,tid,sid){
+  const p=S.projects.find(x=>x.id===pid);
+  const t=p?.todos.find(x=>x.id===tid);
+  if(!t)return;
+  t.subtasks=(t.subtasks||[]).filter(s=>s.id!==sid);
   saveState();renderProjects();
 }
 
@@ -1130,9 +1209,17 @@ function saveModal(){
   } else if(m.type==='todo'){
     const t=g('m-text');if(!t)return;
     const p=S.projects.find(x=>x.id===m.pid);
-    p.todos.push({id:Date.now(),text:t,done:false,important:false});saveState();renderProjects();
+    p.todos.push({id:Date.now(),text:t,done:false,important:false,subtasks:[]});saveState();renderProjects();
   }
-  else if(m.type==='timeLog'){
+  else if(m.type==='subtask'){
+    const text=g('m-subtext');if(!text)return;
+    const p=S.projects.find(x=>x.id===m.pid);
+    const t=p?.todos.find(x=>x.id===m.tid);
+    if(!t)return;
+    if(!t.subtasks)t.subtasks=[];
+    t.subtasks.push({id:Date.now(),text,done:false});
+    saveState();renderProjects();
+  } else if(m.type==='timeLog'){
     const proj=parseInt(g('m-tproj')),date=g('m-tdate'),start=g('m-tstart'),end=g('m-tend'),notes=g('m-tnotes');
     if(!date||!start||!end)return;
     // Calculate duration in minutes
