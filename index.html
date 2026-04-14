@@ -904,10 +904,67 @@ function renderProjects(){
     charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>p.todos.filter(t=>t.done).length),backgroundColor:'rgba(24,95,165,.75)',borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>p.todos.filter(t=>!t.done).length),backgroundColor:'rgba(180,180,180,.25)',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12}}},y:{stacked:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(128,128,128,.1)'}}}}});
   },80);
   document.getElementById('proj-list').innerHTML=S.projects.map(p=>{
-    const d=p.todos.filter(t=>t.done).length,tot=p.todos.length,pct=tot?Math.round(d/tot*100):0;
-    return `<div class="card mb12"><div class="flb mb12"><div class="fl"><div style="width:11px;height:11px;border-radius:50%;background:${p.color}"></div><span style="font-size:14px;font-weight:600">${p.name}</span><span class="tag tb">${pct}%</span></div><button class="btn" style="font-size:11px" onclick="addTodoModal(${p.id})">+ Task</button></div><div class="pb mb12"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>${p.todos.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);"><div onclick="toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;${t.done?'background:var(--blue);border-color:var(--blue);color:#fff;font-size:9px;':''}">${t.done?'✓':''}</div><span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span><button onclick="pinTodo(${p.id},${t.id},'${p.name.replace(/'/g,"\\'")}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'}">★</button></div>`).join('')}</div>`;
+    const active=p.todos.filter(t=>!t.done);
+    const done=p.todos.filter(t=>t.done);
+    const pct=p.todos.length?Math.round(done.length/p.todos.length*100):0;
+    const pnSafe=p.name.replace(/'/g,"\\'");
+    const activeTasks=active.map(t=>`
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);">
+        <div onclick="toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
+        <span style="flex:1;font-size:13px;">${t.text}</span>
+        <button onclick="pinTodo(${p.id},${t.id},'${pnSafe}','${p.color}')" class="btn-icon" style="color:${t.important?'#BA7517':'var(--text3)'}">★</button>
+        <button onclick="deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
+      </div>`).join('');
+    const doneTasks=done.length?`
+      <details style="margin-top:8px;">
+        <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px;">
+          <span style="width:16px;height:16px;border-radius:50%;background:var(--green-bg);color:var(--green-text);font-size:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${done.length}</span>
+          <span>${done.length} completed task${done.length>1?'s':''}</span>
+        </summary>
+        <div style="margin-top:4px;">
+        ${done.map(t=>`
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);opacity:0.65;">
+            <div style="width:15px;height:15px;min-width:15px;background:var(--blue);border:1.5px solid var(--blue);border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;">✓</div>
+            <span style="flex:1;font-size:13px;text-decoration:line-through;color:var(--text3);">${t.text}</span>
+            <button onclick="toggleTodo(${p.id},${t.id})" class="btn-icon" title="Mark incomplete" style="color:var(--text3);font-size:12px;">↩</button>
+            <button onclick="deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
+          </div>`).join('')}
+        </div>
+      </details>` : '';
+    return `<div class="card mb12">
+      <div class="flb mb12">
+        <div class="fl">
+          <div style="width:11px;height:11px;border-radius:50%;background:${p.color}"></div>
+          <span style="font-size:14px;font-weight:600">${p.name}</span>
+          <span class="tag tb">${pct}%</span>
+        </div>
+        <div class="fl" style="gap:6px;">
+          <button class="btn" style="font-size:11px" onclick="addTodoModal(${p.id})">+ Task</button>
+          <button class="btn btnd" style="font-size:11px;padding:5px 8px;" onclick="deleteProject(${p.id})">Delete</button>
+        </div>
+      </div>
+      <div class="pb mb12"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>
+      ${active.length===0&&done.length===0?'<div style="color:var(--text3);font-size:13px;padding:4px 0">No tasks yet.</div>':''}
+      ${activeTasks}
+      ${doneTasks}
+    </div>`;
   }).join('');
 }
+
+function deleteProject(pid){
+  if(!confirm('Delete this project and all its tasks?'))return;
+  S.projects=S.projects.filter(p=>p.id!==pid);
+  S.important=S.important.filter(x=>!String(x.ref).startsWith(pid+'-'));
+  saveState();renderProjects();
+}
+
+function deleteTodo(pid,tid){
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  p.todos=p.todos.filter(t=>t.id!==tid);
+  S.important=S.important.filter(x=>x.ref!==`${pid}-${tid}`);
+  saveState();renderProjects();
+}
+
 function toggleTodo(pid,tid){
   const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
   t.done=!t.done;
