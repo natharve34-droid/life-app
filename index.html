@@ -185,7 +185,7 @@
   <div class="nav-sec">
     <div class="nav-lbl">Overview</div>
     <div class="ni active" onclick="nav('home',this)"><span class="ni-ico">⌂</span>Home</div>
-    <div class="ni" onclick="nav('notes',this)"><span class="ni-ico">✎</span>Daily notes</div>
+    <div class="ni" onclick="nav('notes',this)"><span class="ni-ico">✎</span>Notes</div>
     <div class="ni" onclick="nav('important',this)"><span class="ni-ico">★</span>Important</div>
   </div>
   <div class="nav-sec">
@@ -235,8 +235,28 @@
 
 <!-- NOTES -->
 <div id="page-notes" class="page">
-  <div class="ph rb"><div><div class="pt">Daily notes</div><div class="ps">A note for every day</div></div><button class="btn btnp" onclick="openModal('note')">+ Add note</button></div>
-  <div id="notes-list"></div>
+  <div class="ph rb">
+    <div><div class="pt">Notes</div><div class="ps">Daily notes and project notes in one place</div></div>
+    <div class="fl" style="gap:6px;flex-wrap:wrap;">
+      <button class="btn btnp" onclick="openModal('note')">+ Daily note</button>
+    </div>
+  </div>
+
+  <!-- Tab switcher -->
+  <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:0.5px solid var(--border);">
+    <button id="notes-tab-daily" onclick="switchNotesTab('daily')" style="padding:8px 18px;font-size:13px;font-weight:600;background:none;border:none;border-bottom:2px solid var(--blue);color:var(--blue);cursor:pointer;font-family:inherit;">Daily</button>
+    <button id="notes-tab-projects" onclick="switchNotesTab('projects')" style="padding:8px 18px;font-size:13px;font-weight:600;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);cursor:pointer;font-family:inherit;">Projects</button>
+  </div>
+
+  <!-- Daily notes tab -->
+  <div id="notes-panel-daily">
+    <div id="notes-list"></div>
+  </div>
+
+  <!-- Project notes tab -->
+  <div id="notes-panel-projects" style="display:none;">
+    <div id="proj-notes-list"></div>
+  </div>
 </div>
 
 <!-- IMPORTANT -->
@@ -521,6 +541,7 @@ const DEFAULT_STATE = {
   timeProjects:[],
   timeLog:[],
   calorieLog:[],
+  projectNotes:{},
 };
 
 // ── ONEDRIVE SYNC ──
@@ -768,10 +789,105 @@ function saveHomeNote(){
 }
 
 // ── NOTES ──
-function renderNotes(){
-  const sorted=[...S.notes].sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('notes-list').innerHTML=sorted.length?sorted.map(n=>`<div class="note-card"><div class="flb"><div class="note-date">${fmtDate(n.date)}</div><button class="btn-icon" onclick="deleteNote(${n.id})">✕</button></div><div class="note-text">${n.text}</div></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No notes yet.</div>';
+let _notesTab='daily';
+
+function switchNotesTab(tab){
+  _notesTab=tab;
+  const daily=document.getElementById('notes-panel-daily');
+  const projs=document.getElementById('notes-panel-projects');
+  const tbD=document.getElementById('notes-tab-daily');
+  const tbP=document.getElementById('notes-tab-projects');
+  if(tab==='daily'){
+    if(daily)daily.style.display='';
+    if(projs)projs.style.display='none';
+    if(tbD){tbD.style.borderBottomColor='var(--blue)';tbD.style.color='var(--blue)';}
+    if(tbP){tbP.style.borderBottomColor='transparent';tbP.style.color='var(--text3)';}
+  } else {
+    if(daily)daily.style.display='none';
+    if(projs)projs.style.display='';
+    if(tbD){tbD.style.borderBottomColor='transparent';tbD.style.color='var(--text3)';}
+    if(tbP){tbP.style.borderBottomColor='var(--blue)';tbP.style.color='var(--blue)';}
+    renderProjectNotes();
+  }
 }
+
+function renderNotes(){
+  _notesTab=_notesTab||'daily';
+  switchNotesTab(_notesTab);
+  const sorted=[...S.notes].sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('notes-list');
+  if(!el)return;
+  if(sorted.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:48px 24px;">
+      <div style="font-size:32px;margin-bottom:12px;opacity:0.3;">✎</div>
+      <div style="font-size:14px;color:var(--text3);">No daily notes yet.</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;">Use the + Daily note button to add one.</div>
+    </div>`;
+    return;
+  }
+  // Group by month
+  const groups={};
+  sorted.forEach(n=>{
+    const d=new Date(n.date+'T12:00:00');
+    const key=d.toLocaleDateString('en-IE',{month:'long',year:'numeric'});
+    if(!groups[key])groups[key]=[];
+    groups[key].push(n);
+  });
+  el.innerHTML=Object.entries(groups).map(([month,notes])=>`
+    <div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border);">${month}</div>
+      ${notes.map(n=>`
+        <div style="display:grid;grid-template-columns:80px 1fr auto;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border);align-items:start;">
+          <div>
+            <div style="font-size:20px;font-weight:700;color:var(--text);line-height:1;">${new Date(n.date+'T12:00:00').getDate()}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${new Date(n.date+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short'})}</div>
+          </div>
+          <div style="font-size:13px;color:var(--text);line-height:1.65;white-space:pre-wrap;padding-top:3px;">${n.text}</div>
+          <button onclick="deleteNote(${n.id})" class="btn-icon" style="margin-top:3px;">✕</button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function renderProjectNotes(){
+  const el=document.getElementById('proj-notes-list');
+  if(!el)return;
+  if(!S.projects||S.projects.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:48px 24px;"><div style="font-size:13px;color:var(--text3);">No projects created yet.</div></div>`;
+    return;
+  }
+  // Only show projects that have notes or allow adding
+  el.innerHTML=S.projects.map(p=>{
+    const notes=(S.projectNotes[p.id]||[]);
+    const pnSafe=p.name.replace(/'/g,"\'");
+    return `
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${p.color};"></div>
+          <span style="font-size:14px;font-weight:600;color:var(--text);">${p.name}</span>
+          ${notes.length?`<span style="font-size:11px;background:var(--bg2);color:var(--text3);padding:2px 7px;border-radius:10px;">${notes.length}</span>`:''}
+        </div>
+        <button onclick="openModal('projectNote',{pid:${p.id}})" class="btn" style="font-size:11px;padding:4px 10px;">+ Note</button>
+      </div>
+      ${notes.length===0
+        ?`<div style="font-size:12px;color:var(--text3);padding:10px 14px;background:var(--bg2);border-radius:var(--radius);">No notes for this project yet.</div>`
+        :`<div style="display:flex;flex-direction:column;gap:8px;">
+          ${notes.map(n=>`
+            <div style="background:var(--bg);border:0.5px solid var(--border);border-left:3px solid ${p.color};border-radius:0 var(--radius) var(--radius) 0;padding:12px 14px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:${n.body?'8px':'0'};">
+                <span style="font-size:13px;font-weight:600;color:var(--text);">${n.title}</span>
+                <div style="display:flex;align-items:center;gap:8px;min-width:fit-content;">
+                  <span style="font-size:11px;color:var(--text3);">${n.date}</span>
+                  <button onclick="deleteProjectNote(${p.id},${n.id})" class="btn-icon" style="font-size:11px;">✕</button>
+                </div>
+              </div>
+              ${n.body?`<div style="font-size:13px;color:var(--text2);line-height:1.65;white-space:pre-wrap;">${n.body}</div>`:''}
+            </div>`).join('')}
+          </div>`}
+    </div>`;
+  }).join('');
+}
+
 function deleteNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveState();renderNotes();}
 
 // ── IMPORTANT ──
@@ -980,6 +1096,17 @@ function renderProjects(){
         </div>
       </details>` : '';
 
+    // Notes summary in card
+    const notes=(S.projectNotes[p.id]||[]);
+    const notesHtml=`
+      <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;color:var(--text3);">${notes.length?notes.length+' note'+(notes.length>1?'s':''):'No notes'}</span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="openModal('projectNote',{pid:${p.id}})" class="btn" style="font-size:11px;padding:3px 8px;">+ Note</button>
+          <button onclick="goToProjectNotes()" class="btn" style="font-size:11px;padding:3px 8px;">View all</button>
+        </div>
+      </div>`;
+
     return `<div class="card mb12">
       <div class="flb mb12">
         <div class="fl">
@@ -996,6 +1123,7 @@ function renderProjects(){
       ${active.length===0&&done.length===0?'<div style="color:var(--text3);font-size:13px;padding:4px 0">No tasks yet.</div>':''}
       ${activeTasks}
       ${doneTasks}
+      ${notesHtml}
     </div>`;
   }).join('');
 }
@@ -1034,6 +1162,16 @@ function toggleSubtask(pid,tid,sid){
   if(!s)return;
   s.done=!s.done;
   saveState();renderProjects();
+  // If just marked done and there are time projects, ask how long it took
+  if(s.done && S.timeProjects.length>0){
+    const matchProj=S.timeProjects.find(tp=>tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+    const selProj=matchProj?matchProj.id:S.timeProjects[0].id;
+    S.activeModal={type:'subtaskTime',pid,tid,sid,pname:p.name};
+    document.getElementById('modal-title').textContent='Subtask completed!';
+    document.getElementById('modal-body').innerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Nice work! How long did <strong>${s.text}</strong> take?</div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to time project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(tp=>`<option value="${tp.id}"${tp.id===selProj?' selected':''}>${tp.name}</option>`).join('')}</select></div>`;
+    document.querySelector('#modal .fl-end .btnp').textContent='Log time';
+    document.getElementById('modal').style.display='flex';
+  }
 }
 
 function deleteSubtask(pid,tid,sid){
@@ -1041,6 +1179,22 @@ function deleteSubtask(pid,tid,sid){
   const t=p?.todos.find(x=>x.id===tid);
   if(!t)return;
   t.subtasks=(t.subtasks||[]).filter(s=>s.id!==sid);
+  saveState();renderProjects();
+}
+
+function goToProjectNotes(){
+  // Navigate to Notes > Projects tab
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(e=>{if((e.getAttribute('onclick')||'').includes("'notes'"))e.classList.add('active');});
+  document.getElementById('page-notes').classList.add('active');
+  renderNotes();
+  setTimeout(()=>switchNotesTab('projects'),50);
+}
+
+function deleteProjectNote(pid,nid){
+  if(!S.projectNotes[pid])return;
+  S.projectNotes[pid]=S.projectNotes[pid].filter(n=>n.id!==nid);
   saveState();renderProjects();
 }
 
@@ -1137,7 +1291,7 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -1150,6 +1304,7 @@ function openModal(type,extra){
     note:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-note" placeholder="Write your note..."></textarea></div>`,
     workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
     weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
+    projectNote:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-ntitle" placeholder="e.g. Design decisions, API notes…"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-nbody" placeholder="Write your note here…" style="min-height:120px;"></textarea></div>`,
     timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00"></div></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
     timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
@@ -1219,6 +1374,20 @@ function saveModal(){
     if(!t.subtasks)t.subtasks=[];
     t.subtasks.push({id:Date.now(),text,done:false});
     saveState();renderProjects();
+  } else if(m.type==='subtaskTime'){
+    const hrs=parseInt(g('m-th'))||0,mins=parseInt(g('m-tm'))||0;
+    const totalMins=hrs*60+mins;
+    if(totalMins>0){
+      const projId=parseInt(g('m-ttproj'));
+      const p=S.projects.find(x=>x.id===m.pid);
+      const t=p?.todos.find(x=>x.id===m.tid);
+      const s=t?.subtasks?.find(x=>x.id===m.sid);
+      S.timeLog.push({id:Date.now(),projectId:projId,date:TODAYSTR,
+        start:'00:00',end:'00:00',mins:totalMins,
+        notes:`Subtask: ${s?.text||''} (${t?.text||''})`});
+      saveState();
+    }
+    document.querySelector('#modal .fl-end .btnp').textContent='Save';
   } else if(m.type==='timeLog'){
     const proj=parseInt(g('m-tproj')),date=g('m-tdate'),start=g('m-tstart'),end=g('m-tend'),notes=g('m-tnotes');
     if(!date||!start||!end)return;
@@ -1234,6 +1403,13 @@ function saveModal(){
     if(!name)return;
     S.timeProjects.push({id:Date.now(),name,color});
     saveState();renderTimePage();
+  }
+  else if(m.type==='projectNote'){
+    const pid=m.pid,title=g('m-ntitle'),body=g('m-nbody');
+    if(!title&&!body)return;
+    if(!S.projectNotes[pid])S.projectNotes[pid]=[];
+    S.projectNotes[pid].unshift({id:Date.now(),title:title||'Untitled',body,date:TODAYSTR});
+    saveState();renderProjects();
   }
   else if(m.type==='calorie'){
     const act=g('m-cact'),date=g('m-cdate'),dur=parseInt(g('m-cdur'))||0,cal=parseInt(g('m-ccal'))||0;
@@ -1567,7 +1743,7 @@ setTimeout(async()=>{
       if(remote){
         const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
-          'timeProjects','timeLog','calorieLog'];
+          'timeProjects','timeLog','calorieLog','projectNotes'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
