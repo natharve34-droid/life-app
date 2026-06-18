@@ -205,6 +205,7 @@
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
     <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
+    <div class="ni" onclick="nav('food',this)"><span class="ni-ico">◎</span>Food diary</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -216,7 +217,8 @@
 
 <!-- HOME -->
 <div id="page-home" class="page active">
-  <div class="ph"><div class="pt">Good morning, Harvey</div><div class="ps" id="home-date"></div></div>
+  <div class="ph rb"><div><div class="pt">Good morning, Harvey</div><div class="ps" id="home-date"></div></div><button class="btn btnp" onclick="openModal('spend')">+ Spend</button></div>
+  <div id="h-weather" class="mb16"></div>
   <div class="g4 mb16" id="hm"></div>
   <div class="g2 mb16">
     <div class="card"><div class="st">Upcoming bills</div><div id="h-bills"></div></div>
@@ -272,15 +274,39 @@
       <div><div class="pt">Budget</div><div class="ps" id="budget-month-label">Monthly overview</div></div>
       <div class="fl" style="flex-wrap:wrap;gap:6px;">
         <select class="month-sel" id="budget-month-sel" onchange="onBudgetMonthChange()"></select>
-        <button class="btn btnp" onclick="openModal('pocket')">+ Pocket</button>
-        <button class="btn btnp" onclick="openModal('income')">+ Income</button>
+        <button class="btn btnp" onclick="openModal('spend')">+ Spend</button>
+        <button class="btn" onclick="openModal('income')">+ Income</button>
+        <button class="btn" onclick="editStages()">Stages</button>
       </div>
     </div>
   </div>
   <div class="g4 mb16" id="bm"></div>
+
+  <!-- Pay stages -->
+  <div class="card mb16">
+    <div class="st">Pay stages</div>
+    <div id="budget-stages"></div>
+  </div>
+
+  <!-- Budget vs actual per category, per stage -->
+  <div class="card mb16">
+    <div class="flb mb12">
+      <div class="st" style="margin:0">Budget vs actual</div>
+      <div class="fl" id="bva-tabs" style="gap:4px;flex-wrap:wrap"></div>
+    </div>
+    <div id="budget-vs-actual"></div>
+  </div>
+
+  <!-- Transactions -->
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Spending this month</div><span id="budget-spent-total" class="tag tr"></span></div>
+    <div id="budget-tx"></div>
+  </div>
+
+  <!-- Pockets + income -->
   <div class="g2 mb16">
     <div class="card">
-      <div class="flb mb12"><div class="st" style="margin:0">Revolut pockets</div></div>
+      <div class="flb mb12"><div class="st" style="margin:0">Revolut pockets</div><button class="btn" style="font-size:11px;padding:4px 10px" onclick="openModal('pocket')">+ Pocket</button></div>
       <div id="pockets-list"></div>
     </div>
     <div class="card">
@@ -338,29 +364,39 @@
 
 <!-- FITNESS -->
 <div id="page-fitness" class="page">
-  <div class="ph rb"><div><div class="pt">Fitness</div><div class="ps">Workout tracker</div></div><button class="btn btnp" onclick="openModal('workout')">+ Log session</button></div>
-  <div class="g3 mb16" id="fit-m"></div>
-  <div class="wk-btns" id="wk-btns"></div>
-  <div class="g2 mb16">
-    <div class="card"><div class="st">Push</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="push-list"></div></div>
-    <div class="card"><div class="st">Pull</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="pull-list"></div></div>
-  </div>
-  <div class="g2 mb16">
-    <div class="card"><div class="st">Legs</div><div class="ex-hdr"><span>Exercise</span><span>Reps</span><span>Sets</span><span>Weight</span><span></span></div><div id="legs-list"></div></div>
-    <div class="card"><div class="st">Session log</div><div id="ses-log"></div></div>
-  </div>
-  <div class="card mb16">
-    <div class="flb mb12">
-      <div class="st" style="margin:0">Lifting trends</div>
-      <div class="fl" style="gap:8px">
-        <select class="month-sel" id="trend-type" onchange="renderTrend()" style="font-size:12px;padding:5px 8px">
-          <option value="">Select exercise…</option>
-        </select>
+  <div class="ph rb"><div><div class="pt">Fitness</div><div class="ps">Workout tracker</div></div><button class="btn btnp" id="fit-start-btn" onclick="startSessionPicker()">+ Start session</button></div>
+
+  <!-- Dashboard view -->
+  <div id="fitness-dashboard">
+    <div class="g4 mb16" id="fit-m"></div>
+    <div class="card mb16">
+      <div class="st">Quick start</div>
+      <div id="fit-templates" class="fl" style="flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div class="g2 mb16">
+      <div class="card">
+        <div class="flb mb12">
+          <div class="st" style="margin:0">Progression</div>
+          <select class="month-sel" id="fit-trend-ex" onchange="renderTrend()" style="font-size:12px;padding:5px 8px">
+            <option value="">Select exercise…</option>
+          </select>
+        </div>
+        <div style="position:relative;height:220px"><canvas id="trend-chart" role="img" aria-label="Lifting progression chart">Progression data</canvas></div>
+        <div id="trend-empty" style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0;display:none">Select an exercise above to see how its weight has progressed across sessions.</div>
+      </div>
+      <div class="card">
+        <div class="st">Personal records</div>
+        <div id="fit-prs"></div>
       </div>
     </div>
-    <div style="position:relative;height:220px"><canvas id="trend-chart" role="img" aria-label="Lifting trend chart">Trend data</canvas></div>
-    <div id="trend-empty" style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0;display:none">Select an exercise above to see its weight trend across weeks.</div>
+    <div class="card">
+      <div class="st">Recent sessions</div>
+      <div id="fit-sessions"></div>
+    </div>
   </div>
+
+  <!-- Active session view (rendered by JS) -->
+  <div id="fitness-session" style="display:none"></div>
 </div>
 
 <!-- WEIGHT TRACKER -->
@@ -472,7 +508,68 @@
   </div>
 </div>
 
+<!-- FOOD DIARY -->
+<div id="page-food" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Food diary</div><div class="ps">Search foods or scan a barcode · powered by Open Food Facts</div></div>
+    <div class="fl" style="flex-wrap:wrap;gap:6px;">
+      <button class="btn" onclick="openModal('goals')">Goals</button>
+    </div>
+  </div>
+
+  <!-- Day selector -->
+  <div class="fl mb16" style="gap:10px">
+    <button class="btn" onclick="foodNav(-1)" aria-label="Previous day">‹</button>
+    <div id="food-date-label" style="font-size:14px;font-weight:600;min-width:180px;text-align:center"></div>
+    <button class="btn" onclick="foodNav(1)" aria-label="Next day">›</button>
+    <button class="btn" onclick="foodToday()" style="font-size:12px">Today</button>
+  </div>
+
+  <div class="g4 mb16" id="food-metrics"></div>
+  <div class="card mb16" id="food-net-card"><div class="st">Net calories</div><div id="food-net"></div></div>
+
+  <!-- Add food -->
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Add food</div>
+      <div class="fl" style="gap:6px">
+        <button class="btn" style="font-size:12px" onclick="startScan()">⌑ Scan barcode</button>
+        <button class="btn" style="font-size:12px" onclick="toggleManualFood()">Manual entry</button>
+      </div>
+    </div>
+    <div class="fl" style="gap:8px;margin-bottom:6px">
+      <input class="inp" id="food-search" placeholder="Search a food, e.g. 'chicken breast' or 'weetabix'" onkeydown="if(event.key==='Enter')searchFood()" style="flex:1">
+      <button class="btn btnp" onclick="searchFood()">Search</button>
+    </div>
+    <div id="food-manual" style="display:none;background:var(--bg2);border-radius:var(--radius);padding:12px;margin:8px 0">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Enter the values for the amount you ate (good for fresh food or anything not in the database).</div>
+      <div class="g2" style="gap:8px">
+        <div class="fr"><label class="fl2">Name</label><input class="inp" id="fm-name" placeholder="e.g. Banana"></div>
+        <div class="fr"><label class="fl2">Amount (g)</label><input type="number" class="inp" id="fm-grams" placeholder="100"></div>
+        <div class="fr"><label class="fl2">Calories (kcal)</label><input type="number" class="inp" id="fm-kcal" placeholder="0"></div>
+        <div class="fr"><label class="fl2">Protein (g)</label><input type="number" class="inp" id="fm-p" placeholder="0"></div>
+        <div class="fr"><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="fm-c" placeholder="0"></div>
+        <div class="fr"><label class="fl2">Fat (g)</label><input type="number" class="inp" id="fm-f" placeholder="0"></div>
+      </div>
+      <button class="btn btnp" style="font-size:12px" onclick="addManualFood()">Add to diary</button>
+    </div>
+    <div id="food-results"></div>
+  </div>
+
+  <!-- Today's log -->
+  <div class="card">
+    <div class="st">Logged this day</div>
+    <div id="food-list"></div>
+  </div>
+</div>
+
 </main>
+
+<!-- BARCODE SCAN OVERLAY -->
+<div id="scan-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <video id="scan-video" playsinline style="width:100%;max-width:420px;border-radius:12px;background:#000"></video>
+  <div style="color:#fff;font-size:13px;margin-top:14px">Point the camera at a barcode</div>
+  <button class="btn" style="margin-top:16px;background:#fff;color:#111" onclick="stopScan()">Cancel</button>
+</div>
 
 <div id="sync-status" class="sync-badge"></div>
 </div>
@@ -504,6 +601,23 @@ const DEFAULT_STATE = {
   bills:[],
   pockets:[],
   monthlyData:{},
+  budgetCategories:[
+    {id:1,name:'Groceries',color:'#3B6D11'},
+    {id:2,name:'Eating out',color:'#BA7517'},
+    {id:3,name:'Transport',color:'#185FA5'},
+    {id:4,name:'Shopping',color:'#534AB7'},
+    {id:5,name:'Fun & social',color:'#D4537E'},
+    {id:6,name:'Health',color:'#1D9E75'},
+    {id:7,name:'Other',color:'#888780'},
+  ],
+  budgetStages:[
+    {id:1,name:'Stage 1',startDay:1,endDay:15},
+    {id:2,name:'Stage 2',startDay:16,endDay:31},
+  ],
+  budgetStagesV2:false, // migration flag: collapse old 3-stage setup to 2
+  stageBudgets:{},      // stageBudgets[stageId][categoryId] = planned amount
+  transactions:[],      // {id, amount, categoryId, date, note}
+  activeBudgetStage:1,  // selected tab in Budget vs actual
   savings:[],
   projects:[],
   wishlist:[],
@@ -538,10 +652,18 @@ const DEFAULT_STATE = {
   },
   sessions:[],
   customSets:{},
+  exercises:[],
+  workoutTemplates:[],
+  workoutSessions:[],
+  activeSession:null,
+  workoutMigrated:false,
   timeProjects:[],
   timeLog:[],
   calorieLog:[],
   projectNotes:{},
+  foodLog:[],            // {id,date,name,grams,kcal100,p100,c100,f100,barcode}
+  foodViewDate:null,
+  nutritionGoals:{kcal:2200,protein:150,carbs:220,fat:70},
 };
 
 // ── ONEDRIVE SYNC ──
@@ -637,6 +759,36 @@ async function pushToOD(data){
   }
 }
 
+// Silent token — returns null if not already signed in, NEVER redirects.
+async function getTokenSilent(){
+  const app=getMsalApp();
+  if(!app)return null;
+  if(!_msalInit){try{await app.initialize();_msalInit=true;}catch(e){return null;}}
+  const accts=app.getAllAccounts();
+  if(!accts||!accts.length)return null;
+  try{
+    const r=await app.acquireTokenSilent({scopes:OD.scopes,account:accts[0]});
+    return r.accessToken;
+  }catch(e){return null;}
+}
+
+// Background auto-save: only pushes if already signed in; otherwise saves locally
+// and quietly flags that sync needs a sign-in — it does NOT force a redirect.
+async function autoPush(data){
+  const token=await getTokenSilent();
+  if(!token){setSyncStatus('no-creds');setTimeout(()=>setSyncStatus('idle'),4000);return;}
+  setSyncStatus('saving');
+  try{
+    const res=await fetch(OD.uploadUrl,{
+      method:'PUT',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify(data),
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    setSyncStatus('saved');setTimeout(()=>setSyncStatus('idle'),3000);
+  }catch(e){setSyncStatus('error','✕ '+e.message);setTimeout(()=>setSyncStatus('idle'),5000);}
+}
+
 // Direct token versions used by init (avoids triggering redirect again)
 async function pullWithToken(token){
   const res=await fetch(OD.downloadUrl,{headers:{'Authorization':'Bearer '+token}});
@@ -705,7 +857,7 @@ function saveState() {
     delete toSave.activeModal;
     LS.set('harvey-data', JSON.stringify(toSave));
     clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => pushToOD(toSave), 1500);
+    syncTimer = setTimeout(() => autoPush(toSave), 1500);
   } catch(e) {}
 }
 
@@ -755,6 +907,89 @@ function nav(id, el) {
     wishlist:renderWishlist,fitness:renderFitness,weight:renderWeightPage})[id]?.();
 }
 
+// ── WEATHER (Open-Meteo, no key; browser geolocation → IP fallback) ──
+const WEATHER_CODES={
+  0:['Clear','☀'],1:['Mainly clear','🌤'],2:['Partly cloudy','⛅'],3:['Overcast','☁'],
+  45:['Fog','🌫'],48:['Rime fog','🌫'],
+  51:['Light drizzle','🌦'],53:['Drizzle','🌦'],55:['Heavy drizzle','🌦'],
+  56:['Freezing drizzle','🌧'],57:['Freezing drizzle','🌧'],
+  61:['Light rain','🌧'],63:['Rain','🌧'],65:['Heavy rain','🌧'],
+  66:['Freezing rain','🌧'],67:['Freezing rain','🌧'],
+  71:['Light snow','🌨'],73:['Snow','🌨'],75:['Heavy snow','❄'],77:['Snow grains','🌨'],
+  80:['Light showers','🌦'],81:['Showers','🌦'],82:['Heavy showers','⛈'],
+  85:['Snow showers','🌨'],86:['Snow showers','🌨'],
+  95:['Thunderstorm','⛈'],96:['Thunderstorm','⛈'],99:['Thunderstorm','⛈'],
+};
+
+function weatherCardHTML(inner){
+  return `<div class="card" style="padding:14px 18px">${inner}</div>`;
+}
+
+async function getCoords(){
+  // Try precise browser geolocation first
+  const geo=await new Promise(resolve=>{
+    if(!navigator.geolocation){resolve(null);return;}
+    navigator.geolocation.getCurrentPosition(
+      pos=>resolve({lat:pos.coords.latitude,lon:pos.coords.longitude,src:'browser'}),
+      ()=>resolve(null),
+      {timeout:8000,maximumAge:600000}
+    );
+  });
+  if(geo)return geo;
+  // Fallback: IP-based lookup (no key)
+  try{
+    const r=await fetch('https://ipapi.co/json/');
+    if(r.ok){const d=await r.json();if(d.latitude&&d.longitude)return {lat:d.latitude,lon:d.longitude,city:d.city,src:'ip'};}
+  }catch(e){}
+  return null;
+}
+
+async function renderWeather(){
+  const el=document.getElementById('h-weather');if(!el)return;
+  el.innerHTML=weatherCardHTML('<div style="font-size:13px;color:var(--text3)">Loading weather…</div>');
+  const coords=await getCoords();
+  if(!coords){
+    el.innerHTML=weatherCardHTML('<div style="font-size:13px;color:var(--text3)">Weather unavailable — location access was blocked.</div>');
+    return;
+  }
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}`+
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m`+
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
+    const r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const cur=d.current;
+    const [desc,icon]=WEATHER_CODES[cur.weather_code]||['—','•'];
+    const place=coords.city?coords.city:'Your location';
+    const days=d.daily.time.map((t,i)=>{
+      const dt=new Date(t+'T12:00:00');
+      const [,ic]=WEATHER_CODES[d.daily.weather_code[i]]||['','•'];
+      const dn=i===0?'Today':dt.toLocaleDateString('en-IE',{weekday:'short'});
+      return `<div style="text-align:center;flex:1">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${dn}</div>
+        <div style="font-size:18px;line-height:1;margin-bottom:3px">${ic}</div>
+        <div style="font-size:12px;font-weight:600">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+        <div style="font-size:11px;color:var(--text3)">${Math.round(d.daily.temperature_2m_min[i])}°</div>
+      </div>`;
+    }).join('');
+    el.innerHTML=weatherCardHTML(`
+      <div class="flb" style="align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div class="fl" style="gap:14px">
+          <div style="font-size:42px;line-height:1">${icon}</div>
+          <div>
+            <div style="font-size:26px;font-weight:600;line-height:1.1">${Math.round(cur.temperature_2m)}°C</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">${desc} · feels ${Math.round(cur.apparent_temperature)}°</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${place} · wind ${Math.round(cur.wind_speed_10m)} km/h</div>
+          </div>
+        </div>
+        <div class="fl" style="gap:4px;flex:1;min-width:220px;max-width:340px;justify-content:space-between">${days}</div>
+      </div>`);
+  }catch(e){
+    el.innerHTML=weatherCardHTML(`<div style="font-size:13px;color:var(--text3)">Weather unavailable right now.</div>`);
+  }
+}
+
 // ── HOME ──
 function renderHome(){
   const d=new Date();
@@ -779,6 +1014,7 @@ function renderHome(){
     const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
     charts['wc-home']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'kg',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
   },80);
+  renderWeather();
 }
 function saveHomeNote(){
   const val=document.getElementById('h-note-inp').value.trim();if(!val)return;
@@ -893,8 +1129,16 @@ function deleteNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveState();renderN
 // ── IMPORTANT ──
 function renderImportant(){
   const el=document.getElementById('imp-list');if(!el)return;
+  // Drop any manually-pinned items whose source task is now complete/removed
+  S.important=S.important.filter(i=>{
+    if(!i.ref)return true; // manual entries with no task link stay
+    const [pid,tid]=String(i.ref).split('-').map(Number);
+    const p=S.projects.find(x=>x.id===pid);
+    const t=p&&p.todos.find(x=>x.id===tid);
+    return t&&!t.done; // keep only if task still exists and is not done
+  });
   const all=[...S.important];
-  S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
+  S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!t.done&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
   el.innerHTML=all.length?all.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--blue);min-width:6px"></div><span style="flex:1;font-size:13px">${i.text}</span><span class="tag tp">${i.source}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
 }
 
@@ -917,49 +1161,261 @@ function onBudgetMonthChange(){
 }
 function renderBudget(){
   if(!S.budgetViewMonth)S.budgetViewMonth=curKey;
+  // One-time migration to a two-stage month
+  if(!S.budgetStagesV2){
+    S.budgetStages=[
+      {id:1,name:'Stage 1',startDay:1,endDay:15},
+      {id:2,name:'Stage 2',startDay:16,endDay:31},
+    ];
+    S.activeBudgetStage=1;
+    S.budgetStagesV2=true;
+    saveState();
+  }
   buildMonthOptions('budget-month-sel');
   const [yr,mo]=S.budgetViewMonth.split('-').map(Number);
   const mLabel=`${MONTHS[mo-1]} ${yr}`;
   document.getElementById('budget-month-label').textContent=mLabel;
   const md=getMonthData(S.budgetViewMonth);
-  const totalPockets=S.pockets.reduce((a,p)=>a+(md.pocketAmounts[p.id]||0),0);
   const totalIncome=md.income.reduce((a,i)=>a+i.amount,0);
   const activeBills=S.bills.filter(b=>b.active);
   const totalBills=activeBills.reduce((a,b)=>a+b.amount,0);
-  const net=totalIncome-totalBills;
+  const monthTx=txInMonth(S.budgetViewMonth);
+  const totalSpent=monthTx.reduce((a,t)=>a+t.amount,0);
+  const left=totalIncome-totalBills-totalSpent;
   document.getElementById('bm').innerHTML=`
-    <div class="mc"><div class="ml">Pockets total</div><div class="mv">${euro(totalPockets)}</div><div class="ms">${mLabel}</div></div>
     <div class="mc"><div class="ml">Income</div><div class="mv">${euro(totalIncome)}</div><div class="ms">${mLabel}</div></div>
     <div class="mc"><div class="ml">Bills</div><div class="mv">${euro(totalBills)}</div><div class="ms">Active recurring</div></div>
-    <div class="mc"><div class="ml">Net (income − bills)</div><div class="mv" style="color:${net>=0?'#3B6D11':'#A32D2D'}">${net>=0?'':'-'}${euro(Math.abs(net))}</div></div>`;
-  document.getElementById('pockets-list').innerHTML=S.pockets.map(p=>`
+    <div class="mc"><div class="ml">Spent</div><div class="mv">${euro(totalSpent)}</div><div class="ms">${monthTx.length} transaction${monthTx.length===1?'':'s'}</div></div>
+    <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#3B6D11':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
+
+  renderStages();
+  renderBVATabs();
+  renderBudgetVsActual();
+  renderTransactions();
+
+  document.getElementById('pockets-list').innerHTML=S.pockets.length?S.pockets.map(p=>`
     <div class="pi">
       <div class="fl"><div style="width:9px;height:9px;border-radius:50%;background:${p.color}"></div><span class="pn">${p.name}</span></div>
       <div class="fl">
-        <input type="number" class="inp" style="width:100px;text-align:right;padding:5px 8px;font-size:13px" value="${md.pocketAmounts[p.id]||0}" onchange="updatePocketAmount(${p.id},this.value)">
+        <input type="number" class="inp" style="width:90px;text-align:right;padding:5px 8px;font-size:13px" value="${md.pocketAmounts[p.id]||0}" onchange="updatePocketAmount(${p.id},this.value)">
         <span style="font-size:12px;color:var(--text3)">€</span>
+        <button class="btn-icon" onclick="deletePocket(${p.id})" title="Remove pocket">✕</button>
       </div>
-    </div>`).join('');
-  document.getElementById('income-list').innerHTML=md.income.map(i=>`
+    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No pockets yet.</div>';
+  document.getElementById('income-list').innerHTML=md.income.length?md.income.map(i=>`
     <div class="pi">
       <span class="pn">${i.name}</span>
       <div class="fl">
+        ${i.stageId!=null?`<span class="tag tp">${(S.budgetStages.find(s=>s.id===i.stageId)||{}).name||'—'}</span>`:(i.day?`<span class="tag tb">Day ${i.day}</span>`:'')}
         <span class="tag tg">${i.freq}</span>
         <span class="pv">${euro(i.amount)}</span>
         <button class="btn-icon" onclick="removeMonthIncome('${S.budgetViewMonth}',${i.id})">✕</button>
       </div>
-    </div>`).join('');
+    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No income logged for this month.</div>';
   document.getElementById('budget-bills-total').textContent=euro(totalBills);
   document.getElementById('budget-bills-list').innerHTML=activeBills.map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag ${catTag(b.cat)}">${b.cat}</span><span style="font-size:12px;color:var(--text2)">Due ${b.due}th</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
   document.getElementById('budget-summary').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="sum-box"><div class="sum-label">Total income</div><div class="sum-val" style="color:#3B6D11">${euro(totalIncome)}</div></div>
       <div class="sum-box"><div class="sum-label">Total bills</div><div class="sum-val" style="color:#A32D2D">${euro(totalBills)}</div></div>
-      <div class="sum-box" style="grid-column:span 2"><div class="sum-label">Money left after bills</div><div class="sum-val" style="color:${net>=0?'#185FA5':'#A32D2D'};font-size:22px">${net>=0?'':'-'}${euro(Math.abs(net))}</div></div>
+      <div class="sum-box"><div class="sum-label">Total spent</div><div class="sum-val" style="color:#BA7517">${euro(totalSpent)}</div></div>
+      <div class="sum-box"><div class="sum-label">Left over</div><div class="sum-val" style="color:${left>=0?'#185FA5':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>
     </div>`;
+}
+
+// ── BUDGET: stages, categories, transactions ──
+const dayOfMonth=dateStr=>parseInt(dateStr.split('-')[2],10);
+function txInMonth(key){return S.transactions.filter(t=>t.date.slice(0,7)===key);}
+function getStageBudget(stageId,catId){return (S.stageBudgets[stageId]&&S.stageBudgets[stageId][catId])||0;}
+function setStageBudget(stageId,catId,val){
+  if(!S.stageBudgets[stageId])S.stageBudgets[stageId]={};
+  S.stageBudgets[stageId][catId]=parseFloat(val)||0;
+  saveState();
+}
+function setStageBudgetInput(stageId,catId,val){setStageBudget(stageId,catId,val);renderBudgetVsActual();}
+
+function renderStages(){
+  const el=document.getElementById('budget-stages');if(!el)return;
+  const md=getMonthData(S.budgetViewMonth);
+  const monthTx=txInMonth(S.budgetViewMonth);
+  const activeBills=S.bills.filter(b=>b.active);
+  const isCurMonth=S.budgetViewMonth===curKey;
+  const today=TODAY.getDate();
+  if(!S.budgetStages.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">No stages defined. Tap “Stages” to add some.</div>';return;}
+  el.innerHTML='<div class="g3">'+S.budgetStages.map(st=>{
+    const inc=md.income.filter(i=>{
+      if(i.stageId!=null)return i.stageId===st.id;
+      const d=i.day||1;return d>=st.startDay&&d<=st.endDay; // fallback for older entries
+    }).reduce((a,i)=>a+i.amount,0);
+    const stBills=activeBills.filter(b=>b.due>=st.startDay&&b.due<=st.endDay);
+    const bills=stBills.reduce((a,b)=>a+b.amount,0);
+    const spent=monthTx.filter(t=>{const d=dayOfMonth(t.date);return d>=st.startDay&&d<=st.endDay;}).reduce((a,t)=>a+t.amount,0);
+    const left=inc-bills-spent;
+    const isCurStage=isCurMonth&&today>=st.startDay&&today<=st.endDay;
+    let safe='';
+    if(isCurStage){
+      const daysLeft=Math.max(1,st.endDay-today+1);
+      safe=`<div style="font-size:11px;color:var(--text3);margin-top:5px;padding-top:5px;border-top:0.5px solid var(--border)">Safe to spend <strong style="color:${left>=0?'var(--green)':'var(--red)'}">${euro(Math.max(0,left)/daysLeft)}/day</strong> · ${daysLeft} day${daysLeft>1?'s':''} left</div>`;
+    }
+    return `<div class="mc" style="${isCurStage?'outline:1.5px solid var(--blue);outline-offset:-1px':''}">
+      <div class="flb"><div class="ml" style="margin:0">${st.name}${isCurStage?' · now':''}</div><span style="font-size:10px;color:var(--text3)">${st.startDay}–${st.endDay>=31?'end':st.endDay}</span></div>
+      <div class="mv" style="font-size:18px;color:${left>=0?'var(--text)':'var(--red)'};margin-top:5px">${left>=0?'':'-'}${euro(Math.abs(left))}<span style="font-size:11px;color:var(--text3);font-weight:400"> left</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">+${euro(inc)} in · −${euro(bills)} bills · −${euro(spent)} spent</div>
+      ${stBills.length?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Bills: ${stBills.map(b=>b.name).join(', ')}</div>`:''}
+      ${safe}
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function renderBVATabs(){
+  const el=document.getElementById('bva-tabs');if(!el)return;
+  if(!S.budgetStages.find(s=>s.id===S.activeBudgetStage))S.activeBudgetStage=S.budgetStages[0]?.id;
+  el.innerHTML=S.budgetStages.map(st=>`<button class="wkb ${S.activeBudgetStage===st.id?'active':''}" onclick="selBudgetStage(${st.id})">${st.name}</button>`).join('');
+}
+function selBudgetStage(id){S.activeBudgetStage=id;saveState();renderBVATabs();renderBudgetVsActual();}
+
+function renderBudgetVsActual(){
+  const el=document.getElementById('budget-vs-actual');if(!el)return;
+  const st=S.budgetStages.find(s=>s.id===S.activeBudgetStage)||S.budgetStages[0];
+  if(!st){el.innerHTML='<div style="color:var(--text3);font-size:13px">No stages defined.</div>';return;}
+  const cats=S.pockets;
+  if(!cats.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No pockets yet. Add your Revolut pockets with “+ Pocket” below and they’ll appear here to budget against.</div>';return;}
+  const stageTx=txInMonth(S.budgetViewMonth).filter(t=>{const d=dayOfMonth(t.date);return d>=st.startDay&&d<=st.endDay;});
+  const rows=cats.map(cat=>{
+    const budget=getStageBudget(st.id,cat.id);
+    const actual=stageTx.filter(t=>t.categoryId===cat.id).reduce((a,t)=>a+t.amount,0);
+    const pct=budget>0?Math.min(100,Math.round(actual/budget*100)):(actual>0?100:0);
+    const over=budget>0&&actual>budget;
+    const near=budget>0&&actual>=budget*0.8&&!over;
+    const barColor=over?'var(--red)':near?'var(--amber)':(cat.color||'var(--blue)');
+    return `<div style="margin-bottom:13px">
+      <div class="flb" style="margin-bottom:5px">
+        <div class="fl" style="gap:8px"><div style="width:9px;height:9px;border-radius:50%;background:${cat.color||'var(--blue)'}"></div><span style="font-size:13px">${cat.name}</span></div>
+        <div class="fl" style="gap:6px">
+          <span style="font-size:12px;color:${over?'var(--red)':'var(--text2)'};font-weight:${over?'600':'400'}">${euro(actual)}</span>
+          <span style="font-size:12px;color:var(--text3)">/</span>
+          <input type="number" class="inp" style="width:72px;text-align:right;padding:4px 7px;font-size:12px" value="${budget||''}" placeholder="0" onchange="setStageBudgetInput(${st.id},${cat.id},this.value)">
+        </div>
+      </div>
+      <div class="pb"><div class="pbf" style="width:${pct}%;background:${barColor}"></div></div>
+    </div>`;
+  }).join('');
+  const totBudget=cats.reduce((a,c)=>a+getStageBudget(st.id,c.id),0);
+  const totActual=stageTx.reduce((a,t)=>a+t.amount,0);
+  const overTotal=totBudget>0&&totActual>totBudget;
+  el.innerHTML=rows+`
+    <div class="flb" style="margin-top:6px;padding-top:12px;border-top:0.5px solid var(--border)">
+      <span style="font-size:13px;font-weight:600">${st.name} — spent vs planned</span>
+      <span style="font-size:13px;font-weight:600;color:${overTotal?'var(--red)':'var(--text)'}">${euro(totActual)} / ${euro(totBudget)}</span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">Set a planned amount per pocket for this stage. Bars turn amber at 80% and red when you go over.</div>`;
+}
+
+function renderTransactions(){
+  const el=document.getElementById('budget-tx');if(!el)return;
+  const monthTx=txInMonth(S.budgetViewMonth).sort((a,b)=>b.date.localeCompare(a.date));
+  const tot=monthTx.reduce((a,t)=>a+t.amount,0);
+  const totalEl=document.getElementById('budget-spent-total');if(totalEl)totalEl.textContent=euro(tot);
+  if(monthTx.length===0){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center">No spending logged this month. Tap “+ Spend” to add some.</div>';return;}
+  el.innerHTML=monthTx.slice(0,40).map(t=>{
+    const cat=S.pockets.find(c=>c.id===t.categoryId)||{name:'Uncategorised',color:'#888'};
+    return `<div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)">
+      <div style="width:9px;height:9px;border-radius:50%;background:${cat.color}"></div>
+      <div><div style="font-size:13px">${t.note||cat.name}</div><div style="font-size:11px;color:var(--text3)">${cat.name} · ${fmtDate(t.date).replace(', '+new Date(t.date+'T12:00:00').getFullYear(),'')}</div></div>
+      <span style="font-size:13px;font-weight:600">${euro(t.amount)}</span>
+      <button class="btn-icon" onclick="deleteTransaction(${t.id})">✕</button>
+    </div>`;
+  }).join('')+(monthTx.length>40?`<div style="font-size:11px;color:var(--text3);text-align:center;padding-top:8px">Showing 40 of ${monthTx.length}</div>`:'');
+}
+function deleteTransaction(id){S.transactions=S.transactions.filter(t=>t.id!==id);saveState();renderBudget();}
+
+// Stage editor
+function editStages(){
+  S.activeModal={type:'stages'};
+  document.getElementById('modal-title').textContent='Edit pay stages';
+  const rows=S.budgetStages.map((st,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 64px 64px 28px;gap:6px;margin-bottom:8px;align-items:center">
+      <input class="inp" id="st-name-${i}" value="${st.name}" placeholder="Name">
+      <input type="number" class="inp" id="st-start-${i}" value="${st.startDay}" min="1" max="31">
+      <input type="number" class="inp" id="st-end-${i}" value="${st.endDay}" min="1" max="31">
+      <button class="btn-icon" onclick="removeStageRow(${i})">✕</button>
+    </div>`).join('');
+  document.getElementById('modal-body').innerHTML=`
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">Define the stages of your month by day. Income, bills and spending fall into a stage by their date — so you can see how each pay period is doing.</div>
+    <div style="display:grid;grid-template-columns:1fr 64px 64px 28px;gap:6px;margin-bottom:6px"><span style="font-size:11px;color:var(--text3)">Stage</span><span style="font-size:11px;color:var(--text3)">From</span><span style="font-size:11px;color:var(--text3)">To</span><span></span></div>
+    <div id="stages-rows">${rows}</div>
+    <button class="btn" style="font-size:12px;margin-top:4px" onclick="addStageRow()">+ Add stage</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px">Tip: set the last stage's “To” day to 31 to cover month-end.</div>`;
+  document.getElementById('modal').style.display='flex';
+}
+function readStageRows(){
+  const rows=document.querySelectorAll('#stages-rows > div');
+  const out=[];
+  rows.forEach((r,i)=>{
+    const name=document.getElementById('st-name-'+i)?.value||('Stage '+(i+1));
+    const s=parseInt(document.getElementById('st-start-'+i)?.value,10)||1;
+    const e=parseInt(document.getElementById('st-end-'+i)?.value,10)||31;
+    out.push({name,startDay:s,endDay:e});
+  });
+  return out;
+}
+function addStageRow(){
+  // Persist current edits, add a blank stage, re-open editor
+  const cur=readStageRows();
+  cur.push({name:'Stage '+(cur.length+1),startDay:1,endDay:31});
+  S.budgetStages=cur.map((s,i)=>({id:i+1,...s}));
+  editStages();
+}
+function removeStageRow(idx){
+  const cur=readStageRows().filter((_,i)=>i!==idx);
+  S.budgetStages=cur.map((s,i)=>({id:i+1,...s}));
+  editStages();
+}
+
+// Category editor
+function editCategories(){
+  S.activeModal={type:'categories'};
+  document.getElementById('modal-title').textContent='Spending categories';
+  renderCategoriesModalBody();
+  document.getElementById('modal').style.display='flex';
+}
+function renderCategoriesModalBody(){
+  const body=document.getElementById('modal-body');if(!body)return;
+  body.innerHTML=`
+    <div id="cats-edit">${S.budgetCategories.map(c=>`
+      <div class="fl" style="gap:8px;margin-bottom:8px">
+        <div style="width:11px;height:11px;border-radius:50%;background:${c.color};min-width:11px"></div>
+        <input class="inp" value="${c.name}" onchange="renameCategory(${c.id},this.value)" style="flex:1">
+        <button class="btn-icon" onclick="deleteCategory(${c.id})">✕</button>
+      </div>`).join('')}</div>
+    <div class="fl" style="gap:8px;margin-top:10px">
+      <input class="inp" id="new-cat-name" placeholder="New category name" style="flex:1">
+      <button class="btn btnp" onclick="addCategory()">Add</button>
+    </div>`;
+}
+function renameCategory(id,name){const c=S.budgetCategories.find(x=>x.id===id);if(c&&name.trim()){c.name=name.trim();saveState();}}
+function deleteCategory(id){
+  S.budgetCategories=S.budgetCategories.filter(c=>c.id!==id);
+  Object.keys(S.stageBudgets).forEach(sid=>{if(S.stageBudgets[sid])delete S.stageBudgets[sid][id];});
+  saveState();renderCategoriesModalBody();
+}
+function addCategory(){
+  const inp=document.getElementById('new-cat-name');if(!inp)return;
+  const name=inp.value.trim();if(!name)return;
+  const palette=['#3B6D11','#BA7517','#185FA5','#534AB7','#D4537E','#1D9E75','#A32D2D','#888780'];
+  const id=Date.now();
+  S.budgetCategories.push({id,name,color:palette[S.budgetCategories.length%palette.length]});
+  saveState();renderCategoriesModalBody();
 }
 function updatePocketAmount(pid,val){
   getMonthData(S.budgetViewMonth||curKey).pocketAmounts[pid]=parseFloat(val)||0;
+  saveState();renderBudget();
+}
+function deletePocket(pid){
+  if(!confirm('Remove this pocket? Its budgets are cleared; logged spend stays but shows as Uncategorised.'))return;
+  S.pockets=S.pockets.filter(p=>p.id!==pid);
+  Object.keys(S.stageBudgets).forEach(sid=>{if(S.stageBudgets[sid])delete S.stageBudgets[sid][pid];});
+  Object.values(S.monthlyData).forEach(md=>{if(md.pocketAmounts)delete md.pocketAmounts[pid];});
   saveState();renderBudget();
 }
 function removeMonthIncome(key,id){
@@ -1201,6 +1657,10 @@ function deleteProjectNote(pid,nid){
 function toggleTodo(pid,tid){
   const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
   t.done=!t.done;
+  // Completing a task removes it from the Important list automatically
+  if(t.done){
+    S.important=S.important.filter(x=>x.ref!==`${pid}-${tid}`);
+  }
   saveState();
   renderProjects();
   // If just marked done and there are time projects, ask how long it took
@@ -1235,39 +1695,305 @@ function renderWishlist(){
   }).join('');
 }
 
-// ── FITNESS ──
+// ── FITNESS (session-based) ──
+
+// One-time migration: turn the old W0–W7 week grid (+ any custom edits)
+// into an exercise library, Push/Pull/Legs templates, and 8 weeks of
+// seeded session history so progression and "last time" work immediately.
+function migrateWorkouts(){
+  if(S.workoutMigrated)return;
+  if(!Array.isArray(S.exercises))S.exercises=[];
+  if(!Array.isArray(S.workoutSessions))S.workoutSessions=[];
+  const groups=['push','pull','legs'];
+  const exId={};
+  let idc=1000;
+  groups.forEach(g=>{
+    (S.workoutDef[g]||[]).forEach(ex=>{
+      const id=idc++;
+      exId[g+'|'+ex.name]=id;
+      S.exercises.push({id,name:ex.name,group:g});
+    });
+  });
+  S.workoutTemplates=groups.map((g,i)=>({
+    id:2000+i,
+    name:g.charAt(0).toUpperCase()+g.slice(1),
+    group:g,
+    exerciseIds:(S.workoutDef[g]||[]).map(ex=>exId[g+'|'+ex.name]),
+  }));
+  const parseReps=s=>{
+    if(!s||s==='—')return [];
+    return s.toString().split(/[-–—/.,]+/).map(x=>parseInt(x.trim(),10)).filter(n=>!isNaN(n)&&n>0);
+  };
+  const parseWt=s=>{
+    if(!s||s==='—')return NaN;
+    return parseFloat(s.toString().split(/[-–—/,]+/)[0]);
+  };
+  let sid=3000;
+  for(let w=0;w<8;w++){
+    const base=new Date();
+    base.setDate(base.getDate()-(7-w)*7); // W7 ≈ this week, W0 ≈ 7 weeks ago
+    groups.forEach((g,gi)=>{
+      const exs=[];
+      (S.workoutDef[g]||[]).forEach(ex=>{
+        const key=`${g}|${ex.name}|w${w}`;
+        const custom=S.customSets?S.customSets[key]:null;
+        const repsStr=custom?custom.reps:(ex.weeks?ex.weeks[w]||'':'');
+        const wtStr=custom?custom.weight:(ex.weights?ex.weights[w]||'':'');
+        const reps=parseReps(repsStr);
+        const wt=parseWt(wtStr);
+        if(reps.length===0||isNaN(wt))return;
+        exs.push({exerciseId:exId[g+'|'+ex.name],name:ex.name,sets:reps.map(r=>({weight:wt,reps:r}))});
+      });
+      if(exs.length){
+        const dd=new Date(base);dd.setDate(dd.getDate()+gi*2); // stagger push/pull/legs across the week
+        S.workoutSessions.push({id:sid++,date:dd.toISOString().split('T')[0],group:g,name:g.charAt(0).toUpperCase()+g.slice(1),exercises:exs,notes:''});
+      }
+    });
+  }
+  S.workoutMigrated=true;
+  saveState();
+}
+
+const est1RM=(w,r)=>w*(1+r/30); // Epley
+
+function lastTimeFor(exerciseId){
+  const list=S.workoutSessions
+    .filter(s=>s.exercises.some(e=>e.exerciseId===exerciseId))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length)return null;
+  const e=list[0].exercises.find(e=>e.exerciseId===exerciseId);
+  return {date:list[0].date,sets:e.sets};
+}
+
 function renderFitness(){
+  if(!S.workoutMigrated)migrateWorkouts();
+  const dash=document.getElementById('fitness-dashboard');
+  const sess=document.getElementById('fitness-session');
+  const startBtn=document.getElementById('fit-start-btn');
+  if(S.activeSession){
+    if(dash)dash.style.display='none';
+    if(sess)sess.style.display='';
+    if(startBtn)startBtn.style.display='none';
+    renderSession();
+    return;
+  }
+  if(dash)dash.style.display='';
+  if(sess)sess.style.display='none';
+  if(startBtn)startBtn.style.display='';
+
   const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
   const cur=sorted[sorted.length-1]?.kg||0,start=sorted[0]?.kg||0;
+  const now=new Date();const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay()+1);weekStart.setHours(0,0,0,0);
+  const weekSessions=S.workoutSessions.filter(s=>new Date(s.date+'T12:00:00')>=weekStart).length;
   document.getElementById('fit-m').innerHTML=`
     <div class="mc"><div class="ml">Current weight</div><div class="mv">${cur} kg</div></div>
     <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${(start-cur).toFixed(1)} kg</div></div>
-    <div class="mc"><div class="ml">Sessions logged</div><div class="mv">${S.sessions.length+7}</div></div>`;
-  document.getElementById('wk-btns').innerHTML=['W0','W1','W2','W3','W4','W5','W6','W7'].map((w,i)=>`<button class="wkb ${S.currentWeek===i?'active':''}" onclick="selWeek(${i})">${w}</button>`).join('');
-  ['push','pull','legs'].forEach(type=>{
-    document.getElementById(type+'-list').innerHTML=S.workoutDef[type].map(ex=>{
-      const key=`${type}|${ex.name}|w${S.currentWeek}`;
-      const c=S.customSets[key];
-      const reps=c?c.reps:(ex.weeks[S.currentWeek]||'—');
-      const wt=c?c.weight:(ex.weights?ex.weights[S.currentWeek]||'—':'—');
-      const sets=c?c.sets:'3';
-      const bestWt=ex.weights?Math.max(...ex.weights.map(w=>parseFloat(w)).filter(n=>!isNaN(n))):0;
-      const nm=ex.name.replace(/'/g,"\\'");
-      return `<div class="ex-row"><div><div class="ex-name">${ex.name}</div>${bestWt?`<div class="ex-best">Best: ${bestWt}kg</div>`:''}</div><input class="inp inp-sm" value="${reps}" style="width:76px" onchange="upSet('${type}','${nm}',${S.currentWeek},'reps',this.value)"><input class="inp inp-sm" value="${sets}" style="width:48px" onchange="upSet('${type}','${nm}',${S.currentWeek},'sets',this.value)"><input class="inp inp-sm" value="${wt}" style="width:64px" onchange="upSet('${type}','${nm}',${S.currentWeek},'weight',this.value)"><button onclick="clearSet('${type}','${nm}',${S.currentWeek})" class="btn-icon" title="Reset">↺</button></div>`;
-    }).join('');
-  });
-  document.getElementById('ses-log').innerHTML=S.sessions.length?[...S.sessions].reverse().map(s=>`<div class="ses-row"><div><div style="font-size:13px;font-weight:500">${s.type} session</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${s.notes||'No notes'}</div></div><span class="tag tb">${s.date}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions logged yet.</div>';
-  // Init trend dropdown
+    <div class="mc"><div class="ml">Total sessions</div><div class="mv">${S.workoutSessions.length}</div></div>
+    <div class="mc"><div class="ml">This week</div><div class="mv">${weekSessions}</div></div>`;
+
+  renderTemplates();
+  renderPRs();
+  renderSessions();
   setTimeout(()=>renderTrend(),120);
 }
-function selWeek(i){S.currentWeek=i;saveState();renderFitness();}
-function upSet(type,name,week,field,val){
-  const key=`${type}|${name}|w${week}`;
-  if(!S.customSets[key]){const ex=S.workoutDef[type].find(e=>e.name===name);S.customSets[key]={reps:ex.weeks[week]||'',sets:'3',weight:ex.weights?ex.weights[week]||'':''};}
-  S.customSets[key][field]=val;
-  saveState();
+
+function renderTemplates(){
+  const el=document.getElementById('fit-templates');if(!el)return;
+  const tpls=S.workoutTemplates||[];
+  el.innerHTML=tpls.map(t=>`<button class="btn btnp" style="font-size:12px" onclick="beginSession(${t.id},TODAYSTR)">${t.name}</button>`).join('')
+    +`<button class="btn" style="font-size:12px" onclick="beginSession('empty',TODAYSTR)">Empty session</button>`;
 }
-function clearSet(type,name,week){delete S.customSets[`${type}|${name}|w${week}`];saveState();renderFitness();}
+
+function renderPRs(){
+  const el=document.getElementById('fit-prs');if(!el)return;
+  const prs={};
+  S.workoutSessions.forEach(s=>s.exercises.forEach(e=>{
+    e.sets.forEach(st=>{
+      const cur=prs[e.name];
+      if(!cur||st.weight>cur.weight||(st.weight===cur.weight&&st.reps>cur.reps)){
+        prs[e.name]={weight:st.weight,reps:st.reps};
+      }
+    });
+  }));
+  const entries=Object.entries(prs).sort((a,b)=>b[1].weight-a[1].weight).slice(0,8);
+  el.innerHTML=entries.length?entries.map(([name,pr])=>`
+    <div class="pi"><span class="pn">${name}</span><span style="font-size:13px;font-weight:600;color:var(--blue)">${pr.weight}kg × ${pr.reps}</span></div>`).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:8px 0">No records yet — log a session to set some.</div>';
+}
+
+function renderSessions(){
+  const el=document.getElementById('fit-sessions');if(!el)return;
+  const list=[...S.workoutSessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20);
+  if(list.length===0){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0">No sessions logged yet. Hit “Start session” to begin.</div>';return;}
+  el.innerHTML=list.map(s=>{
+    const vol=s.exercises.reduce((a,e)=>a+e.sets.reduce((x,st)=>x+st.weight*st.reps,0),0);
+    const exSummary=s.exercises.map(e=>`
+      <div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:0.5px solid var(--border)">
+        <span style="font-size:12px">${e.name}</span>
+        <span style="font-size:12px;color:var(--text2);text-align:right">${e.sets.map(st=>`${st.weight}×${st.reps}`).join(', ')}</span>
+      </div>`).join('');
+    return `<details style="border-bottom:0.5px solid var(--border)">
+      <summary style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;list-style:none;cursor:pointer">
+        <div class="fl" style="gap:8px"><span class="tag tb">${s.name}</span><span style="font-size:12px;color:var(--text2)">${fmtDate(s.date)}</span></div>
+        <div class="fl" style="gap:8px"><span style="font-size:12px;color:var(--text3)">${Math.round(vol).toLocaleString()} kg vol</span><button class="btn-icon" onclick="event.preventDefault();deleteSession(${s.id})">✕</button></div>
+      </summary>
+      <div style="padding:2px 0 12px">${exSummary}</div>
+    </details>`;
+  }).join('');
+}
+
+function deleteSession(id){
+  if(!confirm('Delete this session?'))return;
+  S.workoutSessions=S.workoutSessions.filter(s=>s.id!==id);
+  saveState();renderFitness();
+}
+
+// Start flow
+function startSessionPicker(){
+  if(!S.workoutMigrated)migrateWorkouts();
+  S.activeModal={type:'startSession'};
+  document.getElementById('modal-title').textContent='Start workout session';
+  const tpls=S.workoutTemplates||[];
+  document.getElementById('modal-body').innerHTML=`
+    <div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-sdate" value="${TODAYSTR}"></div>
+    <div class="fr"><label class="fl2">Start from</label><select class="inp" id="m-stpl">
+      ${tpls.map(t=>`<option value="${t.id}">${t.name} template</option>`).join('')}
+      <option value="empty">Empty session</option>
+    </select></div>`;
+  document.querySelector('#modal .fl-end .btnp').textContent='Start';
+  document.getElementById('modal').style.display='flex';
+}
+
+function beginSession(tplId,date){
+  if(!S.workoutMigrated)migrateWorkouts();
+  let exercises=[],group='custom',name='Workout';
+  if(tplId!=='empty'){
+    const t=(S.workoutTemplates||[]).find(x=>x.id==tplId);
+    if(t){
+      group=t.group;name=t.name;
+      exercises=t.exerciseIds.map(eid=>{
+        const ex=S.exercises.find(e=>e.id===eid)||{id:eid,name:'?'};
+        return {exerciseId:ex.id,name:ex.name,sets:[{weight:'',reps:''}]};
+      });
+    }
+  }
+  S.activeSession={date:date||TODAYSTR,group,name,exercises,notes:''};
+  saveState();
+  renderFitness();
+}
+
+function renderSession(){
+  const a=S.activeSession;const el=document.getElementById('fitness-session');
+  if(!a||!el)return;
+  const exHtml=a.exercises.map((ex,xi)=>{
+    const last=lastTimeFor(ex.exerciseId);
+    const lastStr=last?last.sets.map(s=>`${s.weight}×${s.reps}`).join(', '):'No history yet';
+    const setsHtml=ex.sets.map((s,si)=>`
+      <div style="display:grid;grid-template-columns:26px 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:5px">
+        <span style="font-size:11px;color:var(--text3);text-align:center">${si+1}</span>
+        <input class="inp inp-sm" type="number" inputmode="decimal" placeholder="kg" value="${s.weight}" onchange="updateSet(${xi},${si},'weight',this.value)">
+        <input class="inp inp-sm" type="number" inputmode="numeric" placeholder="reps" value="${s.reps}" onchange="updateSet(${xi},${si},'reps',this.value)">
+        <button class="btn-icon" onclick="removeSet(${xi},${si})" title="Remove set">✕</button>
+      </div>`).join('');
+    return `<div class="card mb12">
+      <div class="flb mb8">
+        <span style="font-size:14px;font-weight:600">${ex.name}</span>
+        <button class="btn-icon" onclick="removeExerciseFromSession(${xi})" title="Remove exercise">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Last time: ${lastStr}</div>
+      <div style="display:grid;grid-template-columns:26px 1fr 1fr 28px;gap:6px;margin-bottom:6px">
+        <span style="font-size:10px;color:var(--text3);text-align:center">Set</span>
+        <span style="font-size:10px;color:var(--text3)">Weight</span>
+        <span style="font-size:10px;color:var(--text3)">Reps</span><span></span>
+      </div>
+      ${setsHtml}
+      <button class="btn" style="font-size:11px;margin-top:6px" onclick="addSetRow(${xi})">+ Add set</button>
+    </div>`;
+  }).join('');
+  el.innerHTML=`
+    <div class="card mb16">
+      <div class="flb mb12">
+        <div><div style="font-size:16px;font-weight:600">${a.name} session</div><div style="font-size:12px;color:var(--text3)">${fmtDate(a.date)}</div></div>
+        <div class="fl" style="gap:6px">
+          <button class="btn btnd" onclick="cancelSession()">Cancel</button>
+          <button class="btn btnp" onclick="finishSession()">Finish</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2)">Log each set's weight and reps. Your last numbers per exercise are shown so you know what to beat.</div>
+    </div>
+    ${exHtml||'<div class="card mb12" style="color:var(--text3);font-size:13px">No exercises yet — add one below.</div>'}
+    <div class="card">
+      <div class="st">Add exercise</div>
+      <div class="fl" style="gap:8px;flex-wrap:wrap">
+        <select class="inp" id="sess-add-ex" style="flex:1;min-width:180px">
+          <option value="">Choose exercise…</option>
+          ${[...S.exercises].sort((a,b)=>a.name.localeCompare(b.name)).map(e=>`<option value="${e.id}">${e.name} (${e.group})</option>`).join('')}
+          <option value="__new">➕ New exercise…</option>
+        </select>
+        <button class="btn btnp" onclick="addExerciseToSession()">Add</button>
+      </div>
+    </div>`;
+}
+
+function addSetRow(xi){
+  const a=S.activeSession;if(!a)return;
+  const sets=a.exercises[xi].sets;
+  const last=sets[sets.length-1];
+  sets.push({weight:last?last.weight:'',reps:''});
+  saveState();renderSession();
+}
+function updateSet(xi,si,field,val){
+  const a=S.activeSession;if(!a)return;
+  a.exercises[xi].sets[si][field]=val;
+  saveState(); // no re-render — keep input focus
+}
+function removeSet(xi,si){
+  const a=S.activeSession;if(!a)return;
+  a.exercises[xi].sets.splice(si,1);
+  if(a.exercises[xi].sets.length===0)a.exercises[xi].sets.push({weight:'',reps:''});
+  saveState();renderSession();
+}
+function removeExerciseFromSession(xi){
+  const a=S.activeSession;if(!a)return;
+  a.exercises.splice(xi,1);
+  saveState();renderSession();
+}
+function addExerciseToSession(){
+  const sel=document.getElementById('sess-add-ex');if(!sel)return;
+  const val=sel.value;if(!val)return;
+  const a=S.activeSession;if(!a)return;
+  if(val==='__new'){
+    const name=(prompt('New exercise name:')||'').trim();if(!name)return;
+    let group=(prompt('Group? push / pull / legs',a.group&&a.group!=='custom'?a.group:'push')||'push').trim().toLowerCase();
+    if(!['push','pull','legs'].includes(group))group='other';
+    const id=Date.now();
+    S.exercises.push({id,name,group});
+    a.exercises.push({exerciseId:id,name,sets:[{weight:'',reps:''}]});
+  }else{
+    const ex=S.exercises.find(e=>e.id==val);if(!ex)return;
+    a.exercises.push({exerciseId:ex.id,name:ex.name,sets:[{weight:'',reps:''}]});
+  }
+  saveState();renderSession();
+}
+function finishSession(){
+  const a=S.activeSession;if(!a)return;
+  const exercises=a.exercises.map(ex=>({
+    exerciseId:ex.exerciseId,name:ex.name,
+    sets:ex.sets
+      .filter(s=>s.weight!==''&&s.weight!=null&&s.reps!==''&&s.reps!=null)
+      .map(s=>({weight:parseFloat(s.weight),reps:parseInt(s.reps,10)}))
+      .filter(s=>!isNaN(s.weight)&&!isNaN(s.reps)),
+  })).filter(ex=>ex.sets.length>0);
+  if(exercises.length===0){alert('Log at least one set before finishing.');return;}
+  S.workoutSessions.push({id:Date.now(),date:a.date,group:a.group,name:a.name,exercises,notes:a.notes||''});
+  S.activeSession=null;
+  saveState();renderFitness();
+}
+function cancelSession(){
+  if(!confirm('Discard this session? Nothing will be saved.'))return;
+  S.activeSession=null;
+  saveState();renderFitness();
+}
 
 // ── WEIGHT PAGE ──
 function renderWeightPage(){
@@ -1291,11 +2017,13 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',goals:'Daily nutrition goals'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
-    income:`<div class="fr"><label class="fl2">Source name</label><input class="inp" id="m-name" placeholder="e.g. Salary"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Frequency</label><select class="inp" id="m-freq"><option>Monthly</option><option>Weekly</option><option>Variable</option></select></div>`,
+    spend:`<div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0.00" step="0.01" inputmode="decimal"></div><div class="fr"><label class="fl2">Pocket</label><select class="inp" id="m-tcat">${S.pockets.length?S.pockets.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''):'<option value="">Add a pocket first</option>'}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note (optional)</label><input class="inp" id="m-tnote" placeholder="e.g. Tesco, lunch"></div>`,
+    goals:`<div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">Set your daily targets. These are just your own goals — the diary shows progress against them, it won't stop you logging anything.</div><div class="g2" style="gap:8px"><div class="fr"><label class="fl2">Calories (kcal)</label><input type="number" class="inp" id="m-gkcal" value="${(S.nutritionGoals||{}).kcal||2200}"></div><div class="fr"><label class="fl2">Protein (g)</label><input type="number" class="inp" id="m-gp" value="${(S.nutritionGoals||{}).protein||150}"></div><div class="fr"><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="m-gc" value="${(S.nutritionGoals||{}).carbs||220}"></div><div class="fr"><label class="fl2">Fat (g)</label><input type="number" class="inp" id="m-gf" value="${(S.nutritionGoals||{}).fat||70}"></div></div>`,
+    income:`<div class="fr"><label class="fl2">Source name</label><input class="inp" id="m-name" placeholder="e.g. Salary"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Which stage?</label><select class="inp" id="m-istage">${S.budgetStages.map(s=>`<option value="${s.id}">${s.name} (days ${s.startDay}–${s.endDay>=31?'end':s.endDay})</option>`).join('')}</select></div><div class="fr"><label class="fl2">Frequency</label><select class="inp" id="m-freq"><option>Monthly</option><option>Weekly</option><option>Variable</option></select></div>`,
     bill:`<div class="fr"><label class="fl2">Name</label><input class="inp" id="m-name" placeholder="e.g. Netflix"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Due day</label><input type="number" class="inp" id="m-due" placeholder="1–31" min="1" max="31"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Transport</option><option>Other</option></select></div>`,
     saving:`<div class="fr"><label class="fl2">Label (e.g. May 2026)</label><input class="inp" id="m-label" placeholder="Month Year"></div><div class="fr"><label class="fl2">Amount saved (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div>`,
     project:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-name" placeholder="e.g. Client App"></div>`,
@@ -1329,8 +2057,8 @@ function saveModal(){
     Object.keys(S.monthlyData).forEach(k=>{S.monthlyData[k].pocketAmounts[p.id]=0;});
     saveState();renderBudget();
   } else if(m.type==='income'){
-    const n=g('m-name'),a=parseFloat(g('m-amount'))||0,f=g('m-freq');if(!n)return;
-    getMonthData(S.budgetViewMonth||curKey).income.push({id:Date.now(),name:n,amount:a,freq:f});
+    const n=g('m-name'),a=parseFloat(g('m-amount'))||0,f=g('m-freq'),stageId=parseInt(g('m-istage'),10)||(S.budgetStages[0]?.id??1);if(!n)return;
+    getMonthData(S.budgetViewMonth||curKey).income.push({id:Date.now(),name:n,amount:a,freq:f,stageId});
     saveState();renderBudget();
   } else if(m.type==='bill'){
     const n=g('m-name'),a=parseFloat(g('m-amount'))||0,d=parseInt(g('m-due'))||1,c=g('m-cat');if(!n)return;
@@ -1428,6 +2156,29 @@ function saveModal(){
     }
     // Reset save button label
     document.querySelector('#modal .fl-end .btnp').textContent='Save';
+  } else if(m.type==='startSession'){
+    const date=g('m-sdate'),tpl=g('m-stpl');
+    document.querySelector('#modal .fl-end .btnp').textContent='Save';
+    closeModal();
+    beginSession(tpl,date);
+    return;
+  } else if(m.type==='spend'){
+    const a=parseFloat(g('m-amount'))||0,cat=parseInt(g('m-tcat'),10),date=g('m-tdate')||TODAYSTR,note=g('m-tnote');
+    if(a<=0)return;
+    if(!cat){alert('Add a pocket first, then log spending against it.');return;}
+    S.transactions.push({id:Date.now(),amount:a,categoryId:cat,date,note});
+    saveState();renderBudget();
+  } else if(m.type==='stages'){
+    const rows=readStageRows();
+    if(rows.length)S.budgetStages=rows.map((s,i)=>({id:i+1,...s}));
+    if(!S.budgetStages.find(s=>s.id===S.activeBudgetStage))S.activeBudgetStage=S.budgetStages[0]?.id;
+    saveState();renderBudget();
+  } else if(m.type==='categories'){
+    // Edits already applied live; just persist and refresh
+    saveState();renderBudget();
+  } else if(m.type==='goals'){
+    S.nutritionGoals={kcal:parseInt(g('m-gkcal'),10)||0,protein:parseInt(g('m-gp'),10)||0,carbs:parseInt(g('m-gc'),10)||0,fat:parseInt(g('m-gf'),10)||0};
+    saveState();renderFood();
   }
   closeModal();renderHome();
 }
@@ -1634,81 +2385,227 @@ function renderCaloriesPage(){
     :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No activities logged yet.</div>';
 }
 
-// ── LIFTING TREND ──
+// ── PROGRESSION ──
 function renderTrend(){
-  const sel=document.getElementById('trend-type');if(!sel)return;
-  const exName=sel.value;
+  const sel=document.getElementById('fit-trend-ex');if(!sel)return;
   const emptyEl=document.getElementById('trend-empty');
 
-  // Populate dropdown if empty
+  // Populate dropdown from exercises that have session data
   if(sel.options.length<=1){
-    const all=[...S.workoutDef.push,...S.workoutDef.pull,...S.workoutDef.legs];
-    all.forEach(ex=>{
-      const opt=document.createElement('option');
-      opt.value=ex.name;opt.textContent=ex.name;
-      sel.appendChild(opt);
-    });
+    const names=[...new Set(S.workoutSessions.flatMap(s=>s.exercises.map(e=>e.name)))].sort();
+    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
   }
 
+  const exName=sel.value;
   destroyChart('trend-chart');
   if(!exName){
     if(emptyEl)emptyEl.style.display='block';
     return;
   }
-  if(emptyEl)emptyEl.style.display='none';
 
-  // Find exercise in workoutDef
-  const all=[...S.workoutDef.push,...S.workoutDef.pull,...S.workoutDef.legs];
-  const ex=all.find(e=>e.name===exName);
-  if(!ex)return;
+  // Top-set weight and estimated 1RM per session over time
+  const pts=S.workoutSessions
+    .filter(s=>s.exercises.some(e=>e.name===exName))
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .map(s=>{
+      const e=s.exercises.find(e=>e.name===exName);
+      return {
+        date:s.date,
+        wt:Math.max(...e.sets.map(st=>st.weight)),
+        e1rm:Math.round(Math.max(...e.sets.map(st=>est1RM(st.weight,st.reps)))),
+      };
+    });
 
-  // Build data — use customSets overrides where available, fall back to workoutDef
-  const labels=['W0','W1','W2','W3','W4','W5','W6','W7'];
-  const type=S.workoutDef.push.find(e=>e.name===exName)?'push':S.workoutDef.pull.find(e=>e.name===exName)?'pull':'legs';
-
-  const weightData=labels.map((w,i)=>{
-    const key=`${type}|${exName}|w${i}`;
-    const custom=S.customSets[key];
-    const wtStr=custom?custom.weight:(ex.weights?ex.weights[i]||'':null);
-    if(!wtStr||wtStr==='—')return null;
-    // Handle compound weights like "60,65,65" — take max
-    const nums=wtStr.toString().split(/[,x]/).map(v=>parseFloat(v)).filter(n=>!isNaN(n));
-    return nums.length?Math.max(...nums):null;
-  });
-
-  const hasData=weightData.some(v=>v!==null);
-  if(!hasData){
-    if(emptyEl){emptyEl.style.display='block';emptyEl.textContent='No weight data recorded for this exercise yet.';}
+  if(pts.length===0){
+    if(emptyEl){emptyEl.style.display='block';emptyEl.textContent='No data for this exercise yet.';}
     return;
   }
+  if(emptyEl)emptyEl.style.display='none';
 
   setTimeout(()=>{
     const ctx=document.getElementById('trend-chart');if(!ctx)return;
     charts['trend-chart']=new Chart(ctx,{
       type:'line',
       data:{
-        labels:labels,
-        datasets:[{
-          label:'Weight (kg)',
-          data:weightData,
-          borderColor:'#185FA5',
-          backgroundColor:'rgba(24,95,165,.1)',
-          tension:.3,
-          pointRadius:5,
-          pointBackgroundColor:weightData.map(v=>v!==null?'#185FA5':'transparent'),
-          fill:true,
-          spanGaps:true,
-        }]
+        labels:pts.map(p=>p.date.slice(5)),
+        datasets:[
+          {label:'Top set (kg)',data:pts.map(p=>p.wt),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.3,pointRadius:4,fill:true},
+          {label:'Est. 1RM',data:pts.map(p=>p.e1rm),borderColor:'#3B6D11',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false},
+        ]
       },
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}kg`}}},
+        plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}kg`}}},
         scales:{
           y:{ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},
-          x:{ticks:{font:{size:12}},grid:{display:false}}
+          x:{ticks:{font:{size:10}},grid:{display:false}}
         }
       }
     });
   },80);
+}
+
+// ── FOOD DIARY (Open Food Facts) ──
+const OFF_FIELDS='product_name,brands,nutriments,serving_size,code';
+function parseOffProduct(p){
+  const n=p.nutriments||{};
+  let kcal=n['energy-kcal_100g'];
+  if(kcal==null&&n['energy-kcal']!=null)kcal=n['energy-kcal'];
+  if(kcal==null&&n['energy_100g']!=null)kcal=n['energy_100g']/4.184; // kJ→kcal fallback
+  if(kcal==null)return null;
+  const base=(p.product_name||'').trim()||'Unnamed item';
+  const brand=p.brands?p.brands.split(',')[0].trim():'';
+  return {
+    name: brand?`${base} · ${brand}`:base,
+    kcal100:Math.round(kcal),
+    p100:+(+n.proteins_100g||0).toFixed(1),
+    c100:+(+n.carbohydrates_100g||0).toFixed(1),
+    f100:+(+n.fat_100g||0).toFixed(1),
+    serving:p.serving_size||'', barcode:p.code||'',
+  };
+}
+async function offSearch(q){
+  const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=20&fields=${OFF_FIELDS}`;
+  const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  return (d.products||[]).map(parseOffProduct).filter(Boolean);
+}
+async function offBarcode(code){
+  const url=`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${OFF_FIELDS}`;
+  const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  if(d.status!==1||!d.product)return null;
+  return parseOffProduct(d.product);
+}
+
+function foodEntriesFor(date){return S.foodLog.filter(e=>e.date===date);}
+function entryTotals(e){const g=(e.grams||0)/100;return {kcal:Math.round((e.kcal100||0)*g),p:+((e.p100||0)*g).toFixed(1),c:+((e.c100||0)*g).toFixed(1),f:+((e.f100||0)*g).toFixed(1)};}
+function pushFood(prod,grams){
+  S.foodLog.push({id:Date.now(),date:S.foodViewDate||TODAYSTR,name:prod.name,grams:grams||100,
+    kcal100:prod.kcal100,p100:prod.p100,c100:prod.c100,f100:prod.f100,barcode:prod.barcode||''});
+  saveState();renderFood();
+}
+function deleteFoodEntry(id){S.foodLog=S.foodLog.filter(e=>e.id!==id);saveState();renderFood();}
+function foodNav(delta){const d=new Date((S.foodViewDate||TODAYSTR)+'T12:00:00');d.setDate(d.getDate()+delta);S.foodViewDate=d.toISOString().split('T')[0];saveState();renderFood();}
+function foodToday(){S.foodViewDate=TODAYSTR;saveState();renderFood();}
+
+function macroMetric(label,val,goal,unit,isKcal){
+  const pct=goal>0?Math.min(100,Math.round(val/goal*100)):0;
+  const over=goal>0&&val>goal;
+  const color=isKcal?(over?'var(--red)':'var(--blue)'):(over?'var(--amber)':'var(--green)');
+  return `<div class="mc"><div class="ml">${label}</div><div class="mv">${val}<span style="font-size:11px;color:var(--text3);font-weight:400"> / ${goal}${unit==='g'?'g':''}</span></div><div class="pb" style="margin-top:7px"><div class="pbf" style="width:${pct}%;background:${color}"></div></div></div>`;
+}
+
+function renderFood(){
+  if(!S.foodViewDate)S.foodViewDate=TODAYSTR;
+  if(!S.nutritionGoals)S.nutritionGoals={kcal:2200,protein:150,carbs:220,fat:70};
+  const date=S.foodViewDate,g=S.nutritionGoals;
+  const lbl=document.getElementById('food-date-label');if(lbl)lbl.textContent=fmtDate(date)+(date===TODAYSTR?' · Today':'');
+  const entries=foodEntriesFor(date);
+  let kcal=0,p=0,c=0,f=0;
+  entries.forEach(e=>{const t=entryTotals(e);kcal+=t.kcal;p+=t.p;c+=t.c;f+=t.f;});
+  kcal=Math.round(kcal);p=Math.round(p);c=Math.round(c);f=Math.round(f);
+  const mEl=document.getElementById('food-metrics');
+  if(mEl)mEl.innerHTML=macroMetric('Calories',kcal,g.kcal,'kcal',true)+macroMetric('Protein',p,g.protein,'g')+macroMetric('Carbs',c,g.carbs,'g')+macroMetric('Fat',f,g.fat,'g');
+  // Net vs Calories-burned page
+  const burned=Math.round((S.calorieLog||[]).filter(x=>x.date===date).reduce((a,x)=>a+x.calories,0));
+  const net=kcal-burned;
+  const netEl=document.getElementById('food-net');
+  if(netEl)netEl.innerHTML=`
+    <div class="rb">
+      <div>
+        <div style="font-size:26px;font-weight:600;color:${net<=g.kcal?'var(--green)':'var(--text)'}">${net} <span style="font-size:13px;color:var(--text3);font-weight:400">kcal net</span></div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">Eaten ${kcal} − Burned ${burned}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:var(--text3)">Calorie goal</div>
+        <div style="font-size:15px;font-weight:600;color:${kcal>g.kcal?'var(--red)':'var(--text)'}">${kcal} / ${g.kcal}</div>
+      </div>
+    </div>`;
+  // List
+  const listEl=document.getElementById('food-list');
+  if(listEl)listEl.innerHTML=entries.length?entries.map(e=>{const t=entryTotals(e);return `
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border)">
+      <div><div style="font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.grams}g · P${t.p} C${t.c} F${t.f}</div></div>
+      <span style="font-size:14px;font-weight:600">${t.kcal} <span style="font-size:11px;color:var(--text3);font-weight:400">kcal</span></span>
+      <button class="btn-icon" onclick="deleteFoodEntry(${e.id})">✕</button>
+    </div>`;}).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center">Nothing logged for this day yet. Search a food or scan a barcode above.</div>';
+}
+
+let _foodResults=[];
+function parseServingGrams(s){if(!s)return null;const m=String(s).match(/([\d.]+)\s*g/);return m?Math.round(parseFloat(m[1])):null;}
+function renderFoodResults(items){
+  _foodResults=items;
+  const box=document.getElementById('food-results');if(!box)return;
+  if(!items.length){box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">No matches. Try different words, scan the barcode, or add it manually.</div>';return;}
+  box.innerHTML='<div style="font-size:11px;color:var(--text3);margin:8px 0 4px">Tap Add — adjust grams first if needed</div>'+items.map((p,i)=>{
+    const defG=parseServingGrams(p.serving)||100;
+    return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border)">
+      <div><div style="font-size:13px">${p.name}</div><div style="font-size:11px;color:var(--text3)">${p.kcal100} kcal/100g · P${p.p100} C${p.c100} F${p.f100}${p.serving?' · serving '+p.serving:''}</div></div>
+      <div class="fl" style="gap:3px"><input type="number" class="inp inp-sm" id="fr-g-${i}" value="${defG}" style="width:60px;text-align:right"><span style="font-size:11px;color:var(--text3)">g</span></div>
+      <button class="btn btnp" style="font-size:11px" onclick="addFoodFromResult(${i})">Add</button>
+    </div>`;
+  }).join('');
+}
+function addFoodFromResult(i){const p=_foodResults[i];if(!p)return;const grams=parseFloat(document.getElementById('fr-g-'+i)?.value)||100;pushFood(p,grams);}
+async function searchFood(){
+  const q=(document.getElementById('food-search')?.value||'').trim();
+  const box=document.getElementById('food-results');
+  if(!q){if(box)box.innerHTML='';return;}
+  if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Searching…</div>';
+  try{renderFoodResults(await offSearch(q));}
+  catch(e){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Search failed — check your connection, or add it manually.</div>';}
+}
+function toggleManualFood(){const el=document.getElementById('food-manual');if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function addManualFood(){
+  const name=(document.getElementById('fm-name')?.value||'').trim();
+  const kcal=parseFloat(document.getElementById('fm-kcal')?.value)||0;
+  const grams=parseFloat(document.getElementById('fm-grams')?.value)||100;
+  const p=parseFloat(document.getElementById('fm-p')?.value)||0;
+  const c=parseFloat(document.getElementById('fm-c')?.value)||0;
+  const f=parseFloat(document.getElementById('fm-f')?.value)||0;
+  if(!name||kcal<=0){alert('Enter at least a name and calories.');return;}
+  const factor=grams>0?100/grams:1; // store as per-100g so totals recompute consistently
+  pushFood({name,kcal100:Math.round(kcal*factor),p100:+(p*factor).toFixed(1),c100:+(c*factor).toFixed(1),f100:+(f*factor).toFixed(1),barcode:''},grams);
+  ['fm-name','fm-kcal','fm-grams','fm-p','fm-c','fm-f'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+// Barcode scanning (lazy-loads ZXing; gracefully degrades if camera/library unavailable)
+let _scanner=null;
+function loadZX(){return new Promise((res,rej)=>{
+  if(typeof ZXing!=='undefined')return res();
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+  s.onload=()=>res();s.onerror=()=>rej(new Error('Could not load the scanner library'));
+  document.head.appendChild(s);
+});}
+async function startScan(){
+  const overlay=document.getElementById('scan-overlay');if(!overlay)return;
+  overlay.style.display='flex';
+  try{
+    await loadZX();
+    _scanner=new ZXing.BrowserMultiFormatReader();
+    const video=document.getElementById('scan-video');
+    await _scanner.decodeFromVideoDevice(null,video,(result)=>{
+      if(result){const code=result.getText();stopScan();onBarcode(code);}
+    });
+  }catch(e){
+    stopScan();
+    alert('Camera scan unavailable ('+e.message+'). You can search by name or add the food manually.');
+  }
+}
+function stopScan(){
+  const overlay=document.getElementById('scan-overlay');
+  try{if(_scanner){_scanner.reset();_scanner=null;}}catch(e){}
+  if(overlay)overlay.style.display='none';
+}
+async function onBarcode(code){
+  const box=document.getElementById('food-results');
+  if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Looking up barcode '+code+'…</div>';
+  try{
+    const prod=await offBarcode(code);
+    if(!prod){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">No match for that barcode. Search by name or add it manually.</div>';return;}
+    renderFoodResults([prod]);
+  }catch(e){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Barcode lookup failed. Try again, or add it manually.</div>';}
 }
 
 // Nav — includes settings
@@ -1721,7 +2618,7 @@ window.nav = function(id, el){
   document.getElementById('sb-overlay').classList.remove('open');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,food:renderFood};
   handlers[id]?.();
 };
 
@@ -1743,7 +2640,10 @@ setTimeout(async()=>{
       if(remote){
         const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
-          'timeProjects','timeLog','calorieLog','projectNotes'];
+          'timeProjects','timeLog','calorieLog','projectNotes',
+          'exercises','workoutTemplates','workoutSessions','workoutMigrated',
+          'budgetCategories','budgetStages','stageBudgets','transactions','activeBudgetStage','budgetStagesV2',
+          'foodLog','nutritionGoals','foodViewDate'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
