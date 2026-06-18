@@ -287,6 +287,12 @@
     <div id="budget-stages"></div>
   </div>
 
+  <!-- Spending by pocket (per month) -->
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Spending by pocket</div><span style="font-size:11px;color:var(--text3)">this month</span></div>
+    <div id="budget-by-pocket"></div>
+  </div>
+
   <!-- Transactions -->
   <div class="card mb16">
     <div class="flb mb12"><div class="st" style="margin:0">Spending this month</div><span id="budget-spent-total" class="tag tr"></span></div>
@@ -1104,6 +1110,7 @@ function renderBudget(){
     <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#3B6D11':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
 
   renderStages();
+  renderSpendingByPocket();
   renderTransactions();
 
   document.getElementById('pockets-list').innerHTML=S.pockets.length?S.pockets.map(p=>`
@@ -1171,6 +1178,37 @@ function renderStages(){
       ${safe}
     </div>`;
   }).join('')+'</div>';
+}
+
+// Spending grouped by pocket, for the viewed month only (fully per-month).
+function renderSpendingByPocket(){
+  const el=document.getElementById('budget-by-pocket');if(!el)return;
+  if(!S.pockets.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No pockets yet — add your Revolut pockets in the card below and your spending will break down by pocket here.</div>';return;}
+  const md=getMonthData(S.budgetViewMonth);
+  const monthTx=txInMonth(S.budgetViewMonth);
+  const rows=S.pockets.map(p=>{
+    const amount=md.pocketAmounts[p.id]||0;
+    const spent=monthTx.filter(t=>t.categoryId===p.id).reduce((a,t)=>a+t.amount,0);
+    const pct=amount>0?Math.min(100,Math.round(spent/amount*100)):(spent>0?100:0);
+    const over=amount>0&&spent>amount;
+    const near=amount>0&&spent>=amount*0.8&&!over;
+    const bar=over?'var(--red)':near?'var(--amber)':(p.color||'var(--blue)');
+    return `<div style="margin-bottom:13px">
+      <div class="flb" style="margin-bottom:5px">
+        <div class="fl" style="gap:8px"><div style="width:9px;height:9px;border-radius:50%;background:${p.color}"></div><span style="font-size:13px">${p.name}</span></div>
+        <span style="font-size:12px;color:${over?'var(--red)':'var(--text2)'};font-weight:${over?'600':'400'}">${euro(spent)}${amount>0?' / '+euro(amount):''}</span>
+      </div>
+      <div class="pb"><div class="pbf" style="width:${pct}%;background:${bar}"></div></div>
+    </div>`;
+  }).join('');
+  const totalSpent=monthTx.reduce((a,t)=>a+t.amount,0);
+  const totalAmt=S.pockets.reduce((a,p)=>a+(md.pocketAmounts[p.id]||0),0);
+  el.innerHTML=rows+`
+    <div class="flb" style="margin-top:6px;padding-top:12px;border-top:0.5px solid var(--border)">
+      <span style="font-size:13px;font-weight:600">Total spent</span>
+      <span style="font-size:13px;font-weight:600;color:${totalAmt>0&&totalSpent>totalAmt?'var(--red)':'var(--text)'}">${euro(totalSpent)}${totalAmt>0?' / '+euro(totalAmt):''}</span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">Each pocket shows what you've spent against it this month vs the amount in that pocket. Bars turn amber at 80% and red when you go over. All per-month.</div>`;
 }
 
 function renderTransactions(){
