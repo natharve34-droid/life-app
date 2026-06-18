@@ -205,7 +205,6 @@
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
     <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
-    <div class="ni" onclick="nav('food',this)"><span class="ni-ico">◎</span>Food diary</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -286,15 +285,6 @@
   <div class="card mb16">
     <div class="st">Pay stages</div>
     <div id="budget-stages"></div>
-  </div>
-
-  <!-- Budget vs actual per category, per stage -->
-  <div class="card mb16">
-    <div class="flb mb12">
-      <div class="st" style="margin:0">Budget vs actual</div>
-      <div class="fl" id="bva-tabs" style="gap:4px;flex-wrap:wrap"></div>
-    </div>
-    <div id="budget-vs-actual"></div>
   </div>
 
   <!-- Transactions -->
@@ -508,68 +498,7 @@
   </div>
 </div>
 
-<!-- FOOD DIARY -->
-<div id="page-food" class="page">
-  <div class="ph rb">
-    <div><div class="pt">Food diary</div><div class="ps">Search foods or scan a barcode · powered by Open Food Facts</div></div>
-    <div class="fl" style="flex-wrap:wrap;gap:6px;">
-      <button class="btn" onclick="openModal('goals')">Goals</button>
-    </div>
-  </div>
-
-  <!-- Day selector -->
-  <div class="fl mb16" style="gap:10px">
-    <button class="btn" onclick="foodNav(-1)" aria-label="Previous day">‹</button>
-    <div id="food-date-label" style="font-size:14px;font-weight:600;min-width:180px;text-align:center"></div>
-    <button class="btn" onclick="foodNav(1)" aria-label="Next day">›</button>
-    <button class="btn" onclick="foodToday()" style="font-size:12px">Today</button>
-  </div>
-
-  <div class="g4 mb16" id="food-metrics"></div>
-  <div class="card mb16" id="food-net-card"><div class="st">Net calories</div><div id="food-net"></div></div>
-
-  <!-- Add food -->
-  <div class="card mb16">
-    <div class="flb mb12"><div class="st" style="margin:0">Add food</div>
-      <div class="fl" style="gap:6px">
-        <button class="btn" style="font-size:12px" onclick="startScan()">⌑ Scan barcode</button>
-        <button class="btn" style="font-size:12px" onclick="toggleManualFood()">Manual entry</button>
-      </div>
-    </div>
-    <div class="fl" style="gap:8px;margin-bottom:6px">
-      <input class="inp" id="food-search" placeholder="Search a food, e.g. 'chicken breast' or 'weetabix'" onkeydown="if(event.key==='Enter')searchFood()" style="flex:1">
-      <button class="btn btnp" onclick="searchFood()">Search</button>
-    </div>
-    <div id="food-manual" style="display:none;background:var(--bg2);border-radius:var(--radius);padding:12px;margin:8px 0">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Enter the values for the amount you ate (good for fresh food or anything not in the database).</div>
-      <div class="g2" style="gap:8px">
-        <div class="fr"><label class="fl2">Name</label><input class="inp" id="fm-name" placeholder="e.g. Banana"></div>
-        <div class="fr"><label class="fl2">Amount (g)</label><input type="number" class="inp" id="fm-grams" placeholder="100"></div>
-        <div class="fr"><label class="fl2">Calories (kcal)</label><input type="number" class="inp" id="fm-kcal" placeholder="0"></div>
-        <div class="fr"><label class="fl2">Protein (g)</label><input type="number" class="inp" id="fm-p" placeholder="0"></div>
-        <div class="fr"><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="fm-c" placeholder="0"></div>
-        <div class="fr"><label class="fl2">Fat (g)</label><input type="number" class="inp" id="fm-f" placeholder="0"></div>
-      </div>
-      <button class="btn btnp" style="font-size:12px" onclick="addManualFood()">Add to diary</button>
-    </div>
-    <div id="food-results"></div>
-  </div>
-
-  <!-- Today's log -->
-  <div class="card">
-    <div class="st">Logged this day</div>
-    <div id="food-list"></div>
-  </div>
-</div>
-
 </main>
-
-<!-- BARCODE SCAN OVERLAY -->
-<div id="scan-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <video id="scan-video" playsinline style="width:100%;max-width:420px;border-radius:12px;background:#000"></video>
-  <div style="color:#fff;font-size:13px;margin-top:14px">Point the camera at a barcode</div>
-  <button class="btn" style="margin-top:16px;background:#fff;color:#111" onclick="stopScan()">Cancel</button>
-</div>
 
 <div id="sync-status" class="sync-badge"></div>
 </div>
@@ -601,23 +530,12 @@ const DEFAULT_STATE = {
   bills:[],
   pockets:[],
   monthlyData:{},
-  budgetCategories:[
-    {id:1,name:'Groceries',color:'#3B6D11'},
-    {id:2,name:'Eating out',color:'#BA7517'},
-    {id:3,name:'Transport',color:'#185FA5'},
-    {id:4,name:'Shopping',color:'#534AB7'},
-    {id:5,name:'Fun & social',color:'#D4537E'},
-    {id:6,name:'Health',color:'#1D9E75'},
-    {id:7,name:'Other',color:'#888780'},
-  ],
   budgetStages:[
     {id:1,name:'Stage 1',startDay:1,endDay:15},
     {id:2,name:'Stage 2',startDay:16,endDay:31},
   ],
   budgetStagesV2:false, // migration flag: collapse old 3-stage setup to 2
-  stageBudgets:{},      // stageBudgets[stageId][categoryId] = planned amount
-  transactions:[],      // {id, amount, categoryId, date, note}
-  activeBudgetStage:1,  // selected tab in Budget vs actual
+  transactions:[],      // {id, amount, categoryId(=pocket id), date, note}
   savings:[],
   projects:[],
   wishlist:[],
@@ -661,9 +579,6 @@ const DEFAULT_STATE = {
   timeLog:[],
   calorieLog:[],
   projectNotes:{},
-  foodLog:[],            // {id,date,name,grams,kcal100,p100,c100,f100,barcode}
-  foodViewDate:null,
-  nutritionGoals:{kcal:2200,protein:150,carbs:220,fat:70},
 };
 
 // ── ONEDRIVE SYNC ──
@@ -1167,7 +1082,6 @@ function renderBudget(){
       {id:1,name:'Stage 1',startDay:1,endDay:15},
       {id:2,name:'Stage 2',startDay:16,endDay:31},
     ];
-    S.activeBudgetStage=1;
     S.budgetStagesV2=true;
     saveState();
   }
@@ -1176,6 +1090,7 @@ function renderBudget(){
   const mLabel=`${MONTHS[mo-1]} ${yr}`;
   document.getElementById('budget-month-label').textContent=mLabel;
   const md=getMonthData(S.budgetViewMonth);
+  const totalPockets=S.pockets.reduce((a,p)=>a+(md.pocketAmounts[p.id]||0),0);
   const totalIncome=md.income.reduce((a,i)=>a+i.amount,0);
   const activeBills=S.bills.filter(b=>b.active);
   const totalBills=activeBills.reduce((a,b)=>a+b.amount,0);
@@ -1183,14 +1098,12 @@ function renderBudget(){
   const totalSpent=monthTx.reduce((a,t)=>a+t.amount,0);
   const left=totalIncome-totalBills-totalSpent;
   document.getElementById('bm').innerHTML=`
+    <div class="mc" style="outline:1.5px solid var(--blue);outline-offset:-1px"><div class="ml">Pockets total</div><div class="mv">${euro(totalPockets)}</div><div class="ms">${mLabel} · all pockets</div></div>
     <div class="mc"><div class="ml">Income</div><div class="mv">${euro(totalIncome)}</div><div class="ms">${mLabel}</div></div>
-    <div class="mc"><div class="ml">Bills</div><div class="mv">${euro(totalBills)}</div><div class="ms">Active recurring</div></div>
     <div class="mc"><div class="ml">Spent</div><div class="mv">${euro(totalSpent)}</div><div class="ms">${monthTx.length} transaction${monthTx.length===1?'':'s'}</div></div>
     <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#3B6D11':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
 
   renderStages();
-  renderBVATabs();
-  renderBudgetVsActual();
   renderTransactions();
 
   document.getElementById('pockets-list').innerHTML=S.pockets.length?S.pockets.map(p=>`
@@ -1223,16 +1136,9 @@ function renderBudget(){
     </div>`;
 }
 
-// ── BUDGET: stages, categories, transactions ──
+// ── BUDGET: stages, transactions ──
 const dayOfMonth=dateStr=>parseInt(dateStr.split('-')[2],10);
 function txInMonth(key){return S.transactions.filter(t=>t.date.slice(0,7)===key);}
-function getStageBudget(stageId,catId){return (S.stageBudgets[stageId]&&S.stageBudgets[stageId][catId])||0;}
-function setStageBudget(stageId,catId,val){
-  if(!S.stageBudgets[stageId])S.stageBudgets[stageId]={};
-  S.stageBudgets[stageId][catId]=parseFloat(val)||0;
-  saveState();
-}
-function setStageBudgetInput(stageId,catId,val){setStageBudget(stageId,catId,val);renderBudgetVsActual();}
 
 function renderStages(){
   const el=document.getElementById('budget-stages');if(!el)return;
@@ -1265,50 +1171,6 @@ function renderStages(){
       ${safe}
     </div>`;
   }).join('')+'</div>';
-}
-
-function renderBVATabs(){
-  const el=document.getElementById('bva-tabs');if(!el)return;
-  if(!S.budgetStages.find(s=>s.id===S.activeBudgetStage))S.activeBudgetStage=S.budgetStages[0]?.id;
-  el.innerHTML=S.budgetStages.map(st=>`<button class="wkb ${S.activeBudgetStage===st.id?'active':''}" onclick="selBudgetStage(${st.id})">${st.name}</button>`).join('');
-}
-function selBudgetStage(id){S.activeBudgetStage=id;saveState();renderBVATabs();renderBudgetVsActual();}
-
-function renderBudgetVsActual(){
-  const el=document.getElementById('budget-vs-actual');if(!el)return;
-  const st=S.budgetStages.find(s=>s.id===S.activeBudgetStage)||S.budgetStages[0];
-  if(!st){el.innerHTML='<div style="color:var(--text3);font-size:13px">No stages defined.</div>';return;}
-  const cats=S.pockets;
-  if(!cats.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No pockets yet. Add your Revolut pockets with “+ Pocket” below and they’ll appear here to budget against.</div>';return;}
-  const stageTx=txInMonth(S.budgetViewMonth).filter(t=>{const d=dayOfMonth(t.date);return d>=st.startDay&&d<=st.endDay;});
-  const rows=cats.map(cat=>{
-    const budget=getStageBudget(st.id,cat.id);
-    const actual=stageTx.filter(t=>t.categoryId===cat.id).reduce((a,t)=>a+t.amount,0);
-    const pct=budget>0?Math.min(100,Math.round(actual/budget*100)):(actual>0?100:0);
-    const over=budget>0&&actual>budget;
-    const near=budget>0&&actual>=budget*0.8&&!over;
-    const barColor=over?'var(--red)':near?'var(--amber)':(cat.color||'var(--blue)');
-    return `<div style="margin-bottom:13px">
-      <div class="flb" style="margin-bottom:5px">
-        <div class="fl" style="gap:8px"><div style="width:9px;height:9px;border-radius:50%;background:${cat.color||'var(--blue)'}"></div><span style="font-size:13px">${cat.name}</span></div>
-        <div class="fl" style="gap:6px">
-          <span style="font-size:12px;color:${over?'var(--red)':'var(--text2)'};font-weight:${over?'600':'400'}">${euro(actual)}</span>
-          <span style="font-size:12px;color:var(--text3)">/</span>
-          <input type="number" class="inp" style="width:72px;text-align:right;padding:4px 7px;font-size:12px" value="${budget||''}" placeholder="0" onchange="setStageBudgetInput(${st.id},${cat.id},this.value)">
-        </div>
-      </div>
-      <div class="pb"><div class="pbf" style="width:${pct}%;background:${barColor}"></div></div>
-    </div>`;
-  }).join('');
-  const totBudget=cats.reduce((a,c)=>a+getStageBudget(st.id,c.id),0);
-  const totActual=stageTx.reduce((a,t)=>a+t.amount,0);
-  const overTotal=totBudget>0&&totActual>totBudget;
-  el.innerHTML=rows+`
-    <div class="flb" style="margin-top:6px;padding-top:12px;border-top:0.5px solid var(--border)">
-      <span style="font-size:13px;font-weight:600">${st.name} — spent vs planned</span>
-      <span style="font-size:13px;font-weight:600;color:${overTotal?'var(--red)':'var(--text)'}">${euro(totActual)} / ${euro(totBudget)}</span>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px">Set a planned amount per pocket for this stage. Bars turn amber at 80% and red when you go over.</div>`;
 }
 
 function renderTransactions(){
@@ -1372,49 +1234,13 @@ function removeStageRow(idx){
   editStages();
 }
 
-// Category editor
-function editCategories(){
-  S.activeModal={type:'categories'};
-  document.getElementById('modal-title').textContent='Spending categories';
-  renderCategoriesModalBody();
-  document.getElementById('modal').style.display='flex';
-}
-function renderCategoriesModalBody(){
-  const body=document.getElementById('modal-body');if(!body)return;
-  body.innerHTML=`
-    <div id="cats-edit">${S.budgetCategories.map(c=>`
-      <div class="fl" style="gap:8px;margin-bottom:8px">
-        <div style="width:11px;height:11px;border-radius:50%;background:${c.color};min-width:11px"></div>
-        <input class="inp" value="${c.name}" onchange="renameCategory(${c.id},this.value)" style="flex:1">
-        <button class="btn-icon" onclick="deleteCategory(${c.id})">✕</button>
-      </div>`).join('')}</div>
-    <div class="fl" style="gap:8px;margin-top:10px">
-      <input class="inp" id="new-cat-name" placeholder="New category name" style="flex:1">
-      <button class="btn btnp" onclick="addCategory()">Add</button>
-    </div>`;
-}
-function renameCategory(id,name){const c=S.budgetCategories.find(x=>x.id===id);if(c&&name.trim()){c.name=name.trim();saveState();}}
-function deleteCategory(id){
-  S.budgetCategories=S.budgetCategories.filter(c=>c.id!==id);
-  Object.keys(S.stageBudgets).forEach(sid=>{if(S.stageBudgets[sid])delete S.stageBudgets[sid][id];});
-  saveState();renderCategoriesModalBody();
-}
-function addCategory(){
-  const inp=document.getElementById('new-cat-name');if(!inp)return;
-  const name=inp.value.trim();if(!name)return;
-  const palette=['#3B6D11','#BA7517','#185FA5','#534AB7','#D4537E','#1D9E75','#A32D2D','#888780'];
-  const id=Date.now();
-  S.budgetCategories.push({id,name,color:palette[S.budgetCategories.length%palette.length]});
-  saveState();renderCategoriesModalBody();
-}
 function updatePocketAmount(pid,val){
   getMonthData(S.budgetViewMonth||curKey).pocketAmounts[pid]=parseFloat(val)||0;
   saveState();renderBudget();
 }
 function deletePocket(pid){
-  if(!confirm('Remove this pocket? Its budgets are cleared; logged spend stays but shows as Uncategorised.'))return;
+  if(!confirm('Remove this pocket? Logged spend against it stays but shows as Uncategorised.'))return;
   S.pockets=S.pockets.filter(p=>p.id!==pid);
-  Object.keys(S.stageBudgets).forEach(sid=>{if(S.stageBudgets[sid])delete S.stageBudgets[sid][pid];});
   Object.values(S.monthlyData).forEach(md=>{if(md.pocketAmounts)delete md.pocketAmounts[pid];});
   saveState();renderBudget();
 }
@@ -2017,12 +1843,12 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',goals:'Daily nutrition goals'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
     spend:`<div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0.00" step="0.01" inputmode="decimal"></div><div class="fr"><label class="fl2">Pocket</label><select class="inp" id="m-tcat">${S.pockets.length?S.pockets.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''):'<option value="">Add a pocket first</option>'}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note (optional)</label><input class="inp" id="m-tnote" placeholder="e.g. Tesco, lunch"></div>`,
-    goals:`<div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">Set your daily targets. These are just your own goals — the diary shows progress against them, it won't stop you logging anything.</div><div class="g2" style="gap:8px"><div class="fr"><label class="fl2">Calories (kcal)</label><input type="number" class="inp" id="m-gkcal" value="${(S.nutritionGoals||{}).kcal||2200}"></div><div class="fr"><label class="fl2">Protein (g)</label><input type="number" class="inp" id="m-gp" value="${(S.nutritionGoals||{}).protein||150}"></div><div class="fr"><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="m-gc" value="${(S.nutritionGoals||{}).carbs||220}"></div><div class="fr"><label class="fl2">Fat (g)</label><input type="number" class="inp" id="m-gf" value="${(S.nutritionGoals||{}).fat||70}"></div></div>`,
+
     income:`<div class="fr"><label class="fl2">Source name</label><input class="inp" id="m-name" placeholder="e.g. Salary"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Which stage?</label><select class="inp" id="m-istage">${S.budgetStages.map(s=>`<option value="${s.id}">${s.name} (days ${s.startDay}–${s.endDay>=31?'end':s.endDay})</option>`).join('')}</select></div><div class="fr"><label class="fl2">Frequency</label><select class="inp" id="m-freq"><option>Monthly</option><option>Weekly</option><option>Variable</option></select></div>`,
     bill:`<div class="fr"><label class="fl2">Name</label><input class="inp" id="m-name" placeholder="e.g. Netflix"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Due day</label><input type="number" class="inp" id="m-due" placeholder="1–31" min="1" max="31"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Transport</option><option>Other</option></select></div>`,
     saving:`<div class="fr"><label class="fl2">Label (e.g. May 2026)</label><input class="inp" id="m-label" placeholder="Month Year"></div><div class="fr"><label class="fl2">Amount saved (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div>`,
@@ -2171,14 +1997,7 @@ function saveModal(){
   } else if(m.type==='stages'){
     const rows=readStageRows();
     if(rows.length)S.budgetStages=rows.map((s,i)=>({id:i+1,...s}));
-    if(!S.budgetStages.find(s=>s.id===S.activeBudgetStage))S.activeBudgetStage=S.budgetStages[0]?.id;
     saveState();renderBudget();
-  } else if(m.type==='categories'){
-    // Edits already applied live; just persist and refresh
-    saveState();renderBudget();
-  } else if(m.type==='goals'){
-    S.nutritionGoals={kcal:parseInt(g('m-gkcal'),10)||0,protein:parseInt(g('m-gp'),10)||0,carbs:parseInt(g('m-gc'),10)||0,fat:parseInt(g('m-gf'),10)||0};
-    saveState();renderFood();
   }
   closeModal();renderHome();
 }
@@ -2444,170 +2263,6 @@ function renderTrend(){
   },80);
 }
 
-// ── FOOD DIARY (Open Food Facts) ──
-const OFF_FIELDS='product_name,brands,nutriments,serving_size,code';
-function parseOffProduct(p){
-  const n=p.nutriments||{};
-  let kcal=n['energy-kcal_100g'];
-  if(kcal==null&&n['energy-kcal']!=null)kcal=n['energy-kcal'];
-  if(kcal==null&&n['energy_100g']!=null)kcal=n['energy_100g']/4.184; // kJ→kcal fallback
-  if(kcal==null)return null;
-  const base=(p.product_name||'').trim()||'Unnamed item';
-  const brand=p.brands?p.brands.split(',')[0].trim():'';
-  return {
-    name: brand?`${base} · ${brand}`:base,
-    kcal100:Math.round(kcal),
-    p100:+(+n.proteins_100g||0).toFixed(1),
-    c100:+(+n.carbohydrates_100g||0).toFixed(1),
-    f100:+(+n.fat_100g||0).toFixed(1),
-    serving:p.serving_size||'', barcode:p.code||'',
-  };
-}
-async function offSearch(q){
-  const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=20&fields=${OFF_FIELDS}`;
-  const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
-  const d=await r.json();
-  return (d.products||[]).map(parseOffProduct).filter(Boolean);
-}
-async function offBarcode(code){
-  const url=`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${OFF_FIELDS}`;
-  const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
-  const d=await r.json();
-  if(d.status!==1||!d.product)return null;
-  return parseOffProduct(d.product);
-}
-
-function foodEntriesFor(date){return S.foodLog.filter(e=>e.date===date);}
-function entryTotals(e){const g=(e.grams||0)/100;return {kcal:Math.round((e.kcal100||0)*g),p:+((e.p100||0)*g).toFixed(1),c:+((e.c100||0)*g).toFixed(1),f:+((e.f100||0)*g).toFixed(1)};}
-function pushFood(prod,grams){
-  S.foodLog.push({id:Date.now(),date:S.foodViewDate||TODAYSTR,name:prod.name,grams:grams||100,
-    kcal100:prod.kcal100,p100:prod.p100,c100:prod.c100,f100:prod.f100,barcode:prod.barcode||''});
-  saveState();renderFood();
-}
-function deleteFoodEntry(id){S.foodLog=S.foodLog.filter(e=>e.id!==id);saveState();renderFood();}
-function foodNav(delta){const d=new Date((S.foodViewDate||TODAYSTR)+'T12:00:00');d.setDate(d.getDate()+delta);S.foodViewDate=d.toISOString().split('T')[0];saveState();renderFood();}
-function foodToday(){S.foodViewDate=TODAYSTR;saveState();renderFood();}
-
-function macroMetric(label,val,goal,unit,isKcal){
-  const pct=goal>0?Math.min(100,Math.round(val/goal*100)):0;
-  const over=goal>0&&val>goal;
-  const color=isKcal?(over?'var(--red)':'var(--blue)'):(over?'var(--amber)':'var(--green)');
-  return `<div class="mc"><div class="ml">${label}</div><div class="mv">${val}<span style="font-size:11px;color:var(--text3);font-weight:400"> / ${goal}${unit==='g'?'g':''}</span></div><div class="pb" style="margin-top:7px"><div class="pbf" style="width:${pct}%;background:${color}"></div></div></div>`;
-}
-
-function renderFood(){
-  if(!S.foodViewDate)S.foodViewDate=TODAYSTR;
-  if(!S.nutritionGoals)S.nutritionGoals={kcal:2200,protein:150,carbs:220,fat:70};
-  const date=S.foodViewDate,g=S.nutritionGoals;
-  const lbl=document.getElementById('food-date-label');if(lbl)lbl.textContent=fmtDate(date)+(date===TODAYSTR?' · Today':'');
-  const entries=foodEntriesFor(date);
-  let kcal=0,p=0,c=0,f=0;
-  entries.forEach(e=>{const t=entryTotals(e);kcal+=t.kcal;p+=t.p;c+=t.c;f+=t.f;});
-  kcal=Math.round(kcal);p=Math.round(p);c=Math.round(c);f=Math.round(f);
-  const mEl=document.getElementById('food-metrics');
-  if(mEl)mEl.innerHTML=macroMetric('Calories',kcal,g.kcal,'kcal',true)+macroMetric('Protein',p,g.protein,'g')+macroMetric('Carbs',c,g.carbs,'g')+macroMetric('Fat',f,g.fat,'g');
-  // Net vs Calories-burned page
-  const burned=Math.round((S.calorieLog||[]).filter(x=>x.date===date).reduce((a,x)=>a+x.calories,0));
-  const net=kcal-burned;
-  const netEl=document.getElementById('food-net');
-  if(netEl)netEl.innerHTML=`
-    <div class="rb">
-      <div>
-        <div style="font-size:26px;font-weight:600;color:${net<=g.kcal?'var(--green)':'var(--text)'}">${net} <span style="font-size:13px;color:var(--text3);font-weight:400">kcal net</span></div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px">Eaten ${kcal} − Burned ${burned}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;color:var(--text3)">Calorie goal</div>
-        <div style="font-size:15px;font-weight:600;color:${kcal>g.kcal?'var(--red)':'var(--text)'}">${kcal} / ${g.kcal}</div>
-      </div>
-    </div>`;
-  // List
-  const listEl=document.getElementById('food-list');
-  if(listEl)listEl.innerHTML=entries.length?entries.map(e=>{const t=entryTotals(e);return `
-    <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border)">
-      <div><div style="font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.grams}g · P${t.p} C${t.c} F${t.f}</div></div>
-      <span style="font-size:14px;font-weight:600">${t.kcal} <span style="font-size:11px;color:var(--text3);font-weight:400">kcal</span></span>
-      <button class="btn-icon" onclick="deleteFoodEntry(${e.id})">✕</button>
-    </div>`;}).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center">Nothing logged for this day yet. Search a food or scan a barcode above.</div>';
-}
-
-let _foodResults=[];
-function parseServingGrams(s){if(!s)return null;const m=String(s).match(/([\d.]+)\s*g/);return m?Math.round(parseFloat(m[1])):null;}
-function renderFoodResults(items){
-  _foodResults=items;
-  const box=document.getElementById('food-results');if(!box)return;
-  if(!items.length){box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">No matches. Try different words, scan the barcode, or add it manually.</div>';return;}
-  box.innerHTML='<div style="font-size:11px;color:var(--text3);margin:8px 0 4px">Tap Add — adjust grams first if needed</div>'+items.map((p,i)=>{
-    const defG=parseServingGrams(p.serving)||100;
-    return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border)">
-      <div><div style="font-size:13px">${p.name}</div><div style="font-size:11px;color:var(--text3)">${p.kcal100} kcal/100g · P${p.p100} C${p.c100} F${p.f100}${p.serving?' · serving '+p.serving:''}</div></div>
-      <div class="fl" style="gap:3px"><input type="number" class="inp inp-sm" id="fr-g-${i}" value="${defG}" style="width:60px;text-align:right"><span style="font-size:11px;color:var(--text3)">g</span></div>
-      <button class="btn btnp" style="font-size:11px" onclick="addFoodFromResult(${i})">Add</button>
-    </div>`;
-  }).join('');
-}
-function addFoodFromResult(i){const p=_foodResults[i];if(!p)return;const grams=parseFloat(document.getElementById('fr-g-'+i)?.value)||100;pushFood(p,grams);}
-async function searchFood(){
-  const q=(document.getElementById('food-search')?.value||'').trim();
-  const box=document.getElementById('food-results');
-  if(!q){if(box)box.innerHTML='';return;}
-  if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Searching…</div>';
-  try{renderFoodResults(await offSearch(q));}
-  catch(e){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Search failed — check your connection, or add it manually.</div>';}
-}
-function toggleManualFood(){const el=document.getElementById('food-manual');if(el)el.style.display=el.style.display==='none'?'block':'none';}
-function addManualFood(){
-  const name=(document.getElementById('fm-name')?.value||'').trim();
-  const kcal=parseFloat(document.getElementById('fm-kcal')?.value)||0;
-  const grams=parseFloat(document.getElementById('fm-grams')?.value)||100;
-  const p=parseFloat(document.getElementById('fm-p')?.value)||0;
-  const c=parseFloat(document.getElementById('fm-c')?.value)||0;
-  const f=parseFloat(document.getElementById('fm-f')?.value)||0;
-  if(!name||kcal<=0){alert('Enter at least a name and calories.');return;}
-  const factor=grams>0?100/grams:1; // store as per-100g so totals recompute consistently
-  pushFood({name,kcal100:Math.round(kcal*factor),p100:+(p*factor).toFixed(1),c100:+(c*factor).toFixed(1),f100:+(f*factor).toFixed(1),barcode:''},grams);
-  ['fm-name','fm-kcal','fm-grams','fm-p','fm-c','fm-f'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-}
-
-// Barcode scanning (lazy-loads ZXing; gracefully degrades if camera/library unavailable)
-let _scanner=null;
-function loadZX(){return new Promise((res,rej)=>{
-  if(typeof ZXing!=='undefined')return res();
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
-  s.onload=()=>res();s.onerror=()=>rej(new Error('Could not load the scanner library'));
-  document.head.appendChild(s);
-});}
-async function startScan(){
-  const overlay=document.getElementById('scan-overlay');if(!overlay)return;
-  overlay.style.display='flex';
-  try{
-    await loadZX();
-    _scanner=new ZXing.BrowserMultiFormatReader();
-    const video=document.getElementById('scan-video');
-    await _scanner.decodeFromVideoDevice(null,video,(result)=>{
-      if(result){const code=result.getText();stopScan();onBarcode(code);}
-    });
-  }catch(e){
-    stopScan();
-    alert('Camera scan unavailable ('+e.message+'). You can search by name or add the food manually.');
-  }
-}
-function stopScan(){
-  const overlay=document.getElementById('scan-overlay');
-  try{if(_scanner){_scanner.reset();_scanner=null;}}catch(e){}
-  if(overlay)overlay.style.display='none';
-}
-async function onBarcode(code){
-  const box=document.getElementById('food-results');
-  if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Looking up barcode '+code+'…</div>';
-  try{
-    const prod=await offBarcode(code);
-    if(!prod){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">No match for that barcode. Search by name or add it manually.</div>';return;}
-    renderFoodResults([prod]);
-  }catch(e){if(box)box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">Barcode lookup failed. Try again, or add it manually.</div>';}
-}
-
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -2618,7 +2273,7 @@ window.nav = function(id, el){
   document.getElementById('sb-overlay').classList.remove('open');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,food:renderFood};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage};
   handlers[id]?.();
 };
 
@@ -2642,8 +2297,7 @@ setTimeout(async()=>{
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
           'timeProjects','timeLog','calorieLog','projectNotes',
           'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-          'budgetCategories','budgetStages','stageBudgets','transactions','activeBudgetStage','budgetStagesV2',
-          'foodLog','nutritionGoals','foodViewDate'];
+          'budgetStages','transactions','budgetStagesV2'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
