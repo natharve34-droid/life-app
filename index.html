@@ -488,6 +488,19 @@
   </div>
   <div class="g4 mb16" id="cal-metrics"></div>
   <div class="card mb16">
+    <div class="flb mb12">
+      <div class="st" style="margin:0">Week planner</div>
+      <div class="fl" style="gap:6px">
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(-1)">‹</button>
+        <span id="cal-week-label" style="font-size:12px;color:var(--text2);min-width:150px;text-align:center"></span>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(1)">›</button>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(0)">This week</button>
+      </div>
+    </div>
+    <div id="cal-week" style="display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;overflow-x:auto"></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Tap + on a day to plan or log a workout for that date.</div>
+  </div>
+  <div class="card mb16">
     <div class="st">This week</div>
     <div style="position:relative;height:200px"><canvas id="cal-chart" role="img" aria-label="Calories burned this week">Calorie data</canvas></div>
   </div>
@@ -2193,7 +2206,33 @@ function deleteTimeProject(id){
 }
 
 // ── CALORIES PAGE ──
+let _calWeekOffset=0;
+function calWeekNav(d){_calWeekOffset=d===0?0:_calWeekOffset+d;renderCalWeek();}
+function planCalorie(date){openModal('calorie');const el=document.getElementById('m-cdate');if(el)el.value=date;}
+function renderCalWeek(){
+  const el=document.getElementById('cal-week');if(!el)return;
+  const now=new Date();
+  const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7)+_calWeekOffset*7);monday.setHours(0,0,0,0);
+  const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
+  const lbl=document.getElementById('cal-week-label');
+  if(lbl)lbl.textContent=`${monday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-IE',{day:'numeric',month:'short'})}`;
+  el.innerHTML=days.map(d=>{
+    const ds=d.toISOString().split('T')[0];
+    const acts=(S.calorieLog||[]).filter(x=>x.date===ds);
+    const tot=acts.reduce((a,x)=>a+x.calories,0);
+    const isToday=ds===TODAYSTR;
+    return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:8px 7px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:96px">
+      <div class="flb" style="margin-bottom:6px">
+        <div><div style="font-size:11px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:14px;font-weight:600">${d.getDate()}</div></div>
+        <button class="btn-icon" style="font-size:14px;color:var(--blue)" onclick="planCalorie('${ds}')" title="Add">+</button>
+      </div>
+      ${acts.map(x=>`<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.activity}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="S.calorieLog=S.calorieLog.filter(y=>y.id!==${x.id});saveState();renderCaloriesPage();">✕</button></div>`).join('')}
+      ${tot?`<div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:right">${tot} cal</div>`:''}
+    </div>`;
+  }).join('');
+}
 function renderCaloriesPage(){
+  renderCalWeek();
   if(!S.calorieLog)S.calorieLog=[];
   const filter=document.getElementById('cal-filter')?.value||'week';
   const now=new Date();
