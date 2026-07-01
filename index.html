@@ -787,6 +787,7 @@ function loadState() {
 
 function saveState() {
   try {
+    S._ts = Date.now();
     const toSave = Object.assign({}, S);
     delete toSave.activeModal;
     LS.set('harvey-data', JSON.stringify(toSave));
@@ -2379,15 +2380,22 @@ setTimeout(async()=>{
       setSyncStatus('saving');
       // Pull first
       const remote=await pullWithToken(rr.accessToken);
-      if(remote){
+      const localTs=S._ts||0;
+      const remoteTs=(remote&&remote._ts)||0;
+      if(remote&&remoteTs>=localTs){
         const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
           'timeProjects','timeLog','calorieLog','projectNotes',
           'exercises','workoutTemplates','workoutSessions','workoutMigrated',
           'budgetStages','transactions','budgetStagesV2'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
+        S._ts=remoteTs;
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+        renderHome();
+      } else {
+        // Local data is newer than (or the cloud has none) — keep local and push it up
+        await pushWithToken(rr.accessToken,getStateToSave());
         renderHome();
       }
       // Check if we came from a push action
