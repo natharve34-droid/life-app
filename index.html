@@ -133,12 +133,24 @@
   /* SESSION LOG */
   .ses-row{display:flex;align-items:flex-start;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
   .ses-row:last-child{border-bottom:none;}
-  .sync-badge{position:fixed;bottom:14px;right:16px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;z-index:400;transition:opacity .4s;pointer-events:none;}
+  .sync-badge{position:fixed;bottom:14px;left:16px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;z-index:400;transition:opacity .4s;pointer-events:none;}
   .sync-badge:empty{opacity:0;}
   .sync-saving{background:var(--amber-bg);color:var(--amber-text);}
   .sync-ok{background:var(--green-bg);color:var(--green-text);}
   .sync-err{background:var(--red-bg);color:var(--red-text);}
   .sync-warn{background:var(--amber-bg);color:var(--amber-text);}
+
+  /* FAB */
+  .fab-wrap{position:fixed;right:20px;bottom:24px;z-index:410;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-bottom:4px;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .15s,transform .15s;}
+  .fab-menu.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .fab-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:24px;background:var(--bg);border:0.5px solid var(--border2);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap;}
+  .fab-item:hover{background:var(--bg2);}
+  .fab-main{width:54px;height:54px;min-width:54px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.28);transition:transform .15s;}
+  .fab-main.open{transform:rotate(45deg);}
+
+  /* BOTTOM NAV (mobile only) */
+  .bottom-nav{display:none;}
 
   /* MODAL */
   .mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
@@ -164,13 +176,32 @@
     .sidebar-overlay.open{display:block;}
     .hamburger{display:block;}
     .main{width:100%;}
-    .page{padding:56px 16px 40px;}
+    .page{padding:56px 16px 104px;}
     .g4{grid-template-columns:repeat(2,minmax(0,1fr));}
     .g3{grid-template-columns:repeat(2,minmax(0,1fr));}
     .g2{grid-template-columns:1fr;}
     .ex-hdr,.ex-row{grid-template-columns:minmax(0,1.5fr) 70px 50px 65px 28px;}
     .bill-row{grid-template-columns:minmax(0,1fr) 70px auto;}.bill-row .hide-mobile{display:none;}
     .pt{font-size:19px;}
+
+    /* Touch-friendly inputs */
+    .inp{min-height:44px;font-size:16px;padding:10px 12px;}
+    .inp-sm{min-height:40px;font-size:14px;padding:8px 10px;}
+    textarea.inp{min-height:88px;}
+    .btn{min-height:40px;padding:9px 14px;font-size:13px;}
+    .month-sel{min-height:44px;padding:10px 12px;font-size:14px;}
+    .wkb{min-height:36px;padding:7px 13px;}
+    .btn-icon{padding:8px 9px;font-size:15px;}
+
+    /* Bottom nav */
+    .bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;height:58px;background:var(--bg2);border-top:0.5px solid var(--border);z-index:250;padding-bottom:env(safe-area-inset-bottom);}
+    .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--text3);font-size:10px;font-family:inherit;cursor:pointer;padding:4px 0;}
+    .bn-item.active{color:var(--blue);}
+    .bn-ico{font-size:17px;line-height:1;}
+
+    /* FAB + sync badge clear the bottom nav */
+    .fab-wrap{bottom:74px;right:16px;}
+    .sync-badge{bottom:70px;}
   }
 </style>
 </head>
@@ -187,6 +218,7 @@
     <div class="ni active" onclick="nav('home',this)"><span class="ni-ico">⌂</span>Home</div>
     <div class="ni" onclick="nav('notes',this)"><span class="ni-ico">✎</span>Notes</div>
     <div class="ni" onclick="nav('important',this)"><span class="ni-ico">★</span>Important</div>
+    <div class="ni" onclick="nav('calendar',this)"><span class="ni-ico">▤</span>Calendar</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">Finance</div>
@@ -341,6 +373,10 @@
 <div id="page-savings" class="page">
   <div class="ph rb"><div><div class="pt">Savings</div></div><button class="btn btnp" onclick="openModal('saving')">+ Log</button></div>
   <div class="g3 mb16" id="sav-m"></div>
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Goal &amp; projection</div><div class="fl" style="gap:6px"><span style="font-size:12px;color:var(--text2)">Goal €</span><input type="number" class="inp" id="sav-goal-inp" style="width:120px;padding:6px 8px;font-size:13px" placeholder="e.g. 10000" onchange="setSavingsGoal(this.value)"></div></div>
+    <div id="sav-projection"></div>
+  </div>
   <div class="card mb16"><div class="st">Savings over time</div><div style="position:relative;height:200px"><canvas id="sav-chart" role="img" aria-label="Savings chart">Savings data</canvas></div></div>
   <div class="card"><div id="sav-list"></div></div>
 </div>
@@ -399,6 +435,7 @@
 <div id="page-weight" class="page">
   <div class="ph rb"><div><div class="pt">Weight tracker</div><div class="ps">Log and visualise your progress</div></div><button class="btn btnp" onclick="openModal('weight')">+ Log weight</button></div>
   <div class="g4 mb16" id="wt-metrics"></div>
+  <div class="card mb16" id="wt-goal-card"></div>
   <div class="card mb16"><div class="st">Progress chart</div><div style="position:relative;height:240px"><canvas id="wt-chart-main" role="img" aria-label="Weight progress">Weight data</canvas></div></div>
   <div class="card">
     <div class="st">Weight log</div>
@@ -417,7 +454,7 @@
 
   <div class="card mb16">
     <div class="st">OneDrive sync</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Sign in with your Microsoft account to sync your data across all devices via OneDrive. Do this once per device.</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Sign in with your Microsoft account to sync your data across all devices via OneDrive. Do this once per device. This same sign-in also grants access to your Outlook calendar for the Calendar page.</p>
     <div class="fl" style="gap:8px;flex-wrap:wrap;">
       <button class="btn btnp" id="od-signin-btn" onclick="odSignIn()">Sign in &amp; pull from OneDrive</button>
       <button class="btn" onclick="pushToOD(getStateToSave())">Sign in &amp; push to OneDrive</button>
@@ -517,7 +554,55 @@
   </div>
 </div>
 
+<div id="page-calendar" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Calendar</div><div class="ps">Synced with your Outlook calendar</div></div>
+    <button class="btn btnp" onclick="openModal('calEvent',{date:TODAYSTR})">+ Add event</button>
+  </div>
+
+  <div id="calendar-signed-out" class="card" style="display:none">
+    <div class="st">Sign in to view your calendar</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Sign in with the same Microsoft account you use for OneDrive sync to view, add and remove events from your Outlook calendar.</p>
+    <button class="btn btnp" onclick="outlookSignIn()">Sign in with Microsoft</button>
+    <div id="calendar-msg" style="margin-top:10px;font-size:13px;"></div>
+  </div>
+
+  <div id="calendar-content" style="display:none">
+    <div class="g2 mb16" id="calendar-m"></div>
+    <div class="card">
+      <div class="flb mb12">
+        <div class="st" style="margin:0">Week view</div>
+        <div class="fl" style="gap:6px">
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(-1)">‹</button>
+          <span id="calendar-week-label" style="font-size:12px;color:var(--text2);min-width:150px;text-align:center"></span>
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(1)">›</button>
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(0)">This week</button>
+        </div>
+      </div>
+      <div id="calendar-week" style="display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;overflow-x:auto"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">Tap + on a day to add an event. Tap ✕ on an event to remove it from Outlook.</div>
+    </div>
+  </div>
+</div>
+
 </main>
+
+<div class="fab-wrap" id="fab-wrap">
+  <div class="fab-menu" id="fab-menu">
+    <button class="fab-item" onclick="fabAction('workout')">🏋 Quick log workout</button>
+    <button class="fab-item" onclick="fabAction('expense')">€ Add expense</button>
+    <button class="fab-item" onclick="fabAction('note')">✎ New note</button>
+  </div>
+  <button class="fab-main" id="fab-main" onclick="toggleFab()" aria-label="Quick actions">+</button>
+</div>
+
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" data-page="home" onclick="nav('home',this)"><span class="bn-ico">⌂</span><span>Home</span></button>
+  <button class="bn-item" data-page="budget" onclick="nav('budget',this)"><span class="bn-ico">◈</span><span>Budget</span></button>
+  <button class="bn-item" data-page="fitness" onclick="nav('fitness',this)"><span class="bn-ico">◈</span><span>Fitness</span></button>
+  <button class="bn-item" data-page="notes" onclick="nav('notes',this)"><span class="bn-ico">✎</span><span>Notes</span></button>
+  <button class="bn-item" onclick="toggleSidebar()"><span class="bn-ico">☰</span><span>More</span></button>
+</nav>
 
 <div id="sync-status" class="sync-badge"></div>
 </div>
@@ -598,6 +683,7 @@ const DEFAULT_STATE = {
   timeLog:[],
   calorieLog:[],
   projectNotes:{},
+  savingsGoal:0,
 };
 
 // ── ONEDRIVE SYNC ──
@@ -609,7 +695,7 @@ const LS={
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
   redirectUri:window.location.origin+window.location.pathname,
-  scopes:['https://graph.microsoft.com/Files.ReadWrite','https://graph.microsoft.com/User.Read'],
+  scopes:['https://graph.microsoft.com/Files.ReadWrite','https://graph.microsoft.com/User.Read','https://graph.microsoft.com/Calendars.ReadWrite'],
   uploadUrl:'https://graph.microsoft.com/v1.0/me/drive/root:/HarveyApp/harvey-data.json:/content',
   downloadUrl:'https://graph.microsoft.com/v1.0/me/drive/root:/HarveyApp/harvey-data.json:/content',
 };
@@ -825,6 +911,25 @@ function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
 function euro(n){return '€'+Math.round(n).toLocaleString('en-IE');}
 function fmtDate(d){const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
 
+// ── PROGRESS RING ──
+function progressRing(pct,opts){
+  opts=opts||{};
+  const size=opts.size||64,stroke=opts.stroke||6,color=opts.color||'var(--blue)',track=opts.track||'var(--bg2)';
+  pct=Math.max(0,Math.min(100,pct||0));
+  const r=(size-stroke)/2,c=2*Math.PI*r,offset=c*(1-pct/100);
+  const label=opts.label!=null?opts.label:Math.round(pct)+'%';
+  return `<div style="position:relative;width:${size}px;height:${size}px;min-width:${size}px;display:inline-flex;align-items:center;justify-content:center">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg)">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${track}" stroke-width="${stroke}"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}" style="transition:stroke-dashoffset .5s"/>
+    </svg>
+    <div style="position:absolute;text-align:center;padding:0 4px">
+      <div style="font-size:${size>=76?15:11}px;font-weight:700;color:var(--text);line-height:1.1">${label}</div>
+      ${opts.sub?`<div style="font-size:9px;color:var(--text3);margin-top:1px">${opts.sub}</div>`:''}
+    </div>
+  </div>`;
+}
+
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sb-overlay').classList.toggle('open');
@@ -943,7 +1048,14 @@ function renderHome(){
   document.getElementById('h-bills').innerHTML=S.bills.filter(b=>b.active).slice(0,4).map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag tb">Due ${b.due}th</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
   const tn=S.notes.find(n=>n.date===TODAYSTR);
   document.getElementById('h-note').innerHTML=tn?`<div style="font-size:13px;color:var(--text2);font-style:italic;line-height:1.5">"${tn.text}"</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Today</div>`:'<div style="font-size:13px;color:var(--text3)">No note yet for today.</div>';
-  document.getElementById('h-proj').innerHTML=S.projects.map(p=>{const d=p.todos.filter(t=>t.done).length,tot=p.todos.length,pct=tot?Math.round(d/tot*100):0;return `<div style="margin-bottom:10px"><div class="flb" style="margin-bottom:4px"><span style="font-size:13px;font-weight:500">${p.name}</span><span style="font-size:12px;color:var(--text2)">${d}/${tot}</span></div><div class="pb"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div></div>`;}).join('');
+  document.getElementById('h-proj').innerHTML=S.projects.length?`<div style="display:flex;flex-wrap:wrap;gap:16px">`+S.projects.map(p=>{
+    const d=p.todos.filter(t=>t.done).length,tot=p.todos.length,pct=tot?Math.round(d/tot*100):0;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:76px">
+      ${progressRing(pct,{size:64,stroke:6,color:p.color})}
+      <span style="font-size:11px;color:var(--text2);text-align:center;line-height:1.2">${p.name}</span>
+      <span style="font-size:10px;color:var(--text3)">${d}/${tot}</span>
+    </div>`;
+  }).join('')+`</div>`:'<div style="color:var(--text3);font-size:13px">No projects yet.</div>';
   setTimeout(()=>{
     destroyChart('wc-home');
     const ctx=document.getElementById('wc-home');if(!ctx)return;
@@ -1348,12 +1460,43 @@ function renderSavings(){
     <div class="mc"><div class="ml">Total saved</div><div class="mv">${euro(tot)}</div></div>
     <div class="mc"><div class="ml">Last entry</div><div class="mv">${euro(last)}</div></div>
     <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#3B6D11':'#A32D2D'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
+  const goalInp=document.getElementById('sav-goal-inp');if(goalInp)goalInp.value=S.savingsGoal||'';
+  renderSavingsProjection(tot);
   setTimeout(()=>{
     destroyChart('sav-chart');
     const ctx=document.getElementById('sav-chart');if(!ctx)return;
     charts['sav-chart']=new Chart(ctx,{type:'bar',data:{labels:S.savings.map(s=>s.label),datasets:[{label:'Saved',data:S.savings.map(s=>s.amount),backgroundColor:'rgba(24,95,165,.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},callback:v=>'€'+v},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
   },80);
   document.getElementById('sav-list').innerHTML=[...S.savings].reverse().map(s=>`<div class="pi"><span class="pn">${s.label}</span><div class="fl"><span class="pv">${euro(s.amount)}</span><button class="btn-icon" onclick="S.savings=S.savings.filter(x=>x.id!==${s.id});saveState();renderSavings();">✕</button></div></div>`).join('');
+}
+
+function setSavingsGoal(val){
+  S.savingsGoal=parseFloat(val)||0;
+  saveState();renderSavings();
+}
+
+function renderSavingsProjection(tot){
+  const el=document.getElementById('sav-projection');if(!el)return;
+  const goal=S.savingsGoal||0;
+  if(!goal){
+    el.innerHTML=`<div style="color:var(--text3);font-size:13px">Set a savings goal above to see when you'll reach it.</div>`;
+    return;
+  }
+  const recent=S.savings.slice(-3);
+  const rate=recent.length?recent.reduce((a,b)=>a+b.amount,0)/recent.length:0;
+  const pct=goal>0?(tot/goal*100):0;
+  const ring=progressRing(pct,{size:84,stroke:8,color:'var(--green)'});
+  let msg;
+  if(tot>=goal){
+    msg=`<div style="font-size:14px;font-weight:600;color:var(--green)">🎉 Goal reached! You've saved ${euro(tot)} of your ${euro(goal)} goal.</div>`;
+  } else if(rate<=0){
+    msg=`<div style="font-size:13px;color:var(--text2);line-height:1.6">Log a couple more entries to get a projection — you're ${euro(goal-tot)} away from your ${euro(goal)} goal.</div>`;
+  } else {
+    const monthsToGoal=Math.ceil((goal-tot)/rate);
+    const target=new Date();target.setMonth(target.getMonth()+monthsToGoal);
+    msg=`<div style="font-size:14px;color:var(--text);line-height:1.6">At your current savings rate of <strong>${euro(rate)}/month</strong>, you'll reach <strong>${euro(goal)}</strong> in about <strong>${monthsToGoal} month${monthsToGoal===1?'':'s'}</strong> — around <strong>${MONTHS[target.getMonth()]} ${target.getFullYear()}</strong>.</div>`;
+  }
+  el.innerHTML=`<div class="fl" style="gap:18px;align-items:center;flex-wrap:wrap">${ring}<div style="flex:1;min-width:220px">${msg}</div></div>`;
 }
 
 // ── PROJECTS ──
@@ -1893,6 +2036,16 @@ function renderWeightPage(){
     <div class="mc"><div class="ml">Starting</div><div class="mv">${first} kg</div></div>
     <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${lost} kg</div></div>
     <div class="mc"><div class="ml">To goal (${goal}kg)</div><div class="mv" style="color:${toGoal<=0?'#3B6D11':'#185FA5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
+  const totalPlan=+(first-goal).toFixed(1);
+  const goalPct=sorted.length===0?0:(totalPlan>0?Math.min(100,Math.max(0,(lost/totalPlan)*100)):(latest<=goal?100:0));
+  document.getElementById('wt-goal-card').innerHTML=`
+    <div class="flb"><div class="st" style="margin:0">Goal progress</div><span style="font-size:12px;color:var(--text3)">Target ${goal} kg</span></div>
+    <div class="fl" style="gap:18px;align-items:center;flex-wrap:wrap;margin-top:6px">
+      ${progressRing(goalPct,{size:84,stroke:8,color:toGoal<=0?'var(--green)':'var(--blue)'})}
+      <div style="flex:1;min-width:200px;font-size:13px;color:var(--text2);line-height:1.6">
+        ${sorted.length===0?'Log a weight entry to see your goal progress.':toGoal<=0?`<strong style="color:var(--green)">Goal reached!</strong> You're at ${latest} kg.`:`<strong>${toGoal} kg</strong> to go — you've lost ${lost} kg of the ${totalPlan} kg needed.`}
+      </div>
+    </div>`;
   setTimeout(()=>{
     destroyChart('wt-chart-main');
     const ctx=document.getElementById('wt-chart-main');if(!ctx)return;
@@ -1905,7 +2058,7 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -1926,6 +2079,7 @@ function openModal(type,extra){
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
+    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -1936,7 +2090,7 @@ function g(id){const el=document.getElementById(id);return el?el.value:'';}
 const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
 const wicos={'Travel':'✈','Skills':'♪','Personal':'◉','Fitness':'◈','Other':'★'};
 
-function saveModal(){
+async function saveModal(){
   const m=S.activeModal;if(!m)return;
   if(m.type==='pocket'){
     const n=g('m-name');if(!n)return;
@@ -2060,6 +2214,18 @@ function saveModal(){
     const rows=readStageRows();
     if(rows.length)S.budgetStages=rows.map((s,i)=>({id:i+1,...s}));
     saveState();renderBudget();
+  } else if(m.type==='calEvent'){
+    const title=g('m-etitle'),date=g('m-edate'),start=g('m-estart'),end=g('m-eend'),loc=g('m-eloc');
+    if(!title||!date||!start||!end){closeModal();return;}
+    const token=await getTokenSilent();
+    if(!token){alert('Sign in on the Calendar page first, then add events.');closeModal();return;}
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const body={subject:title,start:{dateTime:`${date}T${start}:00`,timeZone:tz},end:{dateTime:`${date}T${end}:00`,timeZone:tz}};
+    if(loc)body.location={displayName:loc};
+    try{
+      await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }catch(e){}
+    closeModal();renderOutlookPage();return;
   }
   closeModal();renderHome();
 }
@@ -2292,6 +2458,90 @@ function renderCaloriesPage(){
     :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No activities logged yet.</div>';
 }
 
+// ── OUTLOOK CALENDAR (Microsoft Graph) ──
+let _outlookWeekOffset=0;
+let _outlookEvents=[];
+
+function outlookWeekRange(offset){
+  const now=new Date();
+  const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7)+offset*7);monday.setHours(0,0,0,0);
+  const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);sunday.setHours(23,59,59,999);
+  return {monday,sunday};
+}
+
+function outlookWeekNav(d){_outlookWeekOffset=d===0?0:_outlookWeekOffset+d;renderOutlookPage();}
+
+async function outlookSignIn(){
+  try{localStorage.setItem('harvey-pending-nav','calendar');}catch(e){}
+  const m=document.getElementById('calendar-msg');
+  if(m){m.textContent='Redirecting to Microsoft…';m.style.color='var(--text2)';}
+  await getToken(); // redirects to Microsoft; page reloads on return
+}
+
+async function fetchOutlookEvents(monday,sunday,token){
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const url=`https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${encodeURIComponent(monday.toISOString())}&endDateTime=${encodeURIComponent(sunday.toISOString())}&$orderby=start/dateTime&$top=100`;
+  const res=await fetch(url,{headers:{'Authorization':'Bearer '+token,'Prefer':`outlook.timezone="${tz}"`}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();
+  return data.value||[];
+}
+
+async function renderOutlookPage(){
+  const signedOut=document.getElementById('calendar-signed-out');
+  const content=document.getElementById('calendar-content');
+  const token=await getTokenSilent();
+  if(!token){
+    if(signedOut)signedOut.style.display='';
+    if(content)content.style.display='none';
+    return;
+  }
+  if(signedOut)signedOut.style.display='none';
+  if(content)content.style.display='';
+
+  const {monday,sunday}=outlookWeekRange(_outlookWeekOffset);
+  const lbl=document.getElementById('calendar-week-label');
+  if(lbl)lbl.textContent=`${monday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})} – ${sunday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})}`;
+  const gridEl=document.getElementById('calendar-week');
+  if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:20px 0">Loading events…</div>';
+
+  try{
+    const events=await fetchOutlookEvents(monday,sunday,token);
+    _outlookEvents=events;
+    const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
+    if(gridEl)gridEl.innerHTML=days.map(d=>{
+      const ds=d.toISOString().split('T')[0];
+      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const isToday=ds===TODAYSTR;
+      return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:8px 7px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:96px">
+        <div class="flb" style="margin-bottom:6px">
+          <div><div style="font-size:11px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:14px;font-weight:600">${d.getDate()}</div></div>
+          <button class="btn-icon" style="font-size:14px;color:var(--blue)" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
+        </div>
+        ${dayEvents.map(e=>`<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px" title="${(e.subject||'').replace(/"/g,'&quot;')}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.subject||'(No title)'}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="deleteOutlookEvent('${e.id}')">✕</button></div>`).join('')}
+      </div>`;
+    }).join('');
+
+    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    const mEl=document.getElementById('calendar-m');
+    if(mEl)mEl.innerHTML=`
+      <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
+      <div class="mc"><div class="ml">This week</div><div class="mv">${events.length}</div></div>`;
+  }catch(err){
+    if(gridEl)gridEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
+  }
+}
+
+async function deleteOutlookEvent(id){
+  if(!confirm('Remove this event from Outlook?'))return;
+  const token=await getTokenSilent();
+  if(!token)return;
+  try{
+    await fetch('https://graph.microsoft.com/v1.0/me/events/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+  }catch(e){}
+  renderOutlookPage();
+}
+
 // ── PROGRESSION ──
 function renderTrend(){
   const sel=document.getElementById('fit-trend-ex');if(!sel)return;
@@ -2359,11 +2609,47 @@ window.nav = function(id, el){
   document.getElementById('page-'+id).classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sb-overlay').classList.remove('open');
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+  closeFab();
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,
+    calendar:renderOutlookPage};
   handlers[id]?.();
 };
+
+function navById(id){
+  const el=[...document.querySelectorAll('.ni')].find(e=>(e.getAttribute('onclick')||'').includes(`'${id}'`));
+  nav(id,el);
+}
+
+// ── FAB ──
+function toggleFab(){
+  const menu=document.getElementById('fab-menu');
+  const btn=document.getElementById('fab-main');
+  const open=menu.classList.toggle('open');
+  btn.classList.toggle('open',open);
+  btn.textContent=open?'✕':'+';
+}
+function closeFab(){
+  const menu=document.getElementById('fab-menu');
+  const btn=document.getElementById('fab-main');
+  if(menu)menu.classList.remove('open');
+  if(btn){btn.classList.remove('open');btn.textContent='+';}
+}
+function fabAction(kind){
+  closeFab();
+  if(kind==='workout'){
+    navById('fitness');
+    setTimeout(()=>startSessionPicker(),80);
+  } else if(kind==='expense'){
+    navById('budget');
+    setTimeout(()=>openModal('spend'),80);
+  } else if(kind==='note'){
+    navById('notes');
+    setTimeout(()=>openModal('note'),80);
+  }
+}
 
 // Init — render page immediately, then check if returning from MS login
 renderHome();
@@ -2387,7 +2673,7 @@ setTimeout(async()=>{
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
           'timeProjects','timeLog','calorieLog','projectNotes',
           'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-          'budgetStages','transactions','budgetStagesV2'];
+          'budgetStages','transactions','budgetStagesV2','savingsGoal'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S._ts=remoteTs;
         S.workoutDef=DEFAULT_STATE.workoutDef;
@@ -2407,6 +2693,12 @@ setTimeout(async()=>{
       setSyncStatus('saved');
       setTimeout(()=>setSyncStatus('idle'),3000);
       localStorage.removeItem('harvey-pending-sync');
+      // If this sign-in was triggered from the Calendar page, land back there
+      const pendingNav=localStorage.getItem('harvey-pending-nav');
+      if(pendingNav){
+        localStorage.removeItem('harvey-pending-nav');
+        if(pendingNav==='calendar')navById('calendar');
+      }
     }else{
       // Normal load — no redirect, just show sign in prompt
       setSyncStatus('no-creds');
