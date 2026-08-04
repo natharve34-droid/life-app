@@ -251,6 +251,11 @@
   <div class="ph rb"><div><div class="pt">Good morning, Harvey</div><div class="ps" id="home-date"></div></div><button class="btn btnp" onclick="openModal('spend')">+ Spend</button></div>
   <div id="h-weather" class="mb16"></div>
   <div class="g4 mb16" id="hm"></div>
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">This week</div><button class="btn" style="font-size:11px;padding:4px 10px" onclick="navById('calendar')">Open calendar</button></div>
+    <div id="home-cal-msg"></div>
+    <div id="home-cal-week" style="display:grid;grid-template-columns:repeat(7,minmax(70px,1fr));gap:6px;overflow-x:auto"></div>
+  </div>
   <div class="g2 mb16">
     <div class="card"><div class="st">Upcoming bills</div><div id="h-bills"></div></div>
     <div class="card">
@@ -684,6 +689,7 @@ const DEFAULT_STATE = {
   calorieLog:[],
   projectNotes:{},
   savingsGoal:0,
+  currentSavings:null,
 };
 
 // ── ONEDRIVE SYNC ──
@@ -1063,6 +1069,7 @@ function renderHome(){
     charts['wc-home']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'kg',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
   },80);
   renderWeather();
+  renderHomeCalendarWeek();
 }
 function saveHomeNote(){
   const val=document.getElementById('h-note-inp').value.trim();if(!val)return;
@@ -1454,10 +1461,15 @@ function deleteBill(id){if(confirm('Delete this bill?')){S.bills=S.bills.filter(
 
 // ── SAVINGS ──
 function renderSavings(){
-  const tot=S.savings.reduce((a,b)=>a+b.amount,0);
+  if(S.currentSavings==null){
+    // First time seeing this feature — seed from the historical log so existing users don't lose their total
+    S.currentSavings=S.savings.reduce((a,b)=>a+b.amount,0);
+    saveState();
+  }
+  const tot=S.currentSavings||0;
   const last=S.savings[S.savings.length-1]?.amount||0,prev=S.savings[S.savings.length-2]?.amount||0,diff=last-prev;
   document.getElementById('sav-m').innerHTML=`
-    <div class="mc"><div class="ml">Total saved</div><div class="mv">${euro(tot)}</div></div>
+    <div class="mc"><div class="ml">Current savings</div><input type="number" class="inp" id="sav-current-inp" value="${S.currentSavings||''}" placeholder="0" style="font-size:19px;font-weight:600;padding:2px 4px;border:none;background:transparent;width:100%" onchange="setCurrentSavings(this.value)"></div>
     <div class="mc"><div class="ml">Last entry</div><div class="mv">${euro(last)}</div></div>
     <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#3B6D11':'#A32D2D'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
   const goalInp=document.getElementById('sav-goal-inp');if(goalInp)goalInp.value=S.savingsGoal||'';
@@ -1472,6 +1484,11 @@ function renderSavings(){
 
 function setSavingsGoal(val){
   S.savingsGoal=parseFloat(val)||0;
+  saveState();renderSavings();
+}
+
+function setCurrentSavings(val){
+  S.currentSavings=parseFloat(val)||0;
   saveState();renderSavings();
 }
 
@@ -2079,13 +2096,19 @@ function openModal(type,extra){
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
-    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div>`,
+    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none"><label class="fl2">Repeat until (optional — leave blank for no end)</label><input type="date" class="inp" id="m-eruntil"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
   setTimeout(()=>{const f=document.querySelector('#modal-body input,#modal-body textarea');if(f)f.focus();},60);
 }
 function closeModal(){document.getElementById('modal').style.display='none';S.activeModal=null;}
+function toggleRecurrenceEnd(){
+  const sel=document.getElementById('m-erepeat');
+  const row=document.getElementById('m-erepeat-end-row');
+  if(!sel||!row)return;
+  row.style.display=sel.value==='none'?'none':'';
+}
 function g(id){const el=document.getElementById(id);return el?el.value:'';}
 const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
 const wicos={'Travel':'✈','Skills':'♪','Personal':'◉','Fitness':'◈','Other':'★'};
@@ -2216,16 +2239,28 @@ async function saveModal(){
     saveState();renderBudget();
   } else if(m.type==='calEvent'){
     const title=g('m-etitle'),date=g('m-edate'),start=g('m-estart'),end=g('m-eend'),loc=g('m-eloc');
+    const repeat=g('m-erepeat')||'none',until=g('m-eruntil');
     if(!title||!date||!start||!end){closeModal();return;}
     const token=await getTokenSilent();
     if(!token){alert('Sign in on the Calendar page first, then add events.');closeModal();return;}
     const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
     const body={subject:title,start:{dateTime:`${date}T${start}:00`,timeZone:tz},end:{dateTime:`${date}T${end}:00`,timeZone:tz}};
     if(loc)body.location={displayName:loc};
+    if(repeat!=='none'){
+      const d=new Date(date+'T12:00:00');
+      const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      const pattern={interval:1};
+      if(repeat==='daily'){pattern.type='daily';}
+      else if(repeat==='weekly'){pattern.type='weekly';pattern.daysOfWeek=[dayNames[d.getDay()]];}
+      else if(repeat==='monthly'){pattern.type='absoluteMonthly';pattern.dayOfMonth=d.getDate();}
+      else if(repeat==='yearly'){pattern.type='absoluteYearly';pattern.dayOfMonth=d.getDate();pattern.month=d.getMonth()+1;}
+      const range=until?{type:'endDate',startDate:date,endDate:until}:{type:'noEnd',startDate:date};
+      body.recurrence={pattern,range};
+    }
     try{
       await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
     }catch(e){}
-    closeModal();renderOutlookPage();return;
+    closeModal();refreshCalendarViews();return;
   }
   closeModal();renderHome();
 }
@@ -2539,7 +2574,46 @@ async function deleteOutlookEvent(id){
   try{
     await fetch('https://graph.microsoft.com/v1.0/me/events/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
   }catch(e){}
+  refreshCalendarViews();
+}
+
+function refreshCalendarViews(){
   renderOutlookPage();
+  renderHomeCalendarWeek();
+}
+
+async function renderHomeCalendarWeek(){
+  const el=document.getElementById('home-cal-week');
+  const msgEl=document.getElementById('home-cal-msg');
+  if(!el)return;
+  const token=await getTokenSilent();
+  if(!token){
+    el.innerHTML='';
+    if(msgEl)msgEl.innerHTML=`<div style="color:var(--text3);font-size:13px;padding:4px 0">Sign in on the <a onclick="navById('calendar')" style="color:var(--blue);cursor:pointer">Calendar page</a> to see this week's events here.</div>`;
+    return;
+  }
+  if(msgEl)msgEl.innerHTML='';
+  const {monday,sunday}=outlookWeekRange(0);
+  el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:12px;padding:14px 0">Loading…</div>';
+  try{
+    const events=await fetchOutlookEvents(monday,sunday,token);
+    const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
+    el.innerHTML=days.map(d=>{
+      const ds=d.toISOString().split('T')[0];
+      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const isToday=ds===TODAYSTR;
+      return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:7px 6px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:80px">
+        <div class="flb" style="margin-bottom:4px">
+          <div><div style="font-size:10px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:13px;font-weight:600">${d.getDate()}</div></div>
+          <button class="btn-icon" style="font-size:12px;color:var(--blue);padding:0" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
+        </div>
+        ${dayEvents.slice(0,3).map(e=>`<div style="font-size:10px;padding:2px 4px;background:var(--bg);border-radius:4px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.subject||'(No title)'}</div>`).join('')}
+        ${dayEvents.length>3?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-3} more</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(err){
+    el.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:12px;padding:14px 0">Couldn't load events.</div>`;
+  }
 }
 
 // ── PROGRESSION ──
@@ -2673,7 +2747,7 @@ setTimeout(async()=>{
           'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
           'timeProjects','timeLog','calorieLog','projectNotes',
           'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-          'budgetStages','transactions','budgetStagesV2','savingsGoal'];
+          'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings'];
         keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S._ts=remoteTs;
         S.workoutDef=DEFAULT_STATE.workoutDef;
