@@ -17,7 +17,12 @@
     --amber:#BA7517;--amber-bg:#FAEEDA;--amber-text:#633806;
     --red:#A32D2D;--red-bg:#FCEBEB;--red-text:#791F1F;
     --purple:#534AB7;--purple-bg:#EEEDFE;--purple-text:#3C3489;
-    --radius:8px;--radius-lg:12px;
+    --radius:9px;--radius-lg:16px;
+    --shadow:0 1px 2px rgba(20,20,15,.04),0 6px 16px rgba(20,20,15,.06);
+    --shadow-lg:0 20px 50px rgba(20,20,15,.18),0 4px 14px rgba(20,20,15,.08);
+    --shadow-sm:0 1px 2px rgba(20,20,15,.05),0 2px 6px rgba(20,20,15,.05);
+    --grad:linear-gradient(135deg,#185FA5,#534AB7);
+    --grad-soft:linear-gradient(135deg,#E6F1FB,#EEEDFE);
   }
   @media(prefers-color-scheme:dark){
     :root{
@@ -29,46 +34,60 @@
       --amber:#EF9F27;--amber-bg:#2e1e08;--amber-text:#FAC775;
       --red:#E24B4A;--red-bg:#2e0f0f;--red-text:#F09595;
       --purple:#7F77DD;--purple-bg:#1e1c3a;--purple-text:#AFA9EC;
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3);
+      --shadow-lg:0 24px 60px rgba(0,0,0,.55),0 4px 14px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.25);
+      --grad:linear-gradient(135deg,#378ADD,#7F77DD);
+      --grad-soft:linear-gradient(135deg,#0c2a4a,#1e1c3a);
     }
   }
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg3);color:var(--text);font-size:14px;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:radial-gradient(1100px 700px at 100% 0%,color-mix(in srgb,var(--blue) 5%,var(--bg3)),var(--bg3) 45%);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
   .app{display:flex;height:100vh;overflow:hidden;}
 
   /* SIDEBAR */
-  .sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform .25s;}
-  .sb-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border);}
-  .sb-logo h1{font-size:15px;font-weight:600;color:var(--text);}
-  .sb-logo p{font-size:11px;color:var(--text3);margin-top:2px;}
-  .nav-sec{padding:8px 0 4px;}
-  .nav-lbl{font-size:10px;font-weight:600;color:var(--text3);padding:0 14px 4px;letter-spacing:.07em;text-transform:uppercase;}
-  .ni{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--text2);border-radius:0;transition:background .1s;}
+  .sidebar{width:224px;min-width:224px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform .25s;}
+  .sb-logo{padding:20px 16px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:11px;}
+  .sb-logo-badge{width:34px;height:34px;min-width:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(24,95,165,.35);}
+  .sb-logo h1{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  .sb-logo p{font-size:11px;color:var(--text3);margin-top:1px;}
+  .nav-sec{padding:10px 8px 4px;}
+  .nav-lbl{font-size:10px;font-weight:700;color:var(--text3);padding:0 6px 5px;letter-spacing:.08em;text-transform:uppercase;}
+  .ni{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:2px;cursor:pointer;font-size:13px;color:var(--text2);border-radius:var(--radius);transition:background .12s,color .12s,transform .08s;}
   .ni:hover{background:var(--bg);color:var(--text);}
-  .ni.active{background:var(--bg);color:var(--text);font-weight:600;}
-  .ni-ico{font-size:14px;width:18px;text-align:center;}
+  .ni.active{background:var(--blue-bg);color:var(--blue-text);font-weight:600;box-shadow:inset 2.5px 0 0 var(--blue);}
+  .ni:active{transform:scale(.98);}
+  .ni-ico{font-size:15px;width:20px;text-align:center;}
 
   /* MAIN */
   .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  .page{display:none;padding:28px 28px 48px;max-width:1020px;}
-  .page.active{display:block;}
-  .ph{margin-bottom:22px;}
-  .pt{font-size:22px;font-weight:600;color:var(--text);}
-  .ps{font-size:13px;color:var(--text2);margin-top:3px;}
+  .page{display:none;padding:32px 32px 48px;max-width:1040px;}
+  .page.active{display:block;animation:pageIn .22s cubic-bezier(.2,.7,.3,1);}
+  @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @media(prefers-reduced-motion:reduce){.page.active{animation:none;}}
+  .ph{margin-bottom:24px;}
+  .pt{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.02em;}
+  .ps{font-size:13px;color:var(--text2);margin-top:4px;}
 
   /* CARDS */
-  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:0;}
-  .mc{background:var(--bg2);border-radius:var(--radius);padding:13px 15px;}
-  .ml{font-size:11px;color:var(--text2);margin-bottom:4px;}
-  .mv{font-size:20px;font-weight:600;color:var(--text);}
-  .ms{font-size:11px;color:var(--text3);margin-top:2px;}
+  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:0;box-shadow:var(--shadow);transition:box-shadow .18s,transform .18s;}
+  .mc{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px 15px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
+  .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:.85;}
+  .g4 .mc:nth-child(4n+1)::before,.g3 .mc:nth-child(3n+1)::before,.g2 .mc:nth-child(2n+1)::before{background:linear-gradient(135deg,var(--blue),var(--purple));}
+  .g4 .mc:nth-child(4n+2)::before,.g3 .mc:nth-child(3n+2)::before,.g2 .mc:nth-child(2n)::before{background:linear-gradient(135deg,var(--green),#8fbf3f);}
+  .g4 .mc:nth-child(4n+3)::before{background:linear-gradient(135deg,var(--amber),#e8a33f);}
+  .g4 .mc:nth-child(4n+4)::before{background:linear-gradient(135deg,var(--red),#c95656);}
+  .ml{font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+  .mv{font-size:23px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  .ms{font-size:11px;color:var(--text3);margin-top:3px;}
 
   /* GRID */
-  .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-  .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
-  .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+  .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
   .mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}.mb20{margin-bottom:20px;}
 
   /* TAGS */
-  .tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;}
+  .tag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.01em;}
   .tg{background:var(--green-bg);color:var(--green-text);}
   .tb{background:var(--blue-bg);color:var(--blue-text);}
   .ta{background:var(--amber-bg);color:var(--amber-text);}
@@ -76,17 +95,21 @@
   .tp{background:var(--purple-bg);color:var(--purple-text);}
 
   /* BUTTONS */
-  .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;transition:background .1s;}
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .12s,transform .08s,border-color .12s,box-shadow .12s;}
   .btn:hover{background:var(--bg2);}
-  .btnp{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .btnp:hover{opacity:.9;}
+  .btn:active{transform:scale(.96);}
+  .btnp{background:var(--grad);color:#fff;border:none;font-weight:600;box-shadow:0 3px 10px rgba(24,95,165,.3);}
+  .btnp:hover{box-shadow:0 4px 14px rgba(24,95,165,.42);transform:translateY(-1px);}
+  .btnp:active{transform:scale(.96) translateY(0);}
   .btnd{background:transparent;color:var(--red);border-color:var(--red-text);}
   .btnd:hover{background:var(--red-bg);}
-  .btn-icon{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;font-family:inherit;}
-  .btn-icon:hover{color:var(--text);}
+  .btn-icon{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;font-family:inherit;border-radius:5px;transition:color .12s,background .12s,transform .08s;}
+  .btn-icon:hover{color:var(--text);background:var(--bg2);}
+  .btn-icon:active{transform:scale(.9);}
+  .btn:focus-visible,.btn-icon:focus-visible,.wkb:focus-visible,.fab-main:focus-visible,.fab-item:focus-visible,.bn-item:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
 
   /* INPUTS */
-  .inp{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;}
+  .inp{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .12s,box-shadow .12s;}
   .inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.15);}
   textarea.inp{resize:vertical;min-height:72px;}
 
@@ -95,9 +118,9 @@
   .fl{display:flex;align-items:center;gap:8px;}
   .fl-end{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
   .flb{display:flex;align-items:center;justify-content:space-between;}
-  .st{font-size:13px;font-weight:600;color:var(--text);margin-bottom:11px;}
-  .pb{width:100%;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
-  .pbf{height:100%;border-radius:3px;}
+  .st{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;letter-spacing:-.005em;}
+  .pb{width:100%;height:6px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+  .pbf{height:100%;border-radius:4px;transition:width .3s ease;}
   .pi{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
   .pi:last-child{border-bottom:none;}
   .pn{font-size:13px;font-weight:500;color:var(--text);}
@@ -118,7 +141,9 @@
 
   /* WEEK BUTTONS */
   .wk-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;}
-  .wkb{padding:5px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;}
+  .wkb{padding:5px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;transition:background .12s,color .12s,transform .08s;}
+  .wkb:hover{background:var(--bg2);}
+  .wkb:active{transform:scale(.96);}
   .wkb.active{background:var(--blue);color:#fff;border-color:var(--blue);}
 
   /* BILL ROWS */
@@ -144,17 +169,24 @@
   .fab-wrap{position:fixed;right:20px;bottom:24px;z-index:410;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
   .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-bottom:4px;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .15s,transform .15s;}
   .fab-menu.open{opacity:1;pointer-events:auto;transform:translateY(0);}
-  .fab-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:24px;background:var(--bg);border:0.5px solid var(--border2);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap;}
+  .fab-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:24px;background:var(--bg);border:0.5px solid var(--border2);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap;transition:background .12s,transform .08s;}
   .fab-item:hover{background:var(--bg2);}
-  .fab-main{width:54px;height:54px;min-width:54px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.28);transition:transform .15s;}
+  .fab-item:active{transform:scale(.96);}
+  .fab-main{width:56px;height:56px;min-width:56px;border-radius:50%;background:var(--grad);color:#fff;border:none;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 6px 20px rgba(24,95,165,.4);transition:transform .15s,box-shadow .15s;}
+  .fab-main:hover{box-shadow:0 8px 26px rgba(24,95,165,.5);}
+  .fab-main:active{transform:scale(.92);}
+  .fab-main.open:active{transform:rotate(45deg) scale(.92);}
   .fab-main.open{transform:rotate(45deg);}
 
   /* BOTTOM NAV (mobile only) */
   .bottom-nav{display:none;}
 
   /* MODAL */
-  .mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
-  .mo-box{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:440px;max-width:100%;max-height:88vh;overflow-y:auto;}
+  .mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;animation:overlayIn .15s ease;}
+  .mo-box{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:440px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .18s cubic-bezier(.2,.8,.2,1);}
+  @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+  @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  @media(prefers-reduced-motion:reduce){.mo-overlay,.mo-box{animation:none;}}
   .mo-box h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text);}
   .fr{margin-bottom:11px;}
   .fl2{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;}
@@ -163,6 +195,22 @@
   .sum-box{padding:13px;background:var(--bg2);border-radius:var(--radius);}
   .sum-label{font-size:12px;color:var(--text2);margin-bottom:3px;}
   .sum-val{font-size:19px;font-weight:600;}
+
+  /* CHART EMPTY STATE */
+  .chart-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:var(--text3);font-size:12px;padding:0 20px;line-height:1.5;}
+  .chart-empty.show{display:flex;}
+
+  /* SCROLLBAR & MISC POLISH */
+  *{scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px;border:2px solid transparent;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text3);background-clip:padding-box;}
+  @media(prefers-color-scheme:dark){
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.85) brightness(1.3);}
+  }
+  ::selection{background:var(--blue);color:#fff;}
 
   /* MOBILE HAMBURGER */
   .hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;cursor:pointer;font-size:18px;line-height:1;}
@@ -212,7 +260,7 @@
 
 <div class="app">
 <nav class="sidebar" id="sidebar">
-  <div class="sb-logo"><h1>Harvey</h1><p>Personal dashboard</p></div>
+  <div class="sb-logo"><div class="sb-logo-badge">H</div><div><h1>Harvey</h1><p>Personal dashboard</p></div></div>
   <div class="nav-sec">
     <div class="nav-lbl">Overview</div>
     <div class="ni active" onclick="nav('home',this)"><span class="ni-ico">⌂</span>Home</div>
@@ -267,7 +315,7 @@
   </div>
   <div class="g2">
     <div class="card"><div class="st">Project progress</div><div id="h-proj"></div></div>
-    <div class="card"><div class="st">Weight trend</div><div style="position:relative;height:150px"><canvas id="wc-home" role="img" aria-label="Weight trend chart">Weight over time</canvas></div></div>
+    <div class="card"><div class="st">Weight trend</div><div style="position:relative;height:150px"><canvas id="wc-home" role="img" aria-label="Weight trend chart">Weight over time</canvas><div id="wc-home-empty" class="chart-empty">Log your weight to see the trend here.</div></div></div>
   </div>
 </div>
 
@@ -382,14 +430,14 @@
     <div class="flb mb12"><div class="st" style="margin:0">Goal &amp; projection</div><div class="fl" style="gap:6px"><span style="font-size:12px;color:var(--text2)">Goal €</span><input type="number" class="inp" id="sav-goal-inp" style="width:120px;padding:6px 8px;font-size:13px" placeholder="e.g. 10000" onchange="setSavingsGoal(this.value)"></div></div>
     <div id="sav-projection"></div>
   </div>
-  <div class="card mb16"><div class="st">Savings over time</div><div style="position:relative;height:200px"><canvas id="sav-chart" role="img" aria-label="Savings chart">Savings data</canvas></div></div>
+  <div class="card mb16"><div class="st">Savings over time</div><div style="position:relative;height:200px"><canvas id="sav-chart" role="img" aria-label="Savings chart">Savings data</canvas><div id="sav-chart-empty" class="chart-empty">Log a savings entry to see it charted here.</div></div></div>
   <div class="card"><div id="sav-list"></div></div>
 </div>
 
 <!-- PROJECTS -->
 <div id="page-projects" class="page">
   <div class="ph rb"><div><div class="pt">Work projects</div></div><button class="btn btnp" onclick="openModal('project')">+ Project</button></div>
-  <div class="card mb16"><div class="st">Completion overview</div><div style="position:relative;height:190px"><canvas id="proj-chart" role="img" aria-label="Project chart">Project data</canvas></div></div>
+  <div class="card mb16"><div class="st">Completion overview</div><div style="position:relative;height:190px"><canvas id="proj-chart" role="img" aria-label="Project chart">Project data</canvas><div id="proj-chart-empty" class="chart-empty">Add a project to see completion here.</div></div></div>
   <div id="proj-list"></div>
 </div>
 
@@ -441,7 +489,7 @@
   <div class="ph rb"><div><div class="pt">Weight tracker</div><div class="ps">Log and visualise your progress</div></div><button class="btn btnp" onclick="openModal('weight')">+ Log weight</button></div>
   <div class="g4 mb16" id="wt-metrics"></div>
   <div class="card mb16" id="wt-goal-card"></div>
-  <div class="card mb16"><div class="st">Progress chart</div><div style="position:relative;height:240px"><canvas id="wt-chart-main" role="img" aria-label="Weight progress">Weight data</canvas></div></div>
+  <div class="card mb16"><div class="st">Progress chart</div><div style="position:relative;height:240px"><canvas id="wt-chart-main" role="img" aria-label="Weight progress">Weight data</canvas><div id="wt-chart-main-empty" class="chart-empty">Log a weight entry to see your progress chart here.</div></div></div>
   <div class="card">
     <div class="st">Weight log</div>
     <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding-bottom:8px;border-bottom:0.5px solid var(--border);margin-bottom:4px;">
@@ -498,7 +546,7 @@
   <div class="g2 mb16">
     <div class="card">
       <div class="st">Hours by project</div>
-      <div style="position:relative;height:220px"><canvas id="time-chart" role="img" aria-label="Hours per project">Time data</canvas></div>
+      <div style="position:relative;height:220px"><canvas id="time-chart" role="img" aria-label="Hours per project">Time data</canvas><div id="time-chart-empty" class="chart-empty">Add a project and log time to see hours here.</div></div>
     </div>
     <div class="card">
       <div class="st">Projects</div>
@@ -917,6 +965,17 @@ function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
 function euro(n){return '€'+Math.round(n).toLocaleString('en-IE');}
 function fmtDate(d){const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
 
+// ── THEME-AWARE CHART COLORS ──
+function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+function hexToRgba(hex,alpha){
+  hex=(hex||'#888888').replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substring(0,2),16),g=parseInt(hex.substring(2,4),16),b=parseInt(hex.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function chartGridColor(){return cssVar('--border');}
+function chartTickColor(){return cssVar('--text3');}
+
 // ── PROGRESS RING ──
 function progressRing(pct,opts){
   opts=opts||{};
@@ -1062,12 +1121,21 @@ function renderHome(){
       <span style="font-size:10px;color:var(--text3)">${d}/${tot}</span>
     </div>`;
   }).join('')+`</div>`:'<div style="color:var(--text3);font-size:13px">No projects yet.</div>';
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('wc-home');
     const ctx=document.getElementById('wc-home');if(!ctx)return;
+    const emptyEl=document.getElementById('wc-home-empty');
     const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
-    charts['wc-home']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'kg',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
-  },80);
+    if(sorted.length===0){
+      if(emptyEl)emptyEl.classList.add('show');
+      ctx.style.visibility='hidden';
+      return;
+    }
+    if(emptyEl)emptyEl.classList.remove('show');
+    ctx.style.visibility='';
+    const blue=cssVar('--blue');
+    charts['wc-home']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'kg',data:sorted.map(d=>d.kg),borderColor:blue,backgroundColor:hexToRgba(blue,.12),tension:.4,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},color:chartTickColor(),callback:v=>v+'kg'},grid:{color:chartGridColor()}},x:{ticks:{font:{size:9},color:chartTickColor()},grid:{display:false}}}}});
+  });
   renderWeather();
   renderHomeCalendarWeek();
 }
@@ -1474,11 +1542,20 @@ function renderSavings(){
     <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#3B6D11':'#A32D2D'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
   const goalInp=document.getElementById('sav-goal-inp');if(goalInp)goalInp.value=S.savingsGoal||'';
   renderSavingsProjection(tot);
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('sav-chart');
     const ctx=document.getElementById('sav-chart');if(!ctx)return;
-    charts['sav-chart']=new Chart(ctx,{type:'bar',data:{labels:S.savings.map(s=>s.label),datasets:[{label:'Saved',data:S.savings.map(s=>s.amount),backgroundColor:'rgba(24,95,165,.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},callback:v=>'€'+v},grid:{color:'rgba(128,128,128,.1)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
-  },80);
+    const emptyEl=document.getElementById('sav-chart-empty');
+    if(S.savings.length===0){
+      if(emptyEl)emptyEl.classList.add('show');
+      ctx.style.visibility='hidden';
+      return;
+    }
+    if(emptyEl)emptyEl.classList.remove('show');
+    ctx.style.visibility='';
+    const blue=cssVar('--blue');
+    charts['sav-chart']=new Chart(ctx,{type:'bar',data:{labels:S.savings.map(s=>s.label),datasets:[{label:'Saved',data:S.savings.map(s=>s.amount),backgroundColor:hexToRgba(blue,.75),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>'€'+v},grid:{color:chartGridColor()}},x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}});
+  });
   document.getElementById('sav-list').innerHTML=[...S.savings].reverse().map(s=>`<div class="pi"><span class="pn">${s.label}</span><div class="fl"><span class="pv">${euro(s.amount)}</span><button class="btn-icon" onclick="S.savings=S.savings.filter(x=>x.id!==${s.id});saveState();renderSavings();">✕</button></div></div>`).join('');
 }
 
@@ -1518,9 +1595,17 @@ function renderSavingsProjection(tot){
 
 // ── PROJECTS ──
 function renderProjects(){
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('proj-chart');
     const ctx=document.getElementById('proj-chart');if(!ctx)return;
+    const emptyEl=document.getElementById('proj-chart-empty');
+    if(S.projects.length===0){
+      if(emptyEl)emptyEl.classList.add('show');
+      ctx.style.visibility='hidden';
+      return;
+    }
+    if(emptyEl)emptyEl.classList.remove('show');
+    ctx.style.visibility='';
     // Count including subtasks for progress
     const doneCount=p=>{
       const td=p.todos.filter(t=>t.done).length;
@@ -1532,8 +1617,9 @@ function renderProjects(){
       const st=p.todos.reduce((a,t)=>(a+(t.subtasks||[]).length),0);
       return tt+st;
     };
-    charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>doneCount(p)),backgroundColor:'rgba(24,95,165,.75)',borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>totalCount(p)-doneCount(p)),backgroundColor:'rgba(180,180,180,.25)',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12}}},y:{stacked:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(128,128,128,.1)'}}}}});
-  },80);
+    const blue=cssVar('--blue');
+    charts['proj-chart']=new Chart(ctx,{type:'bar',data:{labels:S.projects.map(p=>p.name),datasets:[{label:'Done',data:S.projects.map(p=>doneCount(p)),backgroundColor:hexToRgba(blue,.75),borderRadius:4,stack:'s'},{label:'Left',data:S.projects.map(p=>totalCount(p)-doneCount(p)),backgroundColor:hexToRgba(cssVar('--text3'),.25),borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:12},color:chartTickColor()}},y:{stacked:true,ticks:{stepSize:1,font:{size:11},color:chartTickColor()},grid:{color:chartGridColor()}}}}});
+  });
 
   document.getElementById('proj-list').innerHTML=S.projects.map(p=>{
     if(!p.todos)p.todos=[];
@@ -1842,7 +1928,7 @@ function renderFitness(){
   renderTemplates();
   renderPRs();
   renderSessions();
-  setTimeout(()=>renderTrend(),120);
+  requestAnimationFrame(()=>renderTrend());
 }
 
 function renderTemplates(){
@@ -2063,11 +2149,23 @@ function renderWeightPage(){
         ${sorted.length===0?'Log a weight entry to see your goal progress.':toGoal<=0?`<strong style="color:var(--green)">Goal reached!</strong> You're at ${latest} kg.`:`<strong>${toGoal} kg</strong> to go — you've lost ${lost} kg of the ${totalPlan} kg needed.`}
       </div>
     </div>`;
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('wt-chart-main');
     const ctx=document.getElementById('wt-chart-main');if(!ctx)return;
-    charts['wt-chart-main']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'Weight (kg)',data:sorted.map(d=>d.kg),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.4,pointRadius:4,fill:true},{label:'Goal',data:sorted.map(()=>goal),borderColor:'#3B6D11',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'},min:83},x:{ticks:{font:{size:10}},grid:{display:false}}}}});
-  },80);
+    const emptyEl=document.getElementById('wt-chart-main-empty');
+    if(sorted.length===0){
+      if(emptyEl)emptyEl.classList.add('show');
+      ctx.style.visibility='hidden';
+      return;
+    }
+    if(emptyEl)emptyEl.classList.remove('show');
+    ctx.style.visibility='';
+    const vals=sorted.map(d=>d.kg).concat([goal]);
+    const minVal=Math.min(...vals),maxVal=Math.max(...vals);
+    const pad=Math.max(1,(maxVal-minVal)*0.15);
+    const blue=cssVar('--blue'),green=cssVar('--green');
+    charts['wt-chart-main']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'Weight (kg)',data:sorted.map(d=>d.kg),borderColor:blue,backgroundColor:hexToRgba(blue,.12),tension:.4,pointRadius:4,fill:true},{label:'Goal',data:sorted.map(()=>goal),borderColor:green,borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+'kg'},grid:{color:chartGridColor()},min:minVal-pad,max:maxVal+pad},x:{ticks:{font:{size:10},color:chartTickColor()},grid:{display:false}}}}});
+  });
   document.getElementById('wt-log').innerHTML=[...sorted].reverse().map(e=>`<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);align-items:center;"><span style="font-size:13px;color:var(--text2)">${fmtDate(e.date)}</span><span style="font-size:14px;font-weight:600;color:var(--blue)">${e.kg} kg</span><button class="btn-icon" onclick="deleteWeight(${e.id})">✕</button></div>`).join('');
 }
 function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState();renderWeightPage();}
@@ -2075,6 +2173,7 @@ function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.textContent='Save';
   const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
@@ -2342,9 +2441,17 @@ function renderTimePage(){
   filtered.forEach(e=>{projMins[e.projectId]=(projMins[e.projectId]||0)+e.mins;});
 
   // Chart
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('time-chart');
     const ctx=document.getElementById('time-chart');if(!ctx)return;
+    const emptyEl=document.getElementById('time-chart-empty');
+    if(S.timeProjects.length===0){
+      if(emptyEl)emptyEl.classList.add('show');
+      ctx.style.visibility='hidden';
+      return;
+    }
+    if(emptyEl)emptyEl.classList.remove('show');
+    ctx.style.visibility='';
     const labels=S.timeProjects.map(p=>p.name);
     const data=S.timeProjects.map(p=>+((projMins[p.id]||0)/60).toFixed(1));
     const colors=S.timeProjects.map(p=>p.color);
@@ -2352,10 +2459,10 @@ function renderTimePage(){
       type:'bar',
       data:{labels,datasets:[{label:'Hours',data,backgroundColor:colors.map(c=>c+'bb'),borderRadius:4}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{y:{ticks:{font:{size:11},callback:v=>v+'h'},grid:{color:'rgba(128,128,128,.1)'},beginAtZero:true},
-                x:{ticks:{font:{size:12}},grid:{display:false}}}}
+        scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+'h'},grid:{color:chartGridColor()},beginAtZero:true},
+                x:{ticks:{font:{size:12},color:chartTickColor()},grid:{display:false}}}}
     });
-  },80);
+  });
 
   // Projects list
   document.getElementById('time-projects-list').innerHTML=S.timeProjects.length?
@@ -2469,17 +2576,18 @@ function renderCaloriesPage(){
   }
   const dayCals=days.map(ds=>S.calorieLog.filter(e=>e.date===ds).reduce((a,b)=>a+b.calories,0));
 
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     destroyChart('cal-chart');
     const ctx=document.getElementById('cal-chart');if(!ctx)return;
+    const amber=cssVar('--amber');
     charts['cal-chart']=new Chart(ctx,{
       type:'bar',
-      data:{labels:dayLabels,datasets:[{label:'Calories',data:dayCals,backgroundColor:'rgba(186,117,23,.7)',borderRadius:4}]},
+      data:{labels:dayLabels,datasets:[{label:'Calories',data:dayCals,backgroundColor:hexToRgba(amber,.7),borderRadius:4}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{y:{ticks:{font:{size:11},callback:v=>v+' cal'},grid:{color:'rgba(128,128,128,.1)'},beginAtZero:true},
-                x:{ticks:{font:{size:11}},grid:{display:false}}}}
+        scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+' cal'},grid:{color:chartGridColor()},beginAtZero:true},
+                x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}
     });
-  },80);
+  });
 
   const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
   document.getElementById('cal-log').innerHTML=sorted.length?sorted.map(e=>`
@@ -2653,26 +2761,27 @@ function renderTrend(){
   }
   if(emptyEl)emptyEl.style.display='none';
 
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     const ctx=document.getElementById('trend-chart');if(!ctx)return;
+    const blue=cssVar('--blue'),green=cssVar('--green');
     charts['trend-chart']=new Chart(ctx,{
       type:'line',
       data:{
         labels:pts.map(p=>p.date.slice(5)),
         datasets:[
-          {label:'Top set (kg)',data:pts.map(p=>p.wt),borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',tension:.3,pointRadius:4,fill:true},
-          {label:'Est. 1RM',data:pts.map(p=>p.e1rm),borderColor:'#3B6D11',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false},
+          {label:'Top set (kg)',data:pts.map(p=>p.wt),borderColor:blue,backgroundColor:hexToRgba(blue,.12),tension:.3,pointRadius:4,fill:true},
+          {label:'Est. 1RM',data:pts.map(p=>p.e1rm),borderColor:green,borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false},
         ]
       },
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}kg`}}},
+        plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12,color:chartTickColor()}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}kg`}}},
         scales:{
-          y:{ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(128,128,128,.1)'}},
-          x:{ticks:{font:{size:10}},grid:{display:false}}
+          y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+'kg'},grid:{color:chartGridColor()}},
+          x:{ticks:{font:{size:10},color:chartTickColor()},grid:{display:false}}
         }
       }
     });
-  },80);
+  });
 }
 
 // Nav — includes settings
@@ -2724,6 +2833,10 @@ function fabAction(kind){
     setTimeout(()=>openModal('note'),80);
   }
 }
+document.addEventListener('click',(e)=>{
+  const wrap=document.getElementById('fab-wrap');
+  if(wrap&&!wrap.contains(e.target))closeFab();
+});
 
 // Init — render page immediately, then check if returning from MS login
 renderHome();
