@@ -366,6 +366,12 @@
   </div>
   <div class="g4 mb16" id="bm"></div>
 
+  <!-- Monthly whiteboard note -->
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Notes</div><span style="font-size:11px;color:var(--text3)">Saved automatically · one per month</span></div>
+    <textarea class="inp" id="budget-note-inp" placeholder="Jot down anything about this month's budget…" style="min-height:80px" onchange="saveBudgetNote()"></textarea>
+  </div>
+
   <!-- Pay stages -->
   <div class="card mb16">
     <div class="st">Pay stages</div>
@@ -409,6 +415,10 @@
 <div id="page-bills" class="page">
   <div class="ph rb"><div><div class="pt">Bills</div><div class="ps">Edit, add or remove bills</div></div><button class="btn btnp" onclick="openModal('bill')">+ Add bill</button></div>
   <div class="g3 mb16" id="bills-m"></div>
+  <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Notes</div><span style="font-size:11px;color:var(--text3)">Saved automatically · one per month</span></div>
+    <textarea class="inp" id="bills-note-inp" placeholder="Jot down anything about this month's bills…" style="min-height:80px" onchange="saveBillsNote()"></textarea>
+  </div>
   <div class="card">
     <div class="bill-row" style="padding-bottom:8px;border-bottom:0.5px solid var(--border);margin-bottom:4px;">
       <span style="font-size:11px;color:var(--text3)">Name</span>
@@ -623,17 +633,23 @@
   <div id="calendar-content" style="display:none">
     <div class="g2 mb16" id="calendar-m"></div>
     <div class="card">
-      <div class="flb mb12">
-        <div class="st" style="margin:0">Week view</div>
-        <div class="fl" style="gap:6px">
-          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(-1)">‹</button>
-          <span id="calendar-week-label" style="font-size:12px;color:var(--text2);min-width:150px;text-align:center"></span>
-          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(1)">›</button>
-          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookWeekNav(0)">This week</button>
+      <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
+        <div class="fl" style="gap:4px">
+          <button class="wkb active" id="calview-week" onclick="setOutlookView('week')">Week</button>
+          <button class="wkb" id="calview-month" onclick="setOutlookView('month')">Month</button>
+          <button class="wkb" id="calview-agenda" onclick="setOutlookView('agenda')">Agenda</button>
+        </div>
+        <div class="fl" style="gap:6px" id="calendar-nav-controls">
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookNav(-1)">‹</button>
+          <span id="calendar-range-label" style="font-size:12px;color:var(--text2);min-width:150px;text-align:center"></span>
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookNav(1)">›</button>
+          <button class="btn" style="font-size:12px;padding:5px 9px" onclick="outlookNav(0)">Today</button>
         </div>
       </div>
       <div id="calendar-week" style="display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;overflow-x:auto"></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px">Tap + on a day to add an event. Tap ✕ on an event to remove it from Outlook.</div>
+      <div id="calendar-month" style="display:none;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px"></div>
+      <div id="calendar-agenda-list" style="display:none"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px" id="calendar-hint">Tap + on a day to add an event. Tap ✕ on an event to remove it from Outlook.</div>
     </div>
   </div>
 </div>
@@ -946,9 +962,13 @@ function getMonthData(key) {
       pocketAmounts: {},
       income: [],
       pocketBudgets: {},
+      note: '',
+      billsNote: '',
     };
     S.pockets.forEach(p => { S.monthlyData[key].pocketAmounts[p.id] = 0; });
   }
+  if (S.monthlyData[key].note === undefined) S.monthlyData[key].note = '';
+  if (S.monthlyData[key].billsNote === undefined) S.monthlyData[key].billsNote = '';
   return S.monthlyData[key];
 }
 
@@ -1202,7 +1222,10 @@ function renderNotes(){
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">${new Date(n.date+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short'})}</div>
           </div>
           <div style="font-size:13px;color:var(--text);line-height:1.65;white-space:pre-wrap;padding-top:3px;">${n.text}</div>
-          <button onclick="deleteNote(${n.id})" class="btn-icon" style="margin-top:3px;">✕</button>
+          <div class="fl" style="gap:2px;margin-top:3px;">
+            <button onclick="editNote(${n.id})" class="btn-icon" title="Edit">✎</button>
+            <button onclick="deleteNote(${n.id})" class="btn-icon" title="Delete">✕</button>
+          </div>
         </div>`).join('')}
     </div>`).join('');
 }
@@ -1237,6 +1260,7 @@ function renderProjectNotes(){
                 <span style="font-size:13px;font-weight:600;color:var(--text);">${n.title}</span>
                 <div style="display:flex;align-items:center;gap:8px;min-width:fit-content;">
                   <span style="font-size:11px;color:var(--text3);">${n.date}</span>
+                  <button onclick="editProjectNote(${p.id},${n.id})" class="btn-icon" style="font-size:11px;">✎</button>
                   <button onclick="deleteProjectNote(${p.id},${n.id})" class="btn-icon" style="font-size:11px;">✕</button>
                 </div>
               </div>
@@ -1248,6 +1272,13 @@ function renderProjectNotes(){
 }
 
 function deleteNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveState();renderNotes();}
+function editNote(id){
+  const n=S.notes.find(x=>x.id===id);if(!n)return;
+  openModal('note');
+  document.getElementById('modal-title').textContent='Edit note';
+  document.getElementById('m-date').value=n.date;
+  document.getElementById('m-note').value=n.text;
+}
 
 // ── IMPORTANT ──
 function renderImportant(){
@@ -1310,6 +1341,9 @@ function renderBudget(){
     <div class="mc"><div class="ml">Income</div><div class="mv">${euro(totalIncome)}</div><div class="ms">${mLabel}</div></div>
     <div class="mc"><div class="ml">Spent</div><div class="mv">${euro(totalSpent)}</div><div class="ms">${monthTx.length} transaction${monthTx.length===1?'':'s'}</div></div>
     <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#3B6D11':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
+
+  const budgetNoteInp=document.getElementById('budget-note-inp');
+  if(budgetNoteInp&&document.activeElement!==budgetNoteInp)budgetNoteInp.value=md.note||'';
 
   renderStages();
   renderSpendingByPocket();
@@ -1487,6 +1521,16 @@ function updatePocketAmount(pid,val){
   getMonthData(S.budgetViewMonth||curKey).pocketAmounts[pid]=parseFloat(val)||0;
   saveState();renderBudget();
 }
+function saveBudgetNote(){
+  const el=document.getElementById('budget-note-inp');if(!el)return;
+  getMonthData(S.budgetViewMonth||curKey).note=el.value;
+  saveState();
+}
+function saveBillsNote(){
+  const el=document.getElementById('bills-note-inp');if(!el)return;
+  getMonthData(curKey).billsNote=el.value;
+  saveState();
+}
 function deletePocket(pid){
   if(!confirm('Remove this pocket? Logged spend against it stays but shows as Uncategorised.'))return;
   S.pockets=S.pockets.filter(p=>p.id!==pid);
@@ -1507,6 +1551,8 @@ function renderBills(){
     <div class="mc"><div class="ml">Monthly total</div><div class="mv">${euro(tot)}</div></div>
     <div class="mc"><div class="ml">Yearly total</div><div class="mv">${euro(tot*12)}</div></div>
     <div class="mc"><div class="ml">Active bills</div><div class="mv">${active.length}</div><div class="ms">${inactive.length} paused</div></div>`;
+  const billsNoteInp=document.getElementById('bills-note-inp');
+  if(billsNoteInp&&document.activeElement!==billsNoteInp)billsNoteInp.value=getMonthData(curKey).billsNote||'';
   document.getElementById('bills-list').innerHTML=S.bills.map(b=>`
     <div class="bill-row" style="${!b.active?'opacity:0.5':''}">
       <input class="inp" style="font-size:12px;padding:5px 8px;font-weight:500" value="${b.name}" onchange="editBill(${b.id},'name',this.value)">
@@ -1697,11 +1743,13 @@ function renderProjects(){
         </div>
       </div>`;
 
+    const collapsed=!!p.collapsed;
     return `<div class="card mb12">
-      <div class="flb mb12">
-        <div class="fl">
-          <div style="width:11px;height:11px;border-radius:50%;background:${p.color}"></div>
-          <span style="font-size:14px;font-weight:600">${p.name}</span>
+      <div class="flb ${collapsed?'':'mb12'}">
+        <div class="fl" style="cursor:pointer;flex:1;min-width:0" onclick="toggleProjectCollapse(${p.id})">
+          <button class="btn-icon" style="font-size:12px;color:var(--text3)" title="${collapsed?'Expand':'Collapse'}">${collapsed?'▸':'▾'}</button>
+          <div style="width:11px;height:11px;min-width:11px;border-radius:50%;background:${p.color}"></div>
+          <span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
           <span class="tag tb">${pct}%</span>
         </div>
         <div class="fl" style="gap:6px;">
@@ -1709,13 +1757,20 @@ function renderProjects(){
           <button class="btn btnd" style="font-size:11px;padding:5px 8px;" onclick="deleteProject(${p.id})">Delete</button>
         </div>
       </div>
+      ${collapsed?'':`
       <div class="pb mb12"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>
       ${active.length===0&&done.length===0?'<div style="color:var(--text3);font-size:13px;padding:4px 0">No tasks yet.</div>':''}
       ${activeTasks}
       ${doneTasks}
-      ${notesHtml}
+      ${notesHtml}`}
     </div>`;
   }).join('');
+}
+
+function toggleProjectCollapse(pid){
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  p.collapsed=!p.collapsed;
+  saveState();renderProjects();
 }
 
 function deleteProject(pid){
@@ -1785,7 +1840,15 @@ function goToProjectNotes(){
 function deleteProjectNote(pid,nid){
   if(!S.projectNotes[pid])return;
   S.projectNotes[pid]=S.projectNotes[pid].filter(n=>n.id!==nid);
-  saveState();renderProjects();
+  saveState();renderProjects();renderProjectNotes();
+}
+function editProjectNote(pid,nid){
+  const n=(S.projectNotes[pid]||[]).find(x=>x.id===nid);if(!n)return;
+  openModal('projectNote',{pid});
+  S.activeModal.editId=nid;
+  document.getElementById('modal-title').textContent='Edit note';
+  document.getElementById('m-ntitle').value=n.title;
+  document.getElementById('m-nbody').value=n.body;
 }
 
 function toggleTodo(pid,tid){
@@ -2195,7 +2258,7 @@ function openModal(type,extra){
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
-    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none"><label class="fl2">Repeat until (optional — leave blank for no end)</label><input type="date" class="inp" id="m-eruntil"></div>`,
+    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="fr"><label class="fl2" style="display:flex;align-items:center;gap:7px;cursor:pointer;margin-bottom:0"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day event</label></div><div class="g2" id="m-etime-row" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none"><label class="fl2">Repeat until (optional — leave blank for no end)</label><input type="date" class="inp" id="m-eruntil"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -2207,6 +2270,12 @@ function toggleRecurrenceEnd(){
   const row=document.getElementById('m-erepeat-end-row');
   if(!sel||!row)return;
   row.style.display=sel.value==='none'?'none':'';
+}
+function toggleAllDayFields(){
+  const cb=document.getElementById('m-eallday');
+  const row=document.getElementById('m-etime-row');
+  if(!cb||!row)return;
+  row.style.display=cb.checked?'none':'';
 }
 function g(id){const el=document.getElementById(id);return el?el.value:'';}
 const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
@@ -2300,8 +2369,14 @@ async function saveModal(){
     const pid=m.pid,title=g('m-ntitle'),body=g('m-nbody');
     if(!title&&!body)return;
     if(!S.projectNotes[pid])S.projectNotes[pid]=[];
-    S.projectNotes[pid].unshift({id:Date.now(),title:title||'Untitled',body,date:TODAYSTR});
-    saveState();renderProjects();
+    if(m.editId){
+      const idx=S.projectNotes[pid].findIndex(x=>x.id===m.editId);
+      if(idx>=0){S.projectNotes[pid][idx].title=title||'Untitled';S.projectNotes[pid][idx].body=body;}
+      else S.projectNotes[pid].unshift({id:Date.now(),title:title||'Untitled',body,date:TODAYSTR});
+    } else {
+      S.projectNotes[pid].unshift({id:Date.now(),title:title||'Untitled',body,date:TODAYSTR});
+    }
+    saveState();renderProjects();renderProjectNotes();
   }
   else if(m.type==='calorie'){
     const act=g('m-cact'),date=g('m-cdate'),dur=parseInt(g('m-cdur'))||0,cal=parseInt(g('m-ccal'))||0;
@@ -2337,13 +2412,22 @@ async function saveModal(){
     if(rows.length)S.budgetStages=rows.map((s,i)=>({id:i+1,...s}));
     saveState();renderBudget();
   } else if(m.type==='calEvent'){
-    const title=g('m-etitle'),date=g('m-edate'),start=g('m-estart'),end=g('m-eend'),loc=g('m-eloc');
+    const title=g('m-etitle'),date=g('m-edate'),loc=g('m-eloc');
+    const isAllDay=document.getElementById('m-eallday')?.checked||false;
+    const start=g('m-estart'),end=g('m-eend');
     const repeat=g('m-erepeat')||'none',until=g('m-eruntil');
-    if(!title||!date||!start||!end){closeModal();return;}
+    if(!title||!date||(!isAllDay&&(!start||!end))){closeModal();return;}
     const token=await getTokenSilent();
     if(!token){alert('Sign in on the Calendar page first, then add events.');closeModal();return;}
     const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const body={subject:title,start:{dateTime:`${date}T${start}:00`,timeZone:tz},end:{dateTime:`${date}T${end}:00`,timeZone:tz}};
+    let body;
+    if(isAllDay){
+      const endDate=new Date(date+'T00:00:00');endDate.setDate(endDate.getDate()+1);
+      const endStr=`${endDate.getFullYear()}-${String(endDate.getMonth()+1).padStart(2,'0')}-${String(endDate.getDate()).padStart(2,'0')}`;
+      body={subject:title,isAllDay:true,start:{dateTime:`${date}T00:00:00`,timeZone:tz},end:{dateTime:`${endStr}T00:00:00`,timeZone:tz}};
+    } else {
+      body={subject:title,start:{dateTime:`${date}T${start}:00`,timeZone:tz},end:{dateTime:`${date}T${end}:00`,timeZone:tz}};
+    }
     if(loc)body.location={displayName:loc};
     if(repeat!=='none'){
       const d=new Date(date+'T12:00:00');
@@ -2602,7 +2686,8 @@ function renderCaloriesPage(){
 }
 
 // ── OUTLOOK CALENDAR (Microsoft Graph) ──
-let _outlookWeekOffset=0;
+let _outlookView='week'; // 'week' | 'month' | 'agenda'
+let _outlookOffset=0;
 let _outlookEvents=[];
 
 function outlookWeekRange(offset){
@@ -2612,7 +2697,23 @@ function outlookWeekRange(offset){
   return {monday,sunday};
 }
 
-function outlookWeekNav(d){_outlookWeekOffset=d===0?0:_outlookWeekOffset+d;renderOutlookPage();}
+function setOutlookView(view){
+  _outlookView=view;
+  _outlookOffset=0;
+  updateOutlookViewButtons();
+  renderOutlookPage();
+}
+function updateOutlookViewButtons(){
+  ['week','month','agenda'].forEach(v=>{
+    const btn=document.getElementById('calview-'+v);
+    if(btn)btn.classList.toggle('active',v===_outlookView);
+  });
+  const navControls=document.getElementById('calendar-nav-controls');
+  if(navControls)navControls.style.display=_outlookView==='agenda'?'none':'';
+  const hint=document.getElementById('calendar-hint');
+  if(hint)hint.textContent=_outlookView==='agenda'?'Showing your next 30 days. Tap ✕ on an event to remove it from Outlook.':'Tap + on a day to add an event. Tap ✕ on an event to remove it from Outlook.';
+}
+function outlookNav(d){_outlookOffset=d===0?0:_outlookOffset+d;renderOutlookPage();}
 
 async function outlookSignIn(){
   try{localStorage.setItem('harvey-pending-nav','calendar');}catch(e){}
@@ -2621,13 +2722,18 @@ async function outlookSignIn(){
   await getToken(); // redirects to Microsoft; page reloads on return
 }
 
-async function fetchOutlookEvents(monday,sunday,token){
+async function fetchOutlookEvents(start,end,token){
   const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const url=`https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${encodeURIComponent(monday.toISOString())}&endDateTime=${encodeURIComponent(sunday.toISOString())}&$orderby=start/dateTime&$top=100`;
+  const url=`https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${encodeURIComponent(start.toISOString())}&endDateTime=${encodeURIComponent(end.toISOString())}&$orderby=start/dateTime&$top=150`;
   const res=await fetch(url,{headers:{'Authorization':'Bearer '+token,'Prefer':`outlook.timezone="${tz}"`}});
   if(!res.ok)throw new Error('HTTP '+res.status);
   const data=await res.json();
   return data.value||[];
+}
+
+function eventChip(e){
+  const label=(e.isAllDay?'📌 ':'')+(e.subject||'(No title)');
+  return `<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px" title="${(e.subject||'').replace(/"/g,'&quot;')}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="deleteOutlookEvent('${e.id}')">✕</button></div>`;
 }
 
 async function renderOutlookPage(){
@@ -2641,18 +2747,27 @@ async function renderOutlookPage(){
   }
   if(signedOut)signedOut.style.display='none';
   if(content)content.style.display='';
+  updateOutlookViewButtons();
+  document.getElementById('calendar-week').style.display=_outlookView==='week'?'grid':'none';
+  document.getElementById('calendar-month').style.display=_outlookView==='month'?'grid':'none';
+  document.getElementById('calendar-agenda-list').style.display=_outlookView==='agenda'?'':'none';
+  if(_outlookView==='week')return renderOutlookWeek(token);
+  if(_outlookView==='month')return renderOutlookMonth(token);
+  return renderOutlookAgenda(token);
+}
 
-  const {monday,sunday}=outlookWeekRange(_outlookWeekOffset);
-  const lbl=document.getElementById('calendar-week-label');
+async function renderOutlookWeek(token){
+  const {monday,sunday}=outlookWeekRange(_outlookOffset);
+  const lbl=document.getElementById('calendar-range-label');
   if(lbl)lbl.textContent=`${monday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})} – ${sunday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})}`;
   const gridEl=document.getElementById('calendar-week');
-  if(gridEl)gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:20px 0">Loading events…</div>';
+  gridEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:20px 0">Loading events…</div>';
 
   try{
     const events=await fetchOutlookEvents(monday,sunday,token);
     _outlookEvents=events;
     const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
-    if(gridEl)gridEl.innerHTML=days.map(d=>{
+    gridEl.innerHTML=days.map(d=>{
       const ds=d.toISOString().split('T')[0];
       const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
       const isToday=ds===TODAYSTR;
@@ -2661,7 +2776,7 @@ async function renderOutlookPage(){
           <div><div style="font-size:11px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:14px;font-weight:600">${d.getDate()}</div></div>
           <button class="btn-icon" style="font-size:14px;color:var(--blue)" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
         </div>
-        ${dayEvents.map(e=>`<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px" title="${(e.subject||'').replace(/"/g,'&quot;')}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.subject||'(No title)'}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="deleteOutlookEvent('${e.id}')">✕</button></div>`).join('')}
+        ${dayEvents.map(eventChip).join('')}
       </div>`;
     }).join('');
 
@@ -2671,7 +2786,99 @@ async function renderOutlookPage(){
       <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
       <div class="mc"><div class="ml">This week</div><div class="mv">${events.length}</div></div>`;
   }catch(err){
-    if(gridEl)gridEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
+    gridEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
+  }
+}
+
+async function renderOutlookMonth(token){
+  const monthGrid=document.getElementById('calendar-month');
+  const base=new Date();
+  const viewMonth=new Date(base.getFullYear(),base.getMonth()+_outlookOffset,1);
+  const label=document.getElementById('calendar-range-label');
+  if(label)label.textContent=`${MONTHS[viewMonth.getMonth()]} ${viewMonth.getFullYear()}`;
+
+  const firstDay=new Date(viewMonth.getFullYear(),viewMonth.getMonth(),1);
+  const lastDay=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,0);
+  const startOffset=(firstDay.getDay()+6)%7;
+  const gridStart=new Date(firstDay);gridStart.setDate(firstDay.getDate()-startOffset);
+  const endOffset=(7-((lastDay.getDay()+6)%7)-1+7)%7;
+  const gridEnd=new Date(lastDay);gridEnd.setDate(lastDay.getDate()+endOffset);
+  const gridEndInclusive=new Date(gridEnd.getFullYear(),gridEnd.getMonth(),gridEnd.getDate(),23,59,59);
+
+  monthGrid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:12px;padding:14px 0">Loading…</div>';
+  try{
+    const events=await fetchOutlookEvents(gridStart,gridEndInclusive,token);
+    const days=[];
+    for(let d=new Date(gridStart);d<=gridEnd;d.setDate(d.getDate()+1))days.push(new Date(d));
+    const dowLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const header=dowLabels.map(l=>`<div style="text-align:center;font-size:10px;color:var(--text3);font-weight:700;padding:2px 0">${l}</div>`).join('');
+    const cells=days.map(d=>{
+      const ds=d.toISOString().split('T')[0];
+      const inMonth=d.getMonth()===viewMonth.getMonth();
+      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const isToday=ds===TODAYSTR;
+      return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:5px;min-height:68px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};opacity:${inMonth?1:.4}">
+        <div class="flb" style="margin-bottom:3px">
+          <span style="font-size:11px;font-weight:600">${d.getDate()}</span>
+          <button class="btn-icon" style="font-size:11px;padding:0;color:var(--blue)" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
+        </div>
+        ${dayEvents.slice(0,2).map(e=>`<div style="font-size:9.5px;padding:1px 3px;background:var(--bg);border-radius:4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.isAllDay?'📌 ':''}${e.subject||'(No title)'}</div>`).join('')}
+        ${dayEvents.length>2?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-2} more</div>`:''}
+      </div>`;
+    }).join('');
+    monthGrid.innerHTML=header+cells;
+
+    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    const mEl=document.getElementById('calendar-m');
+    if(mEl)mEl.innerHTML=`
+      <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
+      <div class="mc"><div class="ml">This month</div><div class="mv">${events.length}</div></div>`;
+  }catch(err){
+    monthGrid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:12px;padding:14px 0">Couldn't load events: ${err.message}</div>`;
+  }
+}
+
+async function renderOutlookAgenda(token){
+  const listEl=document.getElementById('calendar-agenda-list');
+  const label=document.getElementById('calendar-range-label');
+  if(label)label.textContent='Next 30 days';
+  listEl.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0">Loading events…</div>';
+  const start=new Date();start.setHours(0,0,0,0);
+  const end=new Date(start);end.setDate(end.getDate()+30);
+  try{
+    const events=await fetchOutlookEvents(start,end,token);
+    const mEl=document.getElementById('calendar-m');
+    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    if(mEl)mEl.innerHTML=`
+      <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
+      <div class="mc"><div class="ml">Next 30 days</div><div class="mv">${events.length}</div></div>`;
+    if(events.length===0){
+      listEl.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0">No upcoming events in the next 30 days.</div>';
+      return;
+    }
+    const groups={};
+    events.forEach(e=>{
+      const ds=(e.start.dateTime||'').slice(0,10);
+      if(!groups[ds])groups[ds]=[];
+      groups[ds].push(e);
+    });
+    listEl.innerHTML=Object.keys(groups).sort().map(ds=>{
+      const d=new Date(ds+'T12:00:00');
+      const isToday=ds===TODAYSTR;
+      return `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:${isToday?'var(--blue)':'var(--text3)'};text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${isToday?'Today · ':''}${d.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'})}</div>
+        ${groups[ds].map(e=>`
+          <div class="pi">
+            <div>
+              <span class="pn">${e.subject||'(No title)'}</span>
+              ${e.isAllDay?'<span class="tag tp" style="margin-left:6px">All day</span>':`<div style="font-size:11px;color:var(--text3);margin-top:2px">${new Date(e.start.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})} – ${new Date(e.end.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})}</div>`}
+            </div>
+            <button class="btn-icon" onclick="deleteOutlookEvent('${e.id}')">✕</button>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+  }catch(err){
+    listEl.innerHTML=`<div style="text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
   }
 }
 
@@ -2715,7 +2922,7 @@ async function renderHomeCalendarWeek(){
           <div><div style="font-size:10px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:13px;font-weight:600">${d.getDate()}</div></div>
           <button class="btn-icon" style="font-size:12px;color:var(--blue);padding:0" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
         </div>
-        ${dayEvents.slice(0,3).map(e=>`<div style="font-size:10px;padding:2px 4px;background:var(--bg);border-radius:4px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.subject||'(No title)'}</div>`).join('')}
+        ${dayEvents.slice(0,3).map(e=>`<div style="font-size:10px;padding:2px 4px;background:var(--bg);border-radius:4px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.isAllDay?'📌 ':''}${e.subject||'(No title)'}</div>`).join('')}
         ${dayEvents.length>3?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-3} more</div>`:''}
       </div>`;
     }).join('');
