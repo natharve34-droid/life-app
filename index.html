@@ -282,6 +282,7 @@
     <div class="nav-lbl">Life</div>
     <div class="ni" onclick="nav('wishlist',this)"><span class="ni-ico">✦</span>Wishlist</div>
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
+    <div class="ni" onclick="nav('hyrox',this)"><span class="ni-ico">▲</span>Hyrox</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
     <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
@@ -650,6 +651,71 @@
       <div id="calendar-month" style="display:none;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px"></div>
       <div id="calendar-agenda-list" style="display:none"></div>
       <div style="font-size:11px;color:var(--text3);margin-top:8px" id="calendar-hint">Tap + on a day to add an event. Tap ✕ on an event to remove it from Outlook.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HYROX (Tryka) -->
+<div id="page-hyrox" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Hyrox</div><div class="ps">TRYKA 500 — synced live with your Tryka app</div></div>
+    <div id="hx-race" style="font-size:13px;color:var(--text2)"></div>
+  </div>
+
+  <div id="hx-signed-out" class="card">
+    <div class="st">Sign in to Tryka</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Sign in with the same username and password you use in your Tryka app.</p>
+    <div class="fr"><label class="fl2">Username</label><input class="inp" id="hx-user" placeholder="harvey"></div>
+    <div class="fr"><label class="fl2">Password</label><input type="password" class="inp" id="hx-pass" placeholder="••••••••"></div>
+    <button class="btn btnp" onclick="hxSignIn()">Sign in</button>
+    <div id="hx-err" style="margin-top:10px;font-size:13px;color:var(--red)"></div>
+  </div>
+
+  <div id="hx-content" style="display:none">
+    <div class="flb mb16" style="flex-wrap:wrap;gap:8px">
+      <div class="fl" id="hx-tabs" style="gap:4px"></div>
+      <div class="fl" style="gap:6px">
+        <a href="tryka-12-week-plan_3.html" target="_blank" class="btn" style="font-size:11px;text-decoration:none">Open full Tryka app ↗</a>
+        <button class="btn" style="font-size:11px" onclick="hxSignOut()">Sign out</button>
+      </div>
+    </div>
+    <div class="g3 mb16" id="hx-m"></div>
+    <div class="card mb16" id="hx-week"></div>
+    <div id="hx-workout-editor" style="display:none"></div>
+    <div class="g2 mb16">
+      <div class="card">
+        <div class="st">PR board</div>
+        <div id="hx-prs"></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">
+          <div class="g2" style="gap:6px;margin-bottom:6px">
+            <select class="inp" id="hx-pr-ath" style="font-size:12px;padding:6px 8px"><option value="0">Harvey</option><option value="1">Doireann</option></select>
+            <select class="inp" id="hx-pr-lift" style="font-size:12px;padding:6px 8px"></select>
+          </div>
+          <div class="fl" style="gap:6px">
+            <input class="inp" id="hx-pr-val" placeholder="e.g. 100 or 2:15" style="font-size:12px;padding:6px 8px">
+            <button class="btn" style="font-size:12px;white-space:nowrap" onclick="hxPrAdd()">Log</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="st">Workouts</div>
+        <div class="fl" style="gap:6px;margin-bottom:10px">
+          <button class="btn" style="font-size:12px" onclick="hxStartWorkout('Push')">Log Push</button>
+          <button class="btn" style="font-size:12px" onclick="hxStartWorkout('Pull')">Log Pull</button>
+        </div>
+        <div id="hx-sessions"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="st">Macro log</div>
+      <div id="hx-macro-list" class="mb12"></div>
+      <div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="hx-macro-date" style="font-size:12px;padding:6px 8px"></div>
+      <div class="g3" style="gap:6px;margin-bottom:10px">
+        <div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="hx-macro-p" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
+        <div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="hx-macro-c" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
+        <div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="hx-macro-f" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
+      </div>
+      <button class="btn btnp" style="font-size:12px" onclick="hxMacroSave()">Save today's macros</button>
     </div>
   </div>
 </div>
@@ -2931,6 +2997,381 @@ async function renderHomeCalendarWeek(){
   }
 }
 
+// ── HYROX (Tryka integration via Supabase) ──
+const HX_SB_URL='https://foznudyesjdntzaqhxas.supabase.co';
+const HX_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvem51ZHllc2pkbnR6YXFoeGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMjU3ODEsImV4cCI6MjEwMDkwMTc4MX0.eQvoHWtMCUnQKfVN6L3wUFECes_-V6PON_uXGNct-Ao';
+const HX_TEAM='tryka';
+const HX_AUTH_DOMAIN='tryka.app';
+const HX_WEEK_META=[
+  ['Build the base','Learn the movements and learn each other. Nothing should feel hard.'],
+  ['Build the base','Same shapes, a little more of everything. Consistency beats intensity.'],
+  ['Build the base','Sled work begins, and your first real handover practice.'],
+  ['Deload','Volume drops — plus a light benchmark sim to capture your baseline splits.'],
+  ['Build the engine','Race pace becomes normal pace. Loads get heavy.'],
+  ['Build the engine','Mini simulation — your first team time on the clock.'],
+  ['Build the engine','Biggest week of the plan. Everything peaks here.'],
+  ['Deload','Recover properly so week nine can be sharp.'],
+  ['Sharpen','Half simulation at race weights and real splits.'],
+  ['Sharpen','Race-pace running on tired legs — exactly what race day asks.'],
+  ['Peak','Full simulation — 8 stations, 8 runs, one clock.'],
+  ['Race week','Short and fast. The work is done.'],
+];
+function hxDayMeta(w,d){
+  const isSim=(w===3||w===5||w===8||w===10);
+  const days=[
+    {name:'Intervals',type:'Run',sub:'Day 1 · solo',together:false},
+    {name:'Strength',type:'Strength',sub:'Day 2 · gym, solo',together:false},
+    {name:w===3?'Benchmark sim':w===5?'Mini simulation':w===8?'Half simulation':w===10?'Full simulation':'Partner session',
+     type:isSim?'Simulation':'Partner',sub:'Day 3 · as a team',together:true},
+    {name:'Long and easy',type:'Run',sub:'Day 4 · aerobic',together:true},
+  ];
+  return days[d];
+}
+function hxKey(w,d){return w+'-'+d;}
+
+let HX={sb:null,loggedIn:false,sessionChecked:false,me:0,view:0,weekOffset:null,data:null};
+let HX_WSES=null;
+
+async function hxConnect(){
+  if(HX.sb)return true;
+  try{
+    const mod=await import('https://esm.sh/@supabase/supabase-js@2');
+    HX.sb=mod.createClient(HX_SB_URL,HX_SB_KEY);
+    return true;
+  }catch(e){ return false; }
+}
+function hxUserToEmail(u){ u=(u||'').trim(); return u.indexOf('@')>-1?u:(u.toLowerCase()+'@'+HX_AUTH_DOMAIN); }
+function hxAthleteFromEmail(email){
+  const u=String(email||'').toLowerCase().split('@')[0];
+  const names=(HX.data&&HX.data.names)||['Harvey','Doireann'];
+  if(u===String(names[1]).toLowerCase()||u==='doireann')return 1;
+  return 0;
+}
+function hxDefaultData(){
+  return {names:['Harvey','Doireann'],race:'2026-10-31',done:[{},{}],notes:[{},{}],
+    prs:[],prlog:[],sims:[],logs:{},extras:{},wtemplates:[{},{}],wsessions:[[],[]],macrolog:[{},{}]};
+}
+async function hxLoad(){
+  try{
+    const r=await HX.sb.from('tryka_state').select('data').eq('team',HX_TEAM).maybeSingle();
+    HX.data=(r.data&&r.data.data)?r.data.data:hxDefaultData();
+  }catch(e){ HX.data=HX.data||hxDefaultData(); }
+}
+function hxMergeRemote(remote){
+  if(!remote||!HX.data)return;
+  const other=1-HX.me;
+  if(remote.done)HX.data.done[other]=remote.done[other]||HX.data.done[other];
+  if(remote.notes)HX.data.notes[other]=remote.notes[other]||HX.data.notes[other];
+  if(remote.wtemplates)HX.data.wtemplates[other]=remote.wtemplates[other]||HX.data.wtemplates[other];
+  if(remote.wsessions)HX.data.wsessions[other]=remote.wsessions[other]||HX.data.wsessions[other];
+  if(remote.macrolog)HX.data.macrolog[other]=remote.macrolog[other]||HX.data.macrolog[other];
+  if(remote.logs){Object.keys(remote.logs).forEach(k=>{ if(k.indexOf(other+'-')===0)HX.data.logs[k]=remote.logs[k]; });}
+  if(Array.isArray(remote.prlog)){
+    const mine=HX.data.prlog.filter(p=>p.ath===HX.me);
+    const theirs=remote.prlog.filter(p=>p.ath===other);
+    HX.data.prlog=mine.concat(theirs);
+  }
+}
+async function hxSave(){
+  if(!HX.sb||!HX.loggedIn)return false;
+  try{
+    const r=await HX.sb.from('tryka_state').select('data').eq('team',HX_TEAM).maybeSingle();
+    if(r.data&&r.data.data)hxMergeRemote(r.data.data);
+    await HX.sb.from('tryka_state').upsert({team:HX_TEAM,data:HX.data,updated_at:new Date().toISOString()});
+    return true;
+  }catch(e){ return false; }
+}
+function hxCanEdit(together){ return together||HX.view===HX.me; }
+
+async function hxSignIn(){
+  const user=document.getElementById('hx-user').value;
+  const pass=document.getElementById('hx-pass').value;
+  const errEl=document.getElementById('hx-err');
+  if(errEl)errEl.textContent='';
+  const ok=await hxConnect();
+  if(!ok){ if(errEl)errEl.textContent="Can't reach the server — check your connection."; return; }
+  try{
+    const res=await HX.sb.auth.signInWithPassword({email:hxUserToEmail(user),password:pass});
+    if(res.error){ if(errEl)errEl.textContent=res.error.message||'Sign-in failed'; return; }
+    HX.loggedIn=true;
+    await hxLoad();
+    HX.me=hxAthleteFromEmail(res.data.user.email);
+    HX.view=HX.me;
+    HX.sessionChecked=true;
+    renderHyroxPage();
+  }catch(e){ if(errEl)errEl.textContent=(e&&e.message)||'Sign-in failed'; }
+}
+async function hxSignOut(){
+  try{ if(HX.sb)await HX.sb.auth.signOut(); }catch(e){}
+  HX.loggedIn=false; HX.data=null;
+  renderHyroxPage();
+}
+
+async function renderHyroxPage(){
+  if(!HX.sessionChecked){
+    HX.sessionChecked=true;
+    const ok=await hxConnect();
+    if(ok){
+      try{
+        const s=await HX.sb.auth.getSession();
+        if(s&&s.data&&s.data.session){
+          HX.loggedIn=true;
+          await hxLoad();
+          HX.me=hxAthleteFromEmail(s.data.session.user.email);
+          HX.view=HX.me;
+        }
+      }catch(e){}
+    }
+  }
+  const signedOut=document.getElementById('hx-signed-out');
+  const content=document.getElementById('hx-content');
+  if(!HX.loggedIn){
+    if(signedOut)signedOut.style.display='';
+    if(content)content.style.display='none';
+    return;
+  }
+  if(signedOut)signedOut.style.display='none';
+  if(content)content.style.display='';
+  if(!HX.data)await hxLoad();
+  hxRenderAll();
+}
+
+function hxWeekIndex(){
+  if(!HX.data||!HX.data.race)return 0;
+  const race=new Date(HX.data.race+'T09:00:00');
+  const blockStart=new Date(race);blockStart.setDate(blockStart.getDate()-12*7);
+  const days=Math.floor((new Date()-blockStart)/86400000);
+  return Math.max(0,Math.min(11,Math.floor(days/7)));
+}
+function hxSetView(i){ HX.view=i; renderHyroxPage(); }
+function hxWeekNav(delta){
+  const cur=HX.weekOffset!=null?HX.weekOffset:hxWeekIndex();
+  HX.weekOffset=delta===0?hxWeekIndex():Math.max(0,Math.min(11,cur+delta));
+  hxRenderAll();
+}
+
+function hxRenderAll(){
+  if(!HX.data)return;
+  const D=HX.data;
+  const names=D.names||['Harvey','Doireann'];
+
+  const raceEl=document.getElementById('hx-race');
+  if(raceEl){
+    if(D.race){
+      const days=Math.ceil((new Date(D.race+'T09:00:00')-new Date())/86400000);
+      raceEl.textContent=days>=0?(days+(days===1?' day':' days')+' to race day'):'Race day has passed';
+    } else raceEl.textContent='';
+  }
+
+  const tabsEl=document.getElementById('hx-tabs');
+  if(tabsEl)tabsEl.innerHTML=[0,1].map(i=>`<button class="wkb ${HX.view===i?'active':''}" onclick="hxSetView(${i})">${names[i]}${HX.me===i?' · you':''}</button>`).join('');
+
+  let doneTotal=0; for(let w=0;w<12;w++)for(let d=0;d<4;d++) if(D.done[HX.view][hxKey(w,d)])doneTotal++;
+  const wIdx=HX.weekOffset!=null?HX.weekOffset:hxWeekIndex();
+  let weekDone=0; for(let d=0;d<4;d++) if(D.done[HX.view][hxKey(wIdx,d)])weekDone++;
+  const metricsEl=document.getElementById('hx-m');
+  if(metricsEl)metricsEl.innerHTML=`
+    <div class="mc"><div class="ml">This week</div><div class="mv">${weekDone}/4</div></div>
+    <div class="mc"><div class="ml">Total done</div><div class="mv">${doneTotal}/48</div></div>
+    <div class="mc"><div class="ml">Race day</div><div class="mv" style="font-size:16px">${D.race?fmtDate(D.race):'—'}</div></div>`;
+
+  hxRenderWeek(wIdx);
+  hxRenderPRs();
+  hxRenderMacro();
+  hxRenderWorkoutSessions();
+}
+
+function hxRenderWeek(wIdx){
+  const D=HX.data;
+  const meta=HX_WEEK_META[wIdx];
+  const el=document.getElementById('hx-week');
+  if(!el)return;
+  const days=[0,1,2,3].map(d=>{
+    const dm=hxDayMeta(wIdx,d);
+    const k=hxKey(wIdx,d);
+    const isDone=!!D.done[HX.view][k];
+    const editable=hxCanEdit(dm.together);
+    return `<div class="pi" style="align-items:flex-start">
+      <button class="btn-icon" style="font-size:16px;color:${isDone?'var(--green)':'var(--text3)'}" onclick="hxToggleDay(${wIdx},${d})"${editable?'':' disabled'}>${isDone?'✓':'○'}</button>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;${isDone?'text-decoration:line-through;opacity:.6':''}">${dm.name}${dm.together?' <span class="tag tg" style="margin-left:4px">Together</span>':''}</div>
+        <div style="font-size:11px;color:var(--text3)">${dm.sub} · ${dm.type}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`
+    <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
+      <div><div class="st" style="margin:0">Week ${wIdx+1} · ${meta[0]}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${meta[1]}</div></div>
+      <div class="fl" style="gap:6px">
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(-1)">‹</button>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(0)">This week</button>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(1)">›</button>
+      </div>
+    </div>
+    ${days}`;
+}
+function hxToggleDay(w,d){
+  const D=HX.data;
+  const dm=hxDayMeta(w,d);
+  if(!hxCanEdit(dm.together)){ alert('Sign in as '+D.names[HX.view]+' to edit their plan.'); return; }
+  const k=hxKey(w,d);
+  const val=!D.done[HX.view][k];
+  if(dm.together){ D.done[0][k]=val; D.done[1][k]=val; }
+  else D.done[HX.view][k]=val;
+  hxSave();
+  hxRenderAll();
+}
+
+function hxRenderPRs(){
+  const D=HX.data;
+  const el=document.getElementById('hx-prs');
+  if(!el)return;
+  const prs=(D.prs&&D.prs.length)?D.prs:[
+    {id:'run500',name:'500 m run',kind:'time'},{id:'row2k',name:'2 km row',kind:'time'},
+    {id:'squat',name:'Back squat',kind:'kg'},{id:'deadlift',name:'Deadlift',kind:'kg'},
+    {id:'bench',name:'Bench press',kind:'kg'},{id:'pullup',name:'Pull-up max',kind:'reps'},
+  ];
+  const fmtVal=(v,kind)=>kind==='time'?(Math.floor(v/60)+':'+String(Math.round(v%60)).padStart(2,'0')):(kind==='reps'?Math.round(v)+' reps':v+' kg');
+  const rows=prs.map(p=>{
+    const entries=(D.prlog||[]).filter(x=>x.ath===HX.view&&x.lift===p.id);
+    if(!entries.length)return null;
+    const best=p.kind==='time'?entries.reduce((a,b)=>b.val<a.val?b:a):entries.reduce((a,b)=>b.val>a.val?b:a);
+    return `<div class="pi"><span class="pn">${p.name}</span><span class="pv">${fmtVal(best.val,p.kind)}</span></div>`;
+  }).filter(Boolean);
+  el.innerHTML=rows.length?rows.join(''):`<div style="color:var(--text3);font-size:13px;padding:8px 0">No results logged yet for ${D.names[HX.view]}.</div>`;
+
+  const liftSel=document.getElementById('hx-pr-lift');
+  if(liftSel&&liftSel.options.length!==prs.length){
+    liftSel.innerHTML=prs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  }
+  const athSel=document.getElementById('hx-pr-ath');
+  if(athSel&&athSel.options.length===2){
+    athSel.options[0].textContent=D.names[0]; athSel.options[1].textContent=D.names[1];
+  }
+}
+function hxPrAdd(){
+  const D=HX.data;
+  const ath=parseInt(document.getElementById('hx-pr-ath').value,10);
+  const liftId=document.getElementById('hx-pr-lift').value;
+  const raw=(document.getElementById('hx-pr-val').value||'').trim();
+  if(!raw||!liftId)return;
+  const prs=(D.prs&&D.prs.length)?D.prs:[];
+  const lift=prs.find(p=>p.id===liftId);
+  const kind=lift?lift.kind:'kg';
+  let val;
+  if(kind==='time'){ const parts=raw.split(':'); val=parts.length>1?(parseInt(parts[0],10)*60+parseFloat(parts[1])):parseFloat(raw); }
+  else val=parseFloat(raw);
+  if(!(val>0))return;
+  D.prlog.push({ath,lift:liftId,val,at:Date.now()});
+  document.getElementById('hx-pr-val').value='';
+  hxSave();
+  hxRenderAll();
+}
+
+function hxRenderMacro(){
+  const D=HX.data;
+  const el=document.getElementById('hx-macro-list');
+  if(!el)return;
+  const log=D.macrolog[HX.view]||{};
+  const days=Object.keys(log).sort().reverse().slice(0,7);
+  const kcal=m=>Math.round((+m.p||0)*4+(+m.c||0)*4+(+m.f||0)*9);
+  el.innerHTML=days.length?days.map(d=>{
+    const m=log[d];
+    return `<div class="pi"><span class="pn">${d}</span><span style="font-size:12px;color:var(--text2)">${kcal(m)} kcal · ${m.p||0}P ${m.c||0}C ${m.f||0}F</span></div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No days logged yet.</div>';
+  const dateInp=document.getElementById('hx-macro-date');
+  if(dateInp&&!dateInp.value)dateInp.value=TODAYSTR;
+}
+function hxMacroSave(){
+  const D=HX.data;
+  if(!hxCanEdit(false)){ alert('Sign in as '+D.names[HX.view]+' to log their macros.'); return; }
+  const d=document.getElementById('hx-macro-date').value||TODAYSTR;
+  const p=parseFloat(document.getElementById('hx-macro-p').value)||0;
+  const c=parseFloat(document.getElementById('hx-macro-c').value)||0;
+  const f=parseFloat(document.getElementById('hx-macro-f').value)||0;
+  if(!p&&!c&&!f)return;
+  D.macrolog[HX.view][d]={p,c,f};
+  document.getElementById('hx-macro-p').value='';
+  document.getElementById('hx-macro-c').value='';
+  document.getElementById('hx-macro-f').value='';
+  hxSave();
+  hxRenderAll();
+}
+
+function hxWTemplates(ath){ return (HX.data.wtemplates&&HX.data.wtemplates[ath])||{}; }
+function hxLastSets(ath,ex){
+  const list=HX.data.wsessions[ath]||[];
+  for(let i=list.length-1;i>=0;i--){
+    const e=(list[i].entries||[]).find(x=>x.ex===ex);
+    if(e&&e.sets&&e.sets.length)return e.sets;
+  }
+  const tpls=hxWTemplates(ath);
+  let found=null;
+  ['Push','Pull'].forEach(t=>{ (tpls[t]||[]).forEach(x=>{ if(x.ex===ex&&x.seed)found=x.seed; }); });
+  return found;
+}
+function hxFmtSets(sets){ return sets?sets.map(s=>(s[0]==null||s[0]===''?'bw':s[0])+'×'+s[1]).join(', '):'—'; }
+function hxStartWorkout(type){
+  if(!hxCanEdit(false)){ alert('Sign in as '+HX.data.names[HX.view]+' to log their workout.'); return; }
+  const tpl=hxWTemplates(HX.view)[type]||[];
+  HX_WSES={type,entries:tpl.map(e=>({ex:e.ex,sets:[['','']]}))};
+  hxRenderWorkoutEditor();
+}
+function hxAddSet(i){ HX_WSES.entries[i].sets.push(['','']); hxRenderWorkoutEditor(); }
+function hxDelSet(i,j){ HX_WSES.entries[i].sets.splice(j,1); if(!HX_WSES.entries[i].sets.length)HX_WSES.entries[i].sets.push(['','']); hxRenderWorkoutEditor(); }
+function hxSetVal(i,j,c,v){ HX_WSES.entries[i].sets[j][c]=v; }
+function hxCancelWorkout(){ HX_WSES=null; hxRenderWorkoutEditor(); }
+function hxFinishWorkout(){
+  if(!HX_WSES)return;
+  const entries=HX_WSES.entries.map(e=>{
+    const sets=e.sets.filter(s=>s[1]!==''&&s[1]!=null).map(s=>[s[0]===''?null:parseFloat(s[0]),parseInt(s[1],10)]);
+    return {ex:e.ex,sets};
+  }).filter(e=>e.sets.length);
+  if(!entries.length){ alert('Log at least one set.'); return; }
+  const sess={type:HX_WSES.type,date:TODAYSTR,at:Date.now(),entries};
+  HX.data.wsessions[HX.view].push(sess);
+  HX_WSES=null;
+  hxSave();
+  hxRenderAll();
+  hxRenderWorkoutEditor();
+}
+function hxRenderWorkoutEditor(){
+  const el=document.getElementById('hx-workout-editor'); if(!el)return;
+  if(!HX_WSES){ el.innerHTML=''; el.style.display='none'; return; }
+  el.style.display='';
+  el.innerHTML=`<div class="card mb12">
+    <div class="flb mb12">
+      <span style="font-size:14px;font-weight:600">${HX_WSES.type} session</span>
+      <div class="fl" style="gap:6px"><button class="btn btnd" onclick="hxCancelWorkout()">Cancel</button><button class="btn btnp" onclick="hxFinishWorkout()">Finish</button></div>
+    </div>
+    ${HX_WSES.entries.length===0?'<div style="color:var(--text3);font-size:13px">No exercises in this template yet.</div>':HX_WSES.entries.map((e,i)=>{
+      const last=hxLastSets(HX.view,e.ex);
+      return `<div style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:2px">${e.ex}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Last time: ${hxFmtSets(last)}</div>
+        ${e.sets.map((s,j)=>`<div style="display:grid;grid-template-columns:26px 1fr 1fr 28px;gap:6px;margin-bottom:5px">
+          <span style="font-size:11px;color:var(--text3);text-align:center">${j+1}</span>
+          <input class="inp inp-sm" type="number" placeholder="kg" value="${s[0]}" onchange="hxSetVal(${i},${j},0,this.value)">
+          <input class="inp inp-sm" type="number" placeholder="reps" value="${s[1]}" onchange="hxSetVal(${i},${j},1,this.value)">
+          <button class="btn-icon" onclick="hxDelSet(${i},${j})">✕</button>
+        </div>`).join('')}
+        <button class="btn" style="font-size:11px" onclick="hxAddSet(${i})">+ Add set</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function hxRenderWorkoutSessions(){
+  const el=document.getElementById('hx-sessions'); if(!el)return;
+  const list=[...(HX.data.wsessions[HX.view]||[])].sort((a,b)=>b.at-a.at).slice(0,8);
+  el.innerHTML=list.length?list.map(s=>`
+    <div class="pi" style="align-items:flex-start">
+      <div>
+        <div style="font-size:13px;font-weight:600">${s.type} <span style="font-size:11px;color:var(--text3);font-weight:400">· ${s.date}</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${s.entries.map(e=>e.ex+' ('+hxFmtSets(e.sets)+')').join(' · ')}</div>
+      </div>
+    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions logged yet.</div>';
+}
+
 // ── PROGRESSION ──
 function renderTrend(){
   const sel=document.getElementById('fit-trend-ex');if(!sel)return;
@@ -3004,7 +3445,7 @@ window.nav = function(id, el){
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,
-    calendar:renderOutlookPage};
+    calendar:renderOutlookPage,hyrox:renderHyroxPage};
   handlers[id]?.();
 };
 
