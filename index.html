@@ -3029,6 +3029,148 @@ function hxDayMeta(w,d){
 }
 function hxKey(w,d){return w+'-'+d;}
 
+/* Full session content, ported from the Tryka plan so Harvey can show what each workout actually involves. */
+const HX_WHYSET=[
+ ["Strength isn't your gap — running volume is, and in doubles you can't hide behind a strong partner because you both run every metre. Your solo gym day keeps the push/pull work you've been doing (it protects upper-body muscle through the cut and transfers straight to the ski, sled and thrusters), with one lower anchor lift and race prep rather than heavy leg volume that would blunt your running.",
+  "You want to run but haven't really run before, so this starts as run/walk and builds one minute at a time. Trust it — by week nine you'll be running the 500s. Never redline in these early weeks."],
+ ["One more interval, nothing else changes.","A little more running in each interval. If a walk break feels too long, shorten it — but don't rush the jumps."],
+ ["First sled sessions. Expect them to humble you regardless of your squat.","Two-minute runs now. The gym work is light on purpose while your legs adapt to the running."],
+ ["Deload. Your tendons need it more than your lungs do.","Deload. Beginners get hurt by doing too much too soon — take the easy week."],
+ ["Heavy strength beside race-pace running is the hardest combination in the plan.","Three-minute runs. You're over the hump where running starts to feel like running."],
+ ["The mini sim tells you whether your split is realistic while there's still time to change it.","The mini sim is your first taste of the race. Just finish it — the number is for later."],
+ ["Peak volume. If something's going to niggle, it's this week — back off early, not late.","Your longest continuous running yet. Sleep and food matter as much as the sessions."],
+ ["Second deload. Sharp beats fit from here.","Second deload. You should finish the week itching to train — that's the point."],
+ ["Half sim at race weights. Note where the running fell apart, not just the total.","Now you're running the 500s properly. Half sim shows how far you've come since week six."],
+ ["Race-pace runs with short rests — the closest thing to the real event.","Race-effort 500s. This is the week it starts to feel genuinely possible."],
+ ["Full sim on a Saturday if you can — your predicted time and pacing rehearsal.","Full sim. Whatever the clock says, you've now covered the whole race distance."],
+ ["Taper. Feeling flat and restless is normal and means it's working.","Taper. Trust the twelve weeks behind you — arrive fresh, not fit-and-tired."]
+];
+const HX_RUNSET=[
+ ["6 × 400 m at 5k effort, 90 s walk back","Run/walk 8 × (1 min run / 90 s walk), easy"],
+ ["8 × 400 m at 5k effort, 90 s walk back","Run/walk 8 × (90 s run / 90 s walk)"],
+ ["5 × 600 m steady, 2 min","Run/walk 6 × (2 min run / 90 s walk)"],
+ ["4 × 400 m relaxed, 2 min — deload","Run/walk 5 × (2 min run / 2 min walk) — deload"],
+ ["6 × 500 m at target team pace, 90 s","Run/walk 6 × (3 min run / 90 s walk)"],
+ ["8 × 500 m at target team pace, 90 s","Run/walk 5 × (4 min run / 2 min walk)"],
+ ["5 × 800 m steady, 2 min","Run/walk 4 × (5 min run / 2 min walk) — longest"],
+ ["4 × 500 m relaxed, 90 s — deload","Run/walk 5 × (3 min run / 2 min walk) — deload"],
+ ["8 × 400 m hard, 60 s","6 × 400 m continuous, 90 s walk"],
+ ["6 × 500 m at race pace, 60 s","6 × 500 m at race effort, 90 s walk"],
+ ["4 × 500 m sharp, 90 s","4 × 500 m sharp, 90 s walk"],
+ ["3 × 300 m at race pace, full recovery","3 × 300 m easy with strides"]
+];
+const HX_STRSET=[
+ ["Back squat 3 × 6 moderate","Goblet squat 3 × 8 · Hip hinge with light bar 3 × 10"],
+ ["Back squat 3 × 8","Goblet squat 3 × 10 · Romanian deadlift 3 × 8 light"],
+ ["Trap-bar deadlift 3 × 5","Front-rack squat 3 × 8 · Trap-bar deadlift 3 × 6 light"],
+ ["Back squat 2 × 6 easy — deload","Goblet squat 2 × 10 · Hinge 2 × 8 — deload"],
+ ["Back squat 4 × 5 heavy","Front squat 4 × 6 · Deadlift 3 × 6"],
+ ["Trap-bar deadlift 4 × 4 heavy","Front squat 4 × 8 · Deadlift 3 × 8"],
+ ["Back squat 4 × 5 heavy","Front squat 4 × 6 · Deadlift 4 × 5"],
+ ["Back squat 3 × 5 at 70% — deload","Front squat 3 × 6 · Deadlift 3 × 5 — deload"],
+ ["Deadlift 3 × 4","Front squat 4 × 6 · Deadlift 3 × 5"],
+ ["Back squat 3 × 5","Front squat 3 × 8 · Deadlift 3 × 6"],
+ ["Back squat 2 × 4 crisp, nothing to failure","Front squat 3 × 5 crisp, nothing to failure"],
+ ["Back squat 2 × 3 light, feel fast","Front squat 2 × 5 light, feel fast"]
+];
+const HX_ACCSET=[
+ ["Bench press 3 × 8 · Barbell row 3 × 8 · Pull-ups 3 × max","Dumbbell thruster 4 × 8 · Walking lunge 3 × 16"],
+ ["Bench press 3 × 10 · Barbell row 3 × 10 · Pull-ups 3 × max","Dumbbell thruster 4 × 10 · Walking lunge 3 × 20"],
+ ["Overhead press 4 × 6 · Weighted pull-up 4 × 5 · DB row 3 × 10","Dumbbell thruster 4 × 12 · Weighted lunge 3 × 20"],
+ ["Bench press 2 × 8 easy · DB row 2 × 10 — deload","Thruster 3 × 8 light · Lunge 2 × 16"],
+ ["Bench press 4 × 6 heavy · Weighted pull-up 4 × 5 · Overhead press 3 × 8","Thruster 4 × 12 · Weighted lunge 4 × 20"],
+ ["Incline bench 4 × 8 · Barbell row 4 × 8 · Pull-ups 4 × max","Thruster 5 × 12 · Weighted lunge 4 × 24"],
+ ["Bench press 5 × 5 heavy · Weighted pull-up 5 × 5 · Overhead press 3 × 6","Thruster 5 × 12 · Lunge 4 × 24"],
+ ["Bench press 3 × 6 · Barbell row 3 × 8 — deload","Thruster 3 × 10 · Lunge 3 × 16"],
+ ["Overhead press 4 × 6 · Weighted pull-up 4 × 5 · DB bench 3 × 10","Thruster 5 × 12 race weight · Lunge 4 × 24"],
+ ["Bench press 4 × 6 · Barbell row 4 × 8 · Pull-ups 3 × max","Thruster 4 × 12 race weight · Lunge 3 × 24"],
+ ["Bench press 3 × 5 · Barbell row 3 × 5 crisp","Thruster 3 × 10 race weight · Lunge 2 × 16"],
+ ["Bench press 2 × 5 light · Barbell row 2 × 5 light","Thruster 2 × 8 light · Lunge 2 × 12"]
+];
+const HX_CARRYSET=[
+ ["Thruster 4 × 10 · Farmer's carry 4 × 40 m · Hanging knee raise 3 × 12","Farmer's carry 4 × 30 m · Dead hang 3 × 20 s"],
+ ["Thruster 4 × 12 · Farmer's carry 4 × 50 m · Plank 3 × 45 s","Farmer's carry 4 × 40 m · Dead hang 3 × 25 s"],
+ ["Thruster 5 × 10 · Sled push 5 × 20 m · Farmer's carry 4 × 50 m","Farmer's carry 4 × 40 m · Hang 3 × 30 s"],
+ ["Thruster 3 × 10 light · Farmer's carry 3 × 40 m — deload","Farmer's carry 3 × 30 m · Hang 2 × 20 s"],
+ ["Thruster 5 × 12 · Sled push 5 × 25 m · Farmer's carry 5 × 50 m heavy","Farmer's carry 5 × 40 m · Hang 3 × 35 s"],
+ ["Thruster 5 × 15 · Sled push 5 × 25 m · Farmer's carry 5 × 60 m","Farmer's carry 5 × 50 m · Hang 4 × 40 s"],
+ ["Thruster 6 × 12 heavy · Sled push 6 × 25 m · Farmer's carry 4 × 80 m","Farmer's carry 4 × 60 m · Hang 4 × 45 s"],
+ ["Thruster 3 × 12 · Farmer's carry 3 × 50 m — deload","Farmer's carry 3 × 40 m · Hang 3 × 25 s"],
+ ["Thruster 5 × 15 race weight · Farmer's carry 4 × 80 m race weight","Farmer's carry 4 × 60 m race weight · Hang 4 × 45 s"],
+ ["Thruster 4 × 15 race weight · Farmer's carry 4 × 60 m race weight","Farmer's carry 4 × 60 m race weight · Hang 3 × 40 s"],
+ ["Thruster 3 × 10 race weight · Farmer's carry 3 × 60 m race weight","Farmer's carry 3 × 50 m race weight"],
+ ["Thruster 2 × 8 light · Farmer's carry 2 × 40 m light","Farmer's carry 2 × 40 m light"]
+];
+const HX_PARTSET=[
+ "3 rounds together — run 500 m side by side, then split 200 m SkiErg and 20 walking lunges. Talk through every handover.",
+ "4 rounds together — 500 m run · split 250 m SkiErg and 20 lunges. Try one swap per station and feel how it goes.",
+ "4 rounds together — 500 m run · split 20 m sled push and 12 thrusters. First session with the sled as a pair.",
+ "BENCHMARK SIM (light) — 3 stations, 3 × 500 m runs at easy-moderate effort. Not a fast time — the point is recording each station split and a rough handover time in the log, so weeks 6, 9 and 11 have a baseline to beat.",
+ "5 rounds together — 500 m run · split 20 m sled push and 20 m sled pull. Lock in who takes the bigger share.",
+ "MINI SIM — 4 stations, 4 × 500 m runs, race splits, one clock. Use the sim timer and write the number down.",
+ "5 rounds together — 500 m run · split 400 m row and 12 burpee broad jumps. Alternate burpees in short sets.",
+ "3 easy rounds together — 500 m run · split 200 m ski and 16 lunges. Deload.",
+ "HALF SIM — 4 stations, 4 × 500 m runs at race weights and race splits. Time it and compare to week six.",
+ "6 rounds together — 500 m run · split 30 m farmer's carry and 12 thrusters. Race-pace runs, short rests.",
+ "FULL SIM — all 8 stations, 8 × 500 m runs, 40 m sprint, agreed splits. This is your predicted race time.",
+ "2 easy rounds together — 500 m run · 10 m sled push · 10 thrusters. Rehearse handovers, nothing hard."
+];
+const HX_LONGSET=[
+ "30 min easy together — run/walk as needed, keep it conversational",
+ "35 min easy together — run/walk, conversational",
+ "35 min together, aim to run more of it than last week",
+ "25 min very easy together — deload",
+ "40 min easy together, mostly running now",
+ "45 min easy together",
+ "50 min easy together — longest of the plan",
+ "30 min very easy together — deload",
+ "40 min easy continuous together",
+ "40 min easy together",
+ "30 min easy together, nothing hard",
+ "20 min shakeout together, two 30 s strides"
+];
+const HX_FUEL={
+  Run:"Carbs in the meal before so you can hit the efforts; protein + carbs within the hour after. Intervals dry you out more than they feel — drink.",
+  Strength:"Protein is the priority today. A protein + carb meal 2–3 h before, and protein soon after — this is where strength is built and kept.",
+  Partner:"Treat it like a mini race. Bigger, easy-to-digest carb meal 2–3 h before; sip water or electrolytes if it runs past 45 min; carbs + protein to refuel after. Your hardest session of the week.",
+  Simulation:"Fuel it exactly as you'll fuel race day — this is the rehearsal. Familiar carb meal 2–3 h before, water with a pinch of salt, nothing new. Refuel properly afterward.",
+  LongEasy:"Lower intensity, so don't over-fuel — normal balanced meals, good hydration, and a protein-containing meal after. A good day for veg and whole foods."
+};
+function hxPick(v){ return Array.isArray(v)?v[HX.view]:v; }
+function hxDayBlocks(w,d){
+  const dm=hxDayMeta(w,d);
+  let blocks,fuelKey;
+  if(d===0){
+    blocks=[
+      {h:'Warm up',lines:['10 min easy jog, leg swings, 3 × 20 s strides']},
+      {h:'Main set',lines:[hxPick(HX_RUNSET[w])]},
+      {h:'Cool down',lines:['10 min easy jog or walk']},
+    ];
+    fuelKey='Run';
+  } else if(d===1){
+    blocks=[
+      {h:hxPick(['Lower anchor','Lower body']),lines:[hxPick(HX_STRSET[w])]},
+      {h:hxPick(['Push & pull','Race movements']),lines:[hxPick(HX_ACCSET[w])]},
+      {h:hxPick(['Race prep & carry','Grip and trunk']),lines:[hxPick(HX_CARRYSET[w])]},
+    ];
+    fuelKey='Strength';
+  } else if(d===2){
+    blocks=[
+      {h:'Warm up',lines:['8 min easy together, then one round at half effort']},
+      {h:'Main set',lines:[HX_PARTSET[w]]},
+      {h:'Afterwards',lines:['Two minutes on what to change. Write it in the notes below.']},
+    ];
+    fuelKey=dm.type;
+  } else {
+    blocks=[
+      {h:'Session',lines:[HX_LONGSET[w]]},
+      {h:'Finish with',lines:['10 min mobility — hips, ankles, thoracic spine']},
+    ];
+    fuelKey='LongEasy';
+  }
+  return {blocks,fuel:HX_FUEL[fuelKey]};
+}
+
 let HX={sb:null,loggedIn:false,sessionChecked:false,me:0,view:0,weekOffset:null,data:null};
 let HX_WSES=null;
 
@@ -3186,18 +3328,32 @@ function hxRenderWeek(wIdx){
   const meta=HX_WEEK_META[wIdx];
   const el=document.getElementById('hx-week');
   if(!el)return;
+  const why=hxPick(HX_WHYSET[wIdx]);
   const days=[0,1,2,3].map(d=>{
     const dm=hxDayMeta(wIdx,d);
     const k=hxKey(wIdx,d);
     const isDone=!!D.done[HX.view][k];
     const editable=hxCanEdit(dm.together);
-    return `<div class="pi" style="align-items:flex-start">
-      <button class="btn-icon" style="font-size:16px;color:${isDone?'var(--green)':'var(--text3)'}" onclick="hxToggleDay(${wIdx},${d})"${editable?'':' disabled'}>${isDone?'✓':'○'}</button>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;${isDone?'text-decoration:line-through;opacity:.6':''}">${dm.name}${dm.together?' <span class="tag tg" style="margin-left:4px">Together</span>':''}</div>
-        <div style="font-size:11px;color:var(--text3)">${dm.sub} · ${dm.type}</div>
+    const full=hxDayBlocks(wIdx,d);
+    const blocksHtml=full.blocks.map(b=>`<div style="margin-bottom:10px">
+      <div class="ml" style="margin-bottom:4px">${b.h}</div>
+      ${b.lines.map(l=>`<div style="font-size:12.5px;color:var(--text2);line-height:1.5;padding-left:12px;position:relative;margin-bottom:2px"><span style="position:absolute;left:0;color:var(--text3)">–</span>${l}</div>`).join('')}
+    </div>`).join('');
+    return `<details style="border-top:0.5px solid var(--border);padding:9px 0">
+      <summary style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;list-style:none">
+        <span onclick="event.preventDefault();event.stopPropagation();hxToggleDay(${wIdx},${d})" style="font-size:16px;line-height:1.3;cursor:${editable?'pointer':'default'};color:${isDone?'var(--green)':'var(--text3)'}">${isDone?'✓':'○'}</span>
+        <span style="flex:1">
+          <span style="font-size:13px;font-weight:600;display:block;${isDone?'text-decoration:line-through;opacity:.6':''}">${dm.name}${dm.together?' <span class="tag tg" style="margin-left:4px">Together</span>':''}</span>
+          <span style="font-size:11px;color:var(--text3)">${dm.sub} · ${dm.type}</span>
+        </span>
+      </summary>
+      <div style="padding:10px 0 2px 26px">
+        ${blocksHtml}
+        <div style="font-size:12px;color:var(--text2);border-left:2px solid var(--green);padding-left:10px;margin-top:8px;line-height:1.5">
+          <b style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:2px">Fuel</b>${full.fuel}
+        </div>
       </div>
-    </div>`;
+    </details>`;
   }).join('');
   el.innerHTML=`
     <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
@@ -3208,6 +3364,7 @@ function hxRenderWeek(wIdx){
         <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(1)">›</button>
       </div>
     </div>
+    <p style="font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:8px">${why}</p>
     ${days}`;
 }
 function hxToggleDay(w,d){
