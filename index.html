@@ -281,7 +281,9 @@
   <div class="nav-sec">
     <div class="nav-lbl">Life</div>
     <div class="ni" onclick="nav('wishlist',this)"><span class="ni-ico">✦</span>Wishlist</div>
+    <!-- Old workout tracker hidden for now — superseded by Hyrox. Uncomment to bring back.
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
+    -->
     <div class="ni" onclick="nav('hyrox',this)"><span class="ni-ico">▲</span>Hyrox</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
@@ -734,7 +736,7 @@
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bn-item active" data-page="home" onclick="nav('home',this)"><span class="bn-ico">⌂</span><span>Home</span></button>
   <button class="bn-item" data-page="budget" onclick="nav('budget',this)"><span class="bn-ico">◈</span><span>Budget</span></button>
-  <button class="bn-item" data-page="fitness" onclick="nav('fitness',this)"><span class="bn-ico">◈</span><span>Fitness</span></button>
+  <button class="bn-item" data-page="hyrox" onclick="nav('hyrox',this)"><span class="bn-ico">▲</span><span>Hyrox</span></button>
   <button class="bn-item" data-page="notes" onclick="nav('notes',this)"><span class="bn-ico">✎</span><span>Notes</span></button>
   <button class="bn-item" onclick="toggleSidebar()"><span class="bn-ico">☰</span><span>More</span></button>
 </nav>
@@ -3024,13 +3026,25 @@ const HX_WEEK_META=[
 function hxDayMeta(w,d){
   const isSim=(w===3||w===5||w===8||w===10);
   const days=[
-    {name:'Intervals',type:'Run',sub:'Day 1 · solo',together:false},
-    {name:'Strength',type:'Strength',sub:'Day 2 · gym, solo',together:false},
-    {name:w===3?'Benchmark sim':w===5?'Mini simulation':w===8?'Half simulation':w===10?'Full simulation':'Partner session',
+    {d:0,name:'Intervals',type:'Run',sub:'Day 1 · solo',together:false},
+    {d:1,name:hxPick(['Strength A','Strength']),type:'Strength',sub:'Day 2 · gym, solo',together:false},
+    {d:2,name:w===3?'Benchmark sim':w===5?'Mini simulation':w===8?'Half simulation':w===10?'Full simulation':'Partner session',
      type:isSim?'Simulation':'Partner',sub:'Day 3 · as a team',together:true},
-    {name:'Long and easy',type:'Run',sub:'Day 4 · aerobic',together:true},
+    {d:3,name:'Long and easy',type:'Run',sub:hxPick(['Day 5 · aerobic','Day 4 · aerobic']),together:true},
+    {d:4,name:'Strength B',type:'StrengthB',sub:'Day 4 · gym, solo',together:false,only:0},
   ];
   return days[d];
+}
+// Which day indices apply to whoever's currently being viewed (Strength B is Harvey-only).
+function hxDaysForView(w){
+  return [0,1,2,3,4].filter(d=>{
+    const dm=hxDayMeta(w,d);
+    return dm.only==null||dm.only===HX.view;
+  });
+}
+function hxTotalDaysForView(){
+  let n=0; for(let w=0;w<12;w++)n+=hxDaysForView(w).length;
+  return n;
 }
 function hxKey(w,d){return w+'-'+d;}
 
@@ -3141,6 +3155,13 @@ const HX_FUEL={
   Simulation:"Fuel it exactly as you'll fuel race day — this is the rehearsal. Familiar carb meal 2–3 h before, water with a pinch of salt, nothing new. Refuel properly afterward.",
   LongEasy:"Lower intensity, so don't over-fuel — normal balanced meals, good hydration, and a protein-containing meal after. A good day for veg and whole foods."
 };
+// Harvey's second gym day — fixed prescription every week (unlike the periodised
+// Day 2 sets above). Solo: this day never appears for Doireann.
+const HX_STRB={
+  anchor:"Deadlift 3 × 5 moderate",
+  push:"Overhead press 3 × 8 · Dips 3 × 8–10 · Chest-supported T-bar row 3 × 10 · Face pull 3 × 15",
+  carry:"Walking lunges 3 × 20 · Ski Erg 4 × 20 s hard, 40 s easy · Pallof press 3 × 12 each side",
+};
 function hxPick(v){ return Array.isArray(v)?v[HX.view]:v; }
 function hxDayBlocks(w,d){
   const dm=hxDayMeta(w,d);
@@ -3153,10 +3174,12 @@ function hxDayBlocks(w,d){
     ];
     fuelKey='Run';
   } else if(d===1){
+    // Harvey's Day 2 is frozen at the week-one prescription so his two gym days
+    // are the same every week. Doireann's side still periodises as before.
     blocks=[
-      {h:hxPick(['Lower anchor','Lower body']),lines:[hxPick(HX_STRSET[w])]},
-      {h:hxPick(['Push & pull','Race movements']),lines:[hxPick(HX_ACCSET[w])]},
-      {h:hxPick(['Race prep & carry','Grip and trunk']),lines:[hxPick(HX_CARRYSET[w])]},
+      {h:hxPick(['Lower anchor','Lower body']),lines:[hxPick([HX_STRSET[0][0],HX_STRSET[w][1]])]},
+      {h:hxPick(['Push & pull','Race movements']),lines:[hxPick([HX_ACCSET[0][0],HX_ACCSET[w][1]])]},
+      {h:hxPick(['Race prep & carry','Grip and trunk']),lines:[hxPick([HX_CARRYSET[0][0],HX_CARRYSET[w][1]])]},
     ];
     fuelKey='Strength';
   } else if(d===2){
@@ -3166,12 +3189,19 @@ function hxDayBlocks(w,d){
       {h:'Afterwards',lines:['Two minutes on what to change. Write it in the notes below.']},
     ];
     fuelKey=dm.type;
-  } else {
+  } else if(d===3){
     blocks=[
       {h:'Session',lines:[HX_LONGSET[w]]},
       {h:'Finish with',lines:['10 min mobility — hips, ankles, thoracic spine']},
     ];
     fuelKey='LongEasy';
+  } else {
+    blocks=[
+      {h:'Lower anchor',lines:[HX_STRB.anchor]},
+      {h:'Push & pull',lines:[HX_STRB.push]},
+      {h:'Race prep & carry',lines:[HX_STRB.carry]},
+    ];
+    fuelKey='Strength';
   }
   return {blocks,fuel:HX_FUEL[fuelKey]};
 }
@@ -3313,13 +3343,15 @@ function hxRenderAll(){
   const tabsEl=document.getElementById('hx-tabs');
   if(tabsEl)tabsEl.innerHTML=[0,1].map(i=>`<button class="wkb ${HX.view===i?'active':''}" onclick="hxSetView(${i})">${names[i]}${HX.me===i?' · you':''}</button>`).join('');
 
-  let doneTotal=0; for(let w=0;w<12;w++)for(let d=0;d<4;d++) if(D.done[HX.view][hxKey(w,d)])doneTotal++;
+  let doneTotal=0; for(let w=0;w<12;w++)hxDaysForView(w).forEach(d=>{ if(D.done[HX.view][hxKey(w,d)])doneTotal++; });
+  const totalForView=hxTotalDaysForView();
   const wIdx=HX.weekOffset!=null?HX.weekOffset:hxWeekIndex();
-  let weekDone=0; for(let d=0;d<4;d++) if(D.done[HX.view][hxKey(wIdx,d)])weekDone++;
+  const weekDays=hxDaysForView(wIdx);
+  let weekDone=0; weekDays.forEach(d=>{ if(D.done[HX.view][hxKey(wIdx,d)])weekDone++; });
   const metricsEl=document.getElementById('hx-m');
   if(metricsEl)metricsEl.innerHTML=`
-    <div class="mc"><div class="ml">This week</div><div class="mv">${weekDone}/4</div></div>
-    <div class="mc"><div class="ml">Total done</div><div class="mv">${doneTotal}/48</div></div>
+    <div class="mc"><div class="ml">This week</div><div class="mv">${weekDone}/${weekDays.length}</div></div>
+    <div class="mc"><div class="ml">Total done</div><div class="mv">${doneTotal}/${totalForView}</div></div>
     <div class="mc"><div class="ml">Race day</div><div class="mv" style="font-size:16px">${D.race?fmtDate(D.race):'—'}</div></div>`;
 
   hxRenderWeek(wIdx);
@@ -3334,7 +3366,7 @@ function hxRenderWeek(wIdx){
   const el=document.getElementById('hx-week');
   if(!el)return;
   const why=hxPick(HX_WHYSET[wIdx]);
-  const days=[0,1,2,3].map(d=>{
+  const days=hxDaysForView(wIdx).map(d=>{
     const dm=hxDayMeta(wIdx,d);
     const k=hxKey(wIdx,d);
     const isDone=!!D.done[HX.view][k];
@@ -3375,6 +3407,7 @@ function hxRenderWeek(wIdx){
 function hxToggleDay(w,d){
   const D=HX.data;
   const dm=hxDayMeta(w,d);
+  if(dm.only!=null&&dm.only!==HX.view)return; // e.g. Strength B belongs to Harvey only
   if(!hxCanEdit(dm.together)){ alert('Sign in as '+D.names[HX.view]+' to edit their plan.'); return; }
   const k=hxKey(w,d);
   const val=!D.done[HX.view][k];
@@ -3633,8 +3666,7 @@ function closeFab(){
 function fabAction(kind){
   closeFab();
   if(kind==='workout'){
-    navById('fitness');
-    setTimeout(()=>startSessionPicker(),80);
+    navById('hyrox');
   } else if(kind==='expense'){
     navById('budget');
     setTimeout(()=>openModal('spend'),80);
