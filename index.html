@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Harvey — Personal Dashboard</title>
+<title>Personal Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.0/lib/msal-browser.min.js"></script>
 <style>
@@ -260,7 +260,7 @@
 
 <div class="app">
 <nav class="sidebar" id="sidebar">
-  <div class="sb-logo"><div class="sb-logo-badge">H</div><div><h1>Harvey</h1><p>Personal dashboard</p></div></div>
+  <div class="sb-logo"><div class="sb-logo-badge" id="sb-badge">◆</div><div><h1 id="sb-name">My Dashboard</h1><p>Personal dashboard</p></div></div>
   <div class="nav-sec">
     <div class="nav-lbl">Overview</div>
     <div class="ni active" onclick="nav('home',this)"><span class="ni-ico">⌂</span>Home</div>
@@ -299,7 +299,7 @@
 
 <!-- HOME -->
 <div id="page-home" class="page active">
-  <div class="ph rb"><div><div class="pt">Good morning, Harvey</div><div class="ps" id="home-date"></div></div><button class="btn btnp" onclick="openModal('spend')">+ Spend</button></div>
+  <div class="ph rb"><div><div class="pt" id="home-greeting">Good morning</div><div class="ps" id="home-date"></div></div><button class="btn btnp" onclick="openModal('spend')">+ Spend</button></div>
   <div id="h-weather" class="mb16"></div>
   <div class="g4 mb16" id="hm"></div>
   <div class="card mb16">
@@ -517,6 +517,12 @@
 <!-- SETTINGS -->
 <div id="page-settings" class="page">
   <div class="ph"><div class="pt">Settings & sync</div><div class="ps" id="settings-active-provider">Choose one sync method below</div></div>
+
+  <div class="card mb16">
+    <div class="st">Your profile</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Personalise this dashboard to you — your name shows in the sidebar and the daily greeting. This is per-account data, so if someone else signs in with their own account on their own device, they set their own name without touching yours.</p>
+    <div class="fr"><label class="fl2">Your name</label><input class="inp" id="profile-name-inp" placeholder="e.g. Alex" onchange="saveProfileName()"></div>
+  </div>
 
   <div class="card mb16">
     <div class="flb mb12"><div class="st" style="margin:0">OneDrive sync</div><span class="tag tb" id="od-active-badge" style="display:none">Active</span></div>
@@ -852,6 +858,8 @@ const DEFAULT_STATE = {
   projectNotes:{},
   savingsGoal:0,
   currentSavings:null,
+  userName:'',
+  weightGoal:85,
 };
 
 // ── ONEDRIVE SYNC ──
@@ -871,7 +879,7 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
   'timeProjects','timeLog','calorieLog','projectNotes',
   'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-  'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings'];
+  'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -1201,6 +1209,16 @@ async function sb2DoSignUp(){
   const pass=document.getElementById('sb2-pass').value;
   const msgEl=document.getElementById('sb2-msg');
   if(!email||!pass||pass.length<6){ if(msgEl){msgEl.textContent='Enter an email and a password of at least 6 characters.';msgEl.style.color='var(--red)';} return; }
+
+  // A brand-new account must always start empty — it should never inherit
+  // whatever this device happens to have cached locally, which could belong
+  // to a completely different person (e.g. testing on a shared computer).
+  const hasExistingData = S.projects.length||S.notes.length||S.bills.length||S.transactions.length||S.weightLog.length||S.savings.length||S.timeLog.length||S.calorieLog.length||S.important.length;
+  if(hasExistingData){
+    const ok=confirm("This device has data cached locally (notes, budget, projects, etc.) — likely yours from another sign-in.\n\nCreating a new account will start it completely empty; that local data will NOT be attached to it. Your local data isn't deleted from this device, just left out of the new account.\n\nContinue creating a new, empty account?");
+    if(!ok)return;
+  }
+
   if(msgEl){msgEl.textContent='Creating account…';msgEl.style.color='var(--text2)';}
   const r=await sb2SignUp(email,pass);
   if(r.error){ if(msgEl){msgEl.textContent='✕ '+r.error;msgEl.style.color='var(--red)';} return; }
@@ -1208,9 +1226,16 @@ async function sb2DoSignUp(){
     if(msgEl){msgEl.textContent='✓ Account created — check your email to confirm it, then sign in above.';msgEl.style.color='var(--green)';}
     return;
   }
+  // Reset local state to a clean slate so the new account starts empty.
+  const fresh=JSON.parse(JSON.stringify(DEFAULT_STATE));
+  Object.keys(S).forEach(k=>delete S[k]);
+  Object.assign(S,fresh);
+  S._ts=Date.now();
+  try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+  renderHome();
   await sb2Push(getStateToSave());
   renderSettings();
-  if(msgEl)msgEl.textContent='✓ Account created and signed in! Supabase is now this device\'s active sync method.';
+  if(msgEl)msgEl.textContent='✓ Account created and signed in — starting empty! Supabase is now this device\'s active sync method.';
 }
 async function sb2DoPull(){
   const msgEl=document.getElementById('sb2-msg2');
@@ -1279,19 +1304,6 @@ function progressRing(pct,opts){
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sb-overlay').classList.toggle('open');
-}
-
-function nav(id, el) {
-  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
-  if(el) el.classList.add('active');
-  document.getElementById('page-'+id).classList.add('active');
-  // Close sidebar on mobile
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('open');
-  ({home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
-    bills:renderBills,savings:renderSavings,projects:renderProjects,
-    wishlist:renderWishlist,fitness:renderFitness,weight:renderWeightPage})[id]?.();
 }
 
 // ── WEATHER (Open-Meteo, no key; browser geolocation → IP fallback) ──
@@ -1378,7 +1390,19 @@ async function renderWeather(){
 }
 
 // ── HOME ──
+function applyProfile(){
+  const name=(S.userName||'').trim();
+  const sbName=document.getElementById('sb-name');
+  const sbBadge=document.getElementById('sb-badge');
+  const greeting=document.getElementById('home-greeting');
+  if(sbName)sbName.textContent=name||'My Dashboard';
+  if(sbBadge)sbBadge.textContent=name?name.charAt(0).toUpperCase():'◆';
+  if(greeting)greeting.textContent=name?('Good morning, '+name):'Good morning';
+  document.title=(name?name+' — ':'')+'Personal Dashboard';
+}
+
 function renderHome(){
+  applyProfile();
   const d=new Date();
   document.getElementById('home-date').textContent=d.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const md=getMonthData(curKey);
@@ -2457,16 +2481,17 @@ function cancelSession(){
 function renderWeightPage(){
   const sorted=[...S.weightLog].sort((a,b)=>a.date.localeCompare(b.date));
   const latest=sorted[sorted.length-1]?.kg||0,first=sorted[0]?.kg||0;
-  const lost=+(first-latest).toFixed(1),goal=85,toGoal=+(latest-goal).toFixed(1);
+  const goal=S.weightGoal||85;
+  const lost=+(first-latest).toFixed(1),toGoal=+(latest-goal).toFixed(1);
   document.getElementById('wt-metrics').innerHTML=`
     <div class="mc"><div class="ml">Current</div><div class="mv">${latest} kg</div></div>
     <div class="mc"><div class="ml">Starting</div><div class="mv">${first} kg</div></div>
     <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${lost} kg</div></div>
-    <div class="mc"><div class="ml">To goal (${goal}kg)</div><div class="mv" style="color:${toGoal<=0?'#3B6D11':'#185FA5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
+    <div class="mc"><div class="ml">To goal</div><div class="mv" style="color:${toGoal<=0?'#3B6D11':'#185FA5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
   const totalPlan=+(first-goal).toFixed(1);
   const goalPct=sorted.length===0?0:(totalPlan>0?Math.min(100,Math.max(0,(lost/totalPlan)*100)):(latest<=goal?100:0));
   document.getElementById('wt-goal-card').innerHTML=`
-    <div class="flb"><div class="st" style="margin:0">Goal progress</div><span style="font-size:12px;color:var(--text3)">Target ${goal} kg</span></div>
+    <div class="flb"><div class="st" style="margin:0">Goal progress</div><span style="font-size:12px;color:var(--text3)">Target <input type="number" id="wt-goal-inp" value="${goal}" style="width:40px;border:none;background:transparent;color:inherit;font:inherit;padding:0;text-align:right" onchange="setWeightGoal(this.value)"> kg</span></div>
     <div class="fl" style="gap:18px;align-items:center;flex-wrap:wrap;margin-top:6px">
       ${progressRing(goalPct,{size:84,stroke:8,color:toGoal<=0?'var(--green)':'var(--blue)'})}
       <div style="flex:1;min-width:200px;font-size:13px;color:var(--text2);line-height:1.6">
@@ -2493,6 +2518,7 @@ function renderWeightPage(){
   document.getElementById('wt-log').innerHTML=[...sorted].reverse().map(e=>`<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);align-items:center;"><span style="font-size:13px;color:var(--text2)">${fmtDate(e.date)}</span><span style="font-size:14px;font-weight:600;color:var(--blue)">${e.kg} kg</span><button class="btn-icon" onclick="deleteWeight(${e.id})">✕</button></div>`).join('');
 }
 function deleteWeight(id){S.weightLog=S.weightLog.filter(e=>e.id!==id);saveState();renderWeightPage();}
+function setWeightGoal(val){S.weightGoal=parseFloat(val)||85;saveState();renderWeightPage();}
 
 // ── MODAL ──
 function openModal(type,extra){
@@ -2712,6 +2738,9 @@ async function saveModal(){
 function getStateToSave(){const t=Object.assign({},S);delete t.activeModal;return t;}
 
 function renderSettings(){
+  const nameInp=document.getElementById('profile-name-inp');
+  if(nameInp&&document.activeElement!==nameInp)nameInp.value=S.userName||'';
+
   // No session to display for OneDrive — always show fresh sign in
   const btn=document.getElementById('od-signin-btn');
   if(btn)btn.textContent='Sign in with Microsoft';
@@ -2727,6 +2756,13 @@ function renderSettings(){
   if(providerLabel)providerLabel.textContent='Active sync method: '+(provider==='supabase'?'Supabase':'OneDrive');
 
   sb2RenderSignedState();
+}
+function saveProfileName(){
+  const el=document.getElementById('profile-name-inp');
+  if(!el)return;
+  S.userName=el.value.trim();
+  saveState();
+  applyProfile();
 }
 
 async function sb2RenderSignedState(){
@@ -2768,12 +2804,6 @@ async function odSignIn(){
   }catch(e){
     if(m){m.textContent='✕ '+e.message;m.style.color='var(--red)';}
   }
-}
-
-function odSignOut(){
-  // No persistent session to sign out of
-  const m=document.getElementById('settings-msg');
-  if(m){m.textContent='Not signed in — sign in when you want to sync.';m.style.color='var(--text2)';}
 }
 
 function exportData(){
