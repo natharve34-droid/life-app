@@ -516,22 +516,47 @@
 
 <!-- SETTINGS -->
 <div id="page-settings" class="page">
-  <div class="ph"><div class="pt">Settings & sync</div><div class="ps">Sync via Microsoft OneDrive</div></div>
+  <div class="ph"><div class="pt">Settings & sync</div><div class="ps" id="settings-active-provider">Choose one sync method below</div></div>
 
   <div class="card mb16">
-    <div class="st">OneDrive sync</div>
+    <div class="flb mb12"><div class="st" style="margin:0">OneDrive sync</div><span class="tag tb" id="od-active-badge" style="display:none">Active</span></div>
     <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Sign in with your Microsoft account to sync your data across all devices via OneDrive. Do this once per device. This same sign-in also grants access to your Outlook calendar for the Calendar page.</p>
     <div class="fl" style="gap:8px;flex-wrap:wrap;">
       <button class="btn btnp" id="od-signin-btn" onclick="odSignIn()">Sign in &amp; pull from OneDrive</button>
-      <button class="btn" onclick="pushToOD(getStateToSave())">Sign in &amp; push to OneDrive</button>
+      <button class="btn" onclick="odPushClick()">Sign in &amp; push to OneDrive</button>
     </div>
     <p style="font-size:12px;color:var(--text3);margin-top:8px">Each button signs you in fresh with Microsoft, then immediately pulls or pushes your data. No session is saved.</p>
     <div id="settings-msg" style="margin-top:10px;font-size:13px;"></div>
   </div>
 
   <div class="card mb16">
+    <div class="flb mb12"><div class="st" style="margin:0">Supabase sync</div><span class="tag tp" id="sb2-active-badge" style="display:none">Active</span></div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">An alternative to OneDrive for anyone who'd rather not use a Microsoft account — sign in with just an email and password. Handy if a friend wants to use this dashboard for themselves. Use <strong>one</strong> sync method at a time, not both, to avoid conflicting saves.</p>
+
+    <div id="sb2-signed-out">
+      <div class="fr"><label class="fl2">Email</label><input class="inp" id="sb2-email" placeholder="you@example.com"></div>
+      <div class="fr"><label class="fl2">Password</label><input type="password" class="inp" id="sb2-pass" placeholder="At least 6 characters"></div>
+      <div class="fl" style="gap:8px;flex-wrap:wrap;">
+        <button class="btn btnp" onclick="sb2DoSignIn()">Sign in</button>
+        <button class="btn" onclick="sb2DoSignUp()">Create account</button>
+      </div>
+      <div id="sb2-msg" style="margin-top:10px;font-size:13px;"></div>
+    </div>
+
+    <div id="sb2-signed-in" style="display:none">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Signed in as <strong id="sb2-email-display"></strong> — this device syncs via Supabase.</p>
+      <div class="fl" style="gap:8px;flex-wrap:wrap;">
+        <button class="btn btnp" onclick="sb2DoPull()">Pull from Supabase</button>
+        <button class="btn" onclick="sb2DoPush()">Push to Supabase</button>
+        <button class="btn btnd" onclick="sb2DoSignOut()">Sign out</button>
+      </div>
+      <div id="sb2-msg2" style="margin-top:10px;font-size:13px;"></div>
+    </div>
+  </div>
+
+  <div class="card mb16">
     <div class="st">How it works</div>
-    <p style="font-size:13px;color:var(--text2);line-height:1.8">Click <strong>Sign in &amp; pull</strong> to load your latest data from OneDrive, or <strong>Sign in &amp; push</strong> to save your current data to OneDrive. Each button redirects you to Microsoft to sign in fresh — no password is remembered. Works identically on every device and browser.</p>
+    <p style="font-size:13px;color:var(--text2);line-height:1.8">Click <strong>Sign in &amp; pull</strong> to load your latest data from OneDrive, or <strong>Sign in &amp; push</strong> to save your current data to OneDrive. Each button redirects you to Microsoft to sign in fresh — no password is remembered. Works identically on every device and browser. Signing in with Supabase (above) works the same way but with a normal email + password account instead, and becomes your active sync method until you sign in with the other one.</p>
   </div>
 
   <div class="card">
@@ -835,6 +860,19 @@ const LS={
   set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}},
 };
 
+// Which backend this device currently syncs through — a per-device preference,
+// not part of S, so it survives independently of whatever data is loaded.
+function getSyncProvider(){ return LS.get('harvey-sync-provider')||'onedrive'; }
+function setSyncProvider(p){ LS.set('harvey-sync-provider',p); }
+
+// The fields that actually get synced across devices, shared by both backends
+// so OneDrive and Supabase pulls stay in lockstep.
+const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist',
+  'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
+  'timeProjects','timeLog','calorieLog','projectNotes',
+  'exercises','workoutTemplates','workoutSessions','workoutMigrated',
+  'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings'];
+
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
   redirectUri:window.location.origin+window.location.pathname,
@@ -1021,7 +1059,10 @@ function saveState() {
     delete toSave.activeModal;
     LS.set('harvey-data', JSON.stringify(toSave));
     clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => autoPush(toSave), 1500);
+    syncTimer = setTimeout(() => {
+      if (getSyncProvider()==='supabase') sb2AutoPush(toSave);
+      else autoPush(toSave);
+    }, 1500);
   } catch(e) {}
 }
 
@@ -1050,6 +1091,153 @@ async function syncFromOD(){
   const m=document.getElementById('settings-msg');
   if(m){m.textContent='Redirecting to Microsoft to sign in…';m.style.color='var(--text2)';}
   await pullFromOD(); // pullFromOD calls getToken() which redirects if needed
+}
+
+// ── SUPABASE SYNC (alternative to OneDrive — general Harvey data, not Hyrox) ──
+// Same Supabase project as the Hyrox/Tryka integration, but a separate table
+// (harvey_state) and a separate client instance with its own auth storage key,
+// so an email/password sign-in here never touches the Hyrox athlete session.
+const SB2_URL='https://foznudyesjdntzaqhxas.supabase.co';
+const SB2_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvem51ZHllc2pkbnR6YXFoeGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMjU3ODEsImV4cCI6MjEwMDkwMTc4MX0.eQvoHWtMCUnQKfVN6L3wUFECes_-V6PON_uXGNct-Ao';
+let SB2={client:null,loggedIn:false,email:null};
+
+async function sb2Connect(){
+  if(SB2.client)return true;
+  try{
+    const mod=await import('https://esm.sh/@supabase/supabase-js@2');
+    SB2.client=mod.createClient(SB2_URL,SB2_KEY,{auth:{storageKey:'harvey-life-auth',persistSession:true,autoRefreshToken:true}});
+    return true;
+  }catch(e){ return false; }
+}
+async function sb2SignUp(email,password){
+  const ok=await sb2Connect();
+  if(!ok)return{error:"Can't reach the server — check your connection."};
+  try{
+    const res=await SB2.client.auth.signUp({email,password});
+    if(res.error)return{error:res.error.message};
+    if(res.data.session){
+      SB2.loggedIn=true;SB2.email=res.data.user.email;setSyncProvider('supabase');
+      return{ok:true,confirmed:true};
+    }
+    return{ok:true,confirmed:false}; // needs email confirmation before sign-in works
+  }catch(e){return{error:(e&&e.message)||'Sign-up failed'};}
+}
+async function sb2SignIn(email,password){
+  const ok=await sb2Connect();
+  if(!ok)return{error:"Can't reach the server — check your connection."};
+  try{
+    const res=await SB2.client.auth.signInWithPassword({email,password});
+    if(res.error)return{error:res.error.message};
+    SB2.loggedIn=true;SB2.email=res.data.user.email;setSyncProvider('supabase');
+    return{ok:true};
+  }catch(e){return{error:(e&&e.message)||'Sign-in failed'};}
+}
+async function sb2SignOut(){
+  try{if(SB2.client)await SB2.client.auth.signOut();}catch(e){}
+  SB2.loggedIn=false;SB2.email=null;
+  if(getSyncProvider()==='supabase')setSyncProvider('onedrive');
+}
+async function sb2Pull(){
+  const ok=await sb2Connect();if(!ok)return null;
+  try{
+    const {data:{user}}=await SB2.client.auth.getUser();
+    if(!user)return null;
+    const r=await SB2.client.from('harvey_state').select('data').eq('user_id',user.id).maybeSingle();
+    return (r.data&&r.data.data)?r.data.data:null;
+  }catch(e){return null;}
+}
+async function sb2Push(data){
+  const ok=await sb2Connect();if(!ok)return false;
+  try{
+    const {data:{user}}=await SB2.client.auth.getUser();
+    if(!user)return false;
+    await SB2.client.from('harvey_state').upsert({user_id:user.id,data,updated_at:new Date().toISOString()});
+    return true;
+  }catch(e){return false;}
+}
+// Background auto-save: only pushes if already signed in; otherwise quietly
+// flags that sync needs a sign-in — mirrors autoPush()'s OneDrive behaviour.
+async function sb2AutoPush(data){
+  const ok=await sb2Connect();
+  if(!ok){setSyncStatus('no-creds');setTimeout(()=>setSyncStatus('idle'),4000);return;}
+  let session=null;
+  try{const r=await SB2.client.auth.getSession();session=r&&r.data&&r.data.session;}catch(e){}
+  if(!session){setSyncStatus('no-creds');setTimeout(()=>setSyncStatus('idle'),4000);return;}
+  setSyncStatus('saving');
+  const ok2=await sb2Push(data);
+  if(ok2){setSyncStatus('saved');setTimeout(()=>setSyncStatus('idle'),3000);}
+  else{setSyncStatus('error','✕ Sync failed');setTimeout(()=>setSyncStatus('idle'),5000);}
+}
+function sb2MergeRemote(remote){
+  const localTs=S._ts||0, remoteTs=(remote&&remote._ts)||0;
+  if(remote&&remoteTs>=localTs){
+    SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
+    S._ts=remoteTs;
+    S.workoutDef=DEFAULT_STATE.workoutDef;
+    try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+    renderHome();
+    return true;
+  }
+  return false;
+}
+
+// Settings page button handlers
+async function sb2DoSignIn(){
+  const email=(document.getElementById('sb2-email').value||'').trim();
+  const pass=document.getElementById('sb2-pass').value;
+  const msgEl=document.getElementById('sb2-msg');
+  if(!email||!pass){ if(msgEl){msgEl.textContent='Enter an email and password.';msgEl.style.color='var(--red)';} return; }
+  if(msgEl){msgEl.textContent='Signing in…';msgEl.style.color='var(--text2)';}
+  const r=await sb2SignIn(email,pass);
+  if(r.error){ if(msgEl){msgEl.textContent='✕ '+r.error;msgEl.style.color='var(--red)';} return; }
+  if(msgEl){msgEl.textContent='✓ Signed in! Pulling your data…';msgEl.style.color='var(--green)';}
+  const remote=await sb2Pull();
+  if(!sb2MergeRemote(remote)) await sb2Push(getStateToSave());
+  renderSettings();
+  if(msgEl)msgEl.textContent='✓ Signed in and synced! Supabase is now this device\'s active sync method.';
+}
+async function sb2DoSignUp(){
+  const email=(document.getElementById('sb2-email').value||'').trim();
+  const pass=document.getElementById('sb2-pass').value;
+  const msgEl=document.getElementById('sb2-msg');
+  if(!email||!pass||pass.length<6){ if(msgEl){msgEl.textContent='Enter an email and a password of at least 6 characters.';msgEl.style.color='var(--red)';} return; }
+  if(msgEl){msgEl.textContent='Creating account…';msgEl.style.color='var(--text2)';}
+  const r=await sb2SignUp(email,pass);
+  if(r.error){ if(msgEl){msgEl.textContent='✕ '+r.error;msgEl.style.color='var(--red)';} return; }
+  if(!r.confirmed){
+    if(msgEl){msgEl.textContent='✓ Account created — check your email to confirm it, then sign in above.';msgEl.style.color='var(--green)';}
+    return;
+  }
+  await sb2Push(getStateToSave());
+  renderSettings();
+  if(msgEl)msgEl.textContent='✓ Account created and signed in! Supabase is now this device\'s active sync method.';
+}
+async function sb2DoPull(){
+  const msgEl=document.getElementById('sb2-msg2');
+  if(msgEl){msgEl.textContent='Pulling…';msgEl.style.color='var(--text2)';}
+  const remote=await sb2Pull();
+  if(remote){
+    SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
+    if(remote._ts)S._ts=remote._ts;
+    S.workoutDef=DEFAULT_STATE.workoutDef;
+    try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+    renderHome();
+    if(msgEl)msgEl.textContent='✓ Pulled latest data.';
+  } else if(msgEl){ msgEl.textContent='No data found on Supabase yet — push first.'; msgEl.style.color='var(--text2)'; }
+}
+async function sb2DoPush(){
+  const msgEl=document.getElementById('sb2-msg2');
+  if(msgEl){msgEl.textContent='Pushing…';msgEl.style.color='var(--text2)';}
+  const ok=await sb2Push(getStateToSave());
+  if(msgEl){msgEl.textContent=ok?'✓ Pushed current data.':'✕ Push failed.';msgEl.style.color=ok?'var(--green)':'var(--red)';}
+}
+async function sb2DoSignOut(){
+  await sb2SignOut();
+  renderSettings();
+}
+async function odPushClick(){
+  setSyncProvider('onedrive');
+  await pushToOD(getStateToSave());
 }
 
 
@@ -2524,14 +2712,49 @@ async function saveModal(){
 function getStateToSave(){const t=Object.assign({},S);delete t.activeModal;return t;}
 
 function renderSettings(){
-  // No session to display — always show fresh sign in
+  // No session to display for OneDrive — always show fresh sign in
   const btn=document.getElementById('od-signin-btn');
   if(btn)btn.textContent='Sign in with Microsoft';
   const el=document.getElementById('od-account');
   if(el)el.style.display='none';
+
+  const provider=getSyncProvider();
+  const odBadge=document.getElementById('od-active-badge');
+  if(odBadge)odBadge.style.display=provider==='onedrive'?'':'none';
+  const sbBadge=document.getElementById('sb2-active-badge');
+  if(sbBadge)sbBadge.style.display=provider==='supabase'?'':'none';
+  const providerLabel=document.getElementById('settings-active-provider');
+  if(providerLabel)providerLabel.textContent='Active sync method: '+(provider==='supabase'?'Supabase':'OneDrive');
+
+  sb2RenderSignedState();
+}
+
+async function sb2RenderSignedState(){
+  if(!SB2.sessionChecked){
+    SB2.sessionChecked=true;
+    const ok=await sb2Connect();
+    if(ok){
+      try{
+        const r=await SB2.client.auth.getSession();
+        if(r&&r.data&&r.data.session){ SB2.loggedIn=true; SB2.email=r.data.session.user.email; }
+      }catch(e){}
+    }
+  }
+  const signedOut=document.getElementById('sb2-signed-out');
+  const signedIn=document.getElementById('sb2-signed-in');
+  if(SB2.loggedIn){
+    if(signedOut)signedOut.style.display='none';
+    if(signedIn)signedIn.style.display='';
+    const emailEl=document.getElementById('sb2-email-display');
+    if(emailEl)emailEl.textContent=SB2.email||'';
+  } else {
+    if(signedOut)signedOut.style.display='';
+    if(signedIn)signedIn.style.display='none';
+  }
 }
 
 async function odSignIn(){
+  setSyncProvider('onedrive');
   const m=document.getElementById('settings-msg');
   if(m){m.textContent='Redirecting to Microsoft…';m.style.color='var(--text2)';}
   try{
@@ -3685,7 +3908,7 @@ renderHome();
 setTimeout(async()=>{
   try{
     const app=getMsalApp();
-    if(!app){setSyncStatus('no-creds');return;}
+    if(!app){ if(getSyncProvider()==='onedrive')setSyncStatus('no-creds'); return; }
     await app.initialize();
     _msalInit=true;
     // Check if we just came back from Microsoft login redirect
@@ -3698,12 +3921,7 @@ setTimeout(async()=>{
       const localTs=S._ts||0;
       const remoteTs=(remote&&remote._ts)||0;
       if(remote&&remoteTs>=localTs){
-        const keys=['bills','pockets','monthlyData','savings','projects','wishlist',
-          'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
-          'timeProjects','timeLog','calorieLog','projectNotes',
-          'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-          'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings'];
-        keys.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
+        SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
         S._ts=remoteTs;
         S.workoutDef=DEFAULT_STATE.workoutDef;
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
@@ -3728,6 +3946,8 @@ setTimeout(async()=>{
         localStorage.removeItem('harvey-pending-nav');
         if(pendingNav==='calendar')navById('calendar');
       }
+    }else if(getSyncProvider()==='supabase'){
+      await sb2SilentInit();
     }else{
       // Normal load — no redirect, just show sign in prompt
       setSyncStatus('no-creds');
@@ -3738,6 +3958,24 @@ setTimeout(async()=>{
     setSyncStatus('idle');
   }
 },300);
+
+async function sb2SilentInit(){
+  const ok=await sb2Connect();
+  if(!ok){ setSyncStatus('idle'); return; }
+  try{
+    const r=await SB2.client.auth.getSession();
+    const session=r&&r.data&&r.data.session;
+    if(!session){ setSyncStatus('no-creds'); setTimeout(()=>setSyncStatus('idle'),6000); return; }
+    SB2.loggedIn=true; SB2.email=session.user.email; SB2.sessionChecked=true;
+    setSyncStatus('saving');
+    const remote=await sb2Pull();
+    if(!sb2MergeRemote(remote)) await sb2Push(getStateToSave());
+    setSyncStatus('saved'); setTimeout(()=>setSyncStatus('idle'),3000);
+  }catch(e){
+    console.error('sb2 init:',e);
+    setSyncStatus('idle');
+  }
+}
 </script>
 </body>
 </html>
