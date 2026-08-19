@@ -1097,8 +1097,8 @@ async function syncFromOD(){
 // Same Supabase project as the Hyrox/Tryka integration, but a separate table
 // (harvey_state) and a separate client instance with its own auth storage key,
 // so an email/password sign-in here never touches the Hyrox athlete session.
-const SB2_URL='https://foznudyesjdntzaqhxas.supabase.co';
-const SB2_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvem51ZHllc2pkbnR6YXFoeGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMjU3ODEsImV4cCI6MjEwMDkwMTc4MX0.eQvoHWtMCUnQKfVN6L3wUFECes_-V6PON_uXGNct-Ao';
+const SB2_URL='https://mppcdduompmycfndtxau.supabase.co';
+const SB2_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wcGNkZHVvbXBteWNmbmR0eGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjUyOTUsImV4cCI6MjEwMjcwMTI5NX0.B66y7uwx4Ms08RzQy1xLMbDMZlnFJyh0VRzoSHdBXtA';
 let SB2={client:null,loggedIn:false,email:null};
 
 async function sb2Connect(){
