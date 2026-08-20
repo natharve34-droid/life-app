@@ -288,6 +288,7 @@
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
     <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
+    <div class="ni" onclick="nav('nutrition',this)"><span class="ni-ico">▣</span>Nutrition</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -651,6 +652,38 @@
   </div>
 </div>
 
+<div id="page-nutrition" class="page">
+  <div class="ph"><div class="pt">Nutrition</div><div class="ps">Daily food diary</div></div>
+  <div class="card mb16">
+    <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
+      <div class="st" style="margin:0" id="nut-date-label">Today</div>
+      <div class="fl" style="gap:6px">
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(-1)">‹</button>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(0)">Today</button>
+        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(1)">›</button>
+      </div>
+    </div>
+    <div class="fl" style="gap:24px;align-items:center;flex-wrap:wrap">
+      <div id="nut-ring"></div>
+      <div style="flex:1;min-width:220px" id="nut-macros"></div>
+    </div>
+  </div>
+  <div class="g2 mb16" id="nut-meals"></div>
+  <div class="card mb16">
+    <div class="st">Last 7 days</div>
+    <div style="position:relative;height:180px"><canvas id="nut-chart" role="img" aria-label="Calories consumed, last 7 days">Nutrition trend</canvas></div>
+  </div>
+  <div class="card">
+    <div class="st">Daily goals</div>
+    <div class="g4" style="gap:8px">
+      <div><label class="fl2">Calories</label><input type="number" class="inp" id="nut-goal-kcal" onchange="setNutGoals()"></div>
+      <div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="nut-goal-protein" onchange="setNutGoals()"></div>
+      <div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="nut-goal-carbs" onchange="setNutGoals()"></div>
+      <div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="nut-goal-fat" onchange="setNutGoals()"></div>
+    </div>
+  </div>
+</div>
+
 <div id="page-calendar" class="page">
   <div class="ph rb">
     <div><div class="pt">Calendar</div><div class="ps">Synced with your Outlook calendar</div></div>
@@ -860,6 +893,9 @@ const DEFAULT_STATE = {
   currentSavings:null,
   userName:'',
   weightGoal:85,
+  foodDiary:[],
+  foodLibrary:[],
+  nutritionGoals:{kcal:2000,protein:150,carbs:200,fat:65},
 };
 
 // ── ONEDRIVE SYNC ──
@@ -879,7 +915,8 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'important','notes','weightLog','sessions','customSets','currentWeek','budgetViewMonth',
   'timeProjects','timeLog','calorieLog','projectNotes',
   'exercises','workoutTemplates','workoutSessions','workoutMigrated',
-  'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal'];
+  'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
+  'foodDiary','foodLibrary','nutritionGoals'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -2524,7 +2561,7 @@ function setWeightGoal(val){S.weightGoal=parseFloat(val)||85;saveState();renderW
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
   const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.textContent='Save';
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -2546,6 +2583,15 @@ function openModal(type,extra){
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
     calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><div class="fr"><label class="fl2" style="display:flex;align-items:center;gap:7px;cursor:pointer;margin-bottom:0"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day event</label></div><div class="g2" id="m-etime-row" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none"><label class="fl2">Repeat until (optional — leave blank for no end)</label><input type="date" class="inp" id="m-eruntil"></div>`,
+    addFood:`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Adding to <strong>${(extra&&extra.meal)||''}</strong> · ${(extra&&extra.date)===TODAYSTR?'Today':((extra&&extra.date)||'')}</div>
+      <div class="fr"><label class="fl2">Search a food</label><div class="fl" style="gap:6px"><input class="inp" id="fd-search" placeholder="e.g. banana, chicken breast..." onkeydown="if(event.key==='Enter'){event.preventDefault();fdSearch();}"><button class="btn" style="white-space:nowrap" onclick="fdSearch()">Search</button></div></div>
+      <div id="fd-results" style="max-height:150px;overflow-y:auto;margin-bottom:10px"></div>
+      ${S.foodLibrary.length?`<div class="fr"><label class="fl2">Or pick from your foods</label><select class="inp" id="fd-myfoods" onchange="fdPickMyFood(this.value)"><option value="">Select a saved food…</option>${S.foodLibrary.map(f=>`<option value="${f.id}">${f.name}</option>`).join('')}</select></div>`:''}
+      <div class="fr"><label class="fl2">Food name</label><input class="inp" id="fd-name" placeholder="e.g. Grilled chicken breast"></div>
+      <div class="g2" style="gap:8px;margin-bottom:10px"><div><label class="fl2">Servings</label><input type="number" class="inp" id="fd-servings" value="1" step="0.25" oninput="fdRecalc()"></div><div><label class="fl2">Calories <span id="fd-serving-label" style="text-transform:none">per serving</span></label><input type="number" class="inp" id="fd-kcal-base" oninput="fdRecalc()"></div></div>
+      <div class="g3" style="gap:8px"><div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="fd-protein-base" oninput="fdRecalc()"></div><div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="fd-carbs-base" oninput="fdRecalc()"></div><div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="fd-fat-base" oninput="fdRecalc()"></div></div>
+      <div id="fd-total-preview" style="font-size:12px;color:var(--text2);margin-top:8px">= 0 kcal · 0P 0C 0F total</div>
+      <div class="fr" style="margin-top:10px"><label class="fl2" style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:0"><input type="checkbox" id="fd-savelib" style="width:auto"> Save to my foods for next time</label></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -2731,6 +2777,27 @@ async function saveModal(){
       await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
     }catch(e){}
     closeModal();refreshCalendarViews();return;
+  } else if(m.type==='addFood'){
+    const name=g('fd-name');
+    const kcalBase=parseFloat(g('fd-kcal-base'))||0;
+    const proteinBase=parseFloat(g('fd-protein-base'))||0;
+    const carbsBase=parseFloat(g('fd-carbs-base'))||0;
+    const fatBase=parseFloat(g('fd-fat-base'))||0;
+    const servings=parseFloat(g('fd-servings'))||1;
+    if(name&&kcalBase>0){
+      S.foodDiary.push({
+        id:Date.now(),date:m.date,meal:m.meal,name,
+        kcal:Math.round(kcalBase*servings),
+        protein:+(proteinBase*servings).toFixed(1),
+        carbs:+(carbsBase*servings).toFixed(1),
+        fat:+(fatBase*servings).toFixed(1),
+        servings,at:Date.now(),
+      });
+      if(document.getElementById('fd-savelib')?.checked){
+        S.foodLibrary.push({id:Date.now()+1,name,kcal:kcalBase,protein:proteinBase,carbs:carbsBase,fat:fatBase});
+      }
+      saveState();renderNutritionPage();
+    }
   }
   closeModal();renderHome();
 }
@@ -3009,6 +3076,161 @@ function renderCaloriesPage(){
       <button onclick="S.calorieLog=S.calorieLog.filter(x=>x.id!==${e.id});saveState();renderCaloriesPage();" class="btn-icon">✕</button>
     </div>`).join('')
     :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No activities logged yet.</div>';
+}
+
+// ── NUTRITION (food diary, MyFitnessPal-style) ──
+const MEAL_TYPES=['Breakfast','Lunch','Dinner','Snacks'];
+let _nutDayOffset=0;
+function nutDayNav(d){_nutDayOffset=d===0?0:_nutDayOffset+d;renderNutritionPage();}
+function nutCurDate(){const d=new Date();d.setDate(d.getDate()+_nutDayOffset);return localDateStr(d);}
+
+function renderNutritionPage(){
+  if(!S.foodDiary)S.foodDiary=[];
+  if(!S.foodLibrary)S.foodLibrary=[];
+  if(!S.nutritionGoals)S.nutritionGoals={kcal:2000,protein:150,carbs:200,fat:65};
+  const ds=nutCurDate();
+  const dateLabelEl=document.getElementById('nut-date-label');
+  if(dateLabelEl){
+    const d=new Date(ds+'T12:00:00');
+    dateLabelEl.textContent=ds===TODAYSTR?'Today':d.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'});
+  }
+  const todays=S.foodDiary.filter(e=>e.date===ds);
+  const kcalConsumed=todays.reduce((a,e)=>a+e.kcal,0);
+  const proteinConsumed=todays.reduce((a,e)=>a+e.protein,0);
+  const carbsConsumed=todays.reduce((a,e)=>a+e.carbs,0);
+  const fatConsumed=todays.reduce((a,e)=>a+e.fat,0);
+  const exerciseCal=(S.calorieLog||[]).filter(e=>e.date===ds).reduce((a,e)=>a+e.calories,0);
+  const goals=S.nutritionGoals;
+  const remaining=Math.round(goals.kcal-kcalConsumed+exerciseCal);
+  const pct=goals.kcal>0?Math.min(100,Math.max(0,(kcalConsumed/goals.kcal)*100)):0;
+
+  const ringEl=document.getElementById('nut-ring');
+  if(ringEl)ringEl.innerHTML=progressRing(pct,{size:100,stroke:10,color:remaining<0?'var(--red)':'var(--blue)',label:Math.abs(remaining),sub:remaining<0?'over goal':'remaining'});
+
+  const macroBar=(label,val,goal,color)=>{
+    const p=goal>0?Math.min(100,val/goal*100):0;
+    return `<div style="margin-bottom:10px">
+      <div class="flb" style="margin-bottom:3px"><span style="font-size:12px">${label}</span><span style="font-size:12px;color:var(--text2)">${Math.round(val)} / ${Math.round(goal)}g</span></div>
+      <div class="pb"><div class="pbf" style="width:${p}%;background:${color}"></div></div>
+    </div>`;
+  };
+  const macrosEl=document.getElementById('nut-macros');
+  if(macrosEl)macrosEl.innerHTML=`
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Goal ${goals.kcal} · Food ${Math.round(kcalConsumed)}${exerciseCal?' · Exercise +'+exerciseCal:''}</div>
+    ${macroBar('Protein',proteinConsumed,goals.protein,'var(--blue)')}
+    ${macroBar('Carbs',carbsConsumed,goals.carbs,'var(--amber)')}
+    ${macroBar('Fat',fatConsumed,goals.fat,'var(--purple)')}`;
+
+  const mealsEl=document.getElementById('nut-meals');
+  if(mealsEl)mealsEl.innerHTML=MEAL_TYPES.map(meal=>{
+    const items=todays.filter(e=>e.meal===meal);
+    const sub=items.reduce((a,e)=>a+e.kcal,0);
+    return `<div class="card">
+      <div class="flb mb12">
+        <div class="st" style="margin:0">${meal}</div>
+        <div class="fl" style="gap:8px">
+          <span style="font-size:12px;color:var(--text3)">${sub?Math.round(sub)+' kcal':''}</span>
+          <button class="btn-icon" style="font-size:15px;color:var(--blue)" onclick="openModal('addFood',{meal:'${meal}',date:'${ds}'})" title="Add food">+</button>
+        </div>
+      </div>
+      ${items.length?items.map(e=>`<div class="pi"><div><span class="pn">${e.name}</span><div style="font-size:11px;color:var(--text3)">${Math.round(e.kcal)} kcal · ${Math.round(e.protein)}P ${Math.round(e.carbs)}C ${Math.round(e.fat)}F</div></div><button class="btn-icon" onclick="deleteFoodEntry(${e.id})">✕</button></div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:6px 0">Nothing logged yet.</div>'}
+    </div>`;
+  }).join('');
+
+  ['kcal','protein','carbs','fat'].forEach(k=>{
+    const inp=document.getElementById('nut-goal-'+k);
+    if(inp&&document.activeElement!==inp)inp.value=goals[k];
+  });
+
+  requestAnimationFrame(()=>{
+    destroyChart('nut-chart');
+    const ctx=document.getElementById('nut-chart');if(!ctx)return;
+    const days=[],labels=[];
+    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()+_nutDayOffset-i);days.push(localDateStr(d));labels.push(d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric'}));}
+    const kcalByDay=days.map(dds=>S.foodDiary.filter(e=>e.date===dds).reduce((a,e)=>a+e.kcal,0));
+    const blue=cssVar('--blue');
+    charts['nut-chart']=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Calories',data:kcalByDay,backgroundColor:hexToRgba(blue,.7),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+' kcal'},grid:{color:chartGridColor()},beginAtZero:true},x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}});
+  });
+}
+function deleteFoodEntry(id){S.foodDiary=S.foodDiary.filter(e=>e.id!==id);saveState();renderNutritionPage();}
+function setNutGoals(){
+  S.nutritionGoals={
+    kcal:parseFloat(document.getElementById('nut-goal-kcal').value)||2000,
+    protein:parseFloat(document.getElementById('nut-goal-protein').value)||150,
+    carbs:parseFloat(document.getElementById('nut-goal-carbs').value)||200,
+    fat:parseFloat(document.getElementById('nut-goal-fat').value)||65,
+  };
+  saveState();renderNutritionPage();
+}
+
+// Add-food modal helpers
+// USDA FoodData Central — free public food/nutrition database, CORS-enabled.
+// DEMO_KEY works out of the box but is rate-limited (~30 req/hr/IP shared by everyone using it).
+// Get your own free key in seconds at https://fdc.nal.usda.gov/api-key-signup.html and swap it in below.
+const USDA_API_KEY='DEMO_KEY';
+let _fdSearchResults=[];
+async function fdSearch(){
+  const q=(document.getElementById('fd-search').value||'').trim();
+  const resultsEl=document.getElementById('fd-results');
+  if(!resultsEl)return;
+  if(!q){resultsEl.innerHTML='';return;}
+  resultsEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">Searching…</div>';
+  try{
+    const url=`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(q)}&pageSize=12&api_key=${USDA_API_KEY}`;
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const nVal=(f,id)=>{const n=(f.foodNutrients||[]).find(x=>x.nutrientId===id);return n&&n.value!=null?n.value:null;};
+    const foods=(data.foods||[]).filter(f=>f.description&&nVal(f,1008)!=null).map(f=>({
+      name:f.description,
+      brand:f.brandOwner||f.brandName||'',
+      kcal:nVal(f,1008)||0,
+      protein:nVal(f,1003)||0,
+      carbs:nVal(f,1005)||0,
+      fat:nVal(f,1004)||0,
+    }));
+    _fdSearchResults=foods.slice(0,10);
+    resultsEl.innerHTML=_fdSearchResults.length?_fdSearchResults.map((p,i)=>{
+      return `<div class="pi" style="cursor:pointer" onclick="fdPickSearchResult(${i})">
+        <div><span class="pn">${p.name}</span>${p.brand?`<div style="font-size:11px;color:var(--text3)">${p.brand}</div>`:''}</div>
+        <span style="font-size:12px;color:var(--text2)">${Math.round(p.kcal)} kcal/100g</span>
+      </div>`;
+    }).join(''):'<div style="font-size:12px;color:var(--text3);padding:8px 0">No results — try a different search, or fill it in manually below.</div>';
+  }catch(e){
+    resultsEl.innerHTML='<div style="font-size:12px;color:var(--red);padding:8px 0">Search failed — check your connection, or fill it in manually below.</div>';
+  }
+}
+function fdPickSearchResult(i){
+  const p=_fdSearchResults[i];if(!p)return;
+  document.getElementById('fd-name').value=p.name+(p.brand?' ('+p.brand+')':'');
+  const lbl=document.getElementById('fd-serving-label');if(lbl)lbl.textContent='per 100g';
+  document.getElementById('fd-kcal-base').value=Math.round(p.kcal);
+  document.getElementById('fd-protein-base').value=+p.protein.toFixed(1);
+  document.getElementById('fd-carbs-base').value=+p.carbs.toFixed(1);
+  document.getElementById('fd-fat-base').value=+p.fat.toFixed(1);
+  document.getElementById('fd-servings').value=1;
+  fdRecalc();
+}
+function fdPickMyFood(id){
+  if(!id)return;
+  const f=S.foodLibrary.find(x=>x.id==id);if(!f)return;
+  document.getElementById('fd-name').value=f.name;
+  const lbl=document.getElementById('fd-serving-label');if(lbl)lbl.textContent='per serving';
+  document.getElementById('fd-kcal-base').value=f.kcal;
+  document.getElementById('fd-protein-base').value=f.protein;
+  document.getElementById('fd-carbs-base').value=f.carbs;
+  document.getElementById('fd-fat-base').value=f.fat;
+  document.getElementById('fd-servings').value=1;
+  fdRecalc();
+}
+function fdRecalc(){
+  const kcal=parseFloat(document.getElementById('fd-kcal-base')?.value)||0;
+  const protein=parseFloat(document.getElementById('fd-protein-base')?.value)||0;
+  const carbs=parseFloat(document.getElementById('fd-carbs-base')?.value)||0;
+  const fat=parseFloat(document.getElementById('fd-fat-base')?.value)||0;
+  const servings=parseFloat(document.getElementById('fd-servings')?.value)||1;
+  const totalEl=document.getElementById('fd-total-preview');
+  if(totalEl)totalEl.textContent=`= ${Math.round(kcal*servings)} kcal · ${Math.round(protein*servings)}P ${Math.round(carbs*servings)}C ${Math.round(fat*servings)}F total`;
 }
 
 // ── OUTLOOK CALENDAR (Microsoft Graph) ──
@@ -3893,7 +4115,7 @@ window.nav = function(id, el){
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,
-    calendar:renderOutlookPage,hyrox:renderHyroxPage};
+    calendar:renderOutlookPage,hyrox:renderHyroxPage,nutrition:renderNutritionPage};
   handlers[id]?.();
 };
 
