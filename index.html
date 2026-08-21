@@ -45,7 +45,7 @@
   .app{display:flex;height:100vh;overflow:hidden;}
 
   /* SIDEBAR */
-  .sidebar{width:224px;min-width:224px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform .25s;}
+  .sidebar{width:224px;min-width:224px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;transition:transform .25s;}
   .sb-logo{padding:20px 16px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:11px;}
   .sb-logo-badge{width:34px;height:34px;min-width:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(24,95,165,.35);}
   .sb-logo h1{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
