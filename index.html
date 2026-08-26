@@ -2582,7 +2582,7 @@ function openModal(type,extra){
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
-    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="g2" style="gap:8px;margin-bottom:11px;align-items:end"><div><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><label style="display:flex;align-items:center;gap:7px;cursor:pointer;height:44px;padding-left:2px"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day</label></div><div class="g2" id="m-etime-row" style="gap:8px;margin-bottom:11px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr" style="margin-bottom:0"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none;margin-top:11px"><label class="fl2">Repeat until (optional)</label><input type="date" class="inp" id="m-eruntil"></div>`,
+    calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="g2" style="gap:8px;margin-bottom:11px;align-items:end"><div><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><label style="display:flex;align-items:center;gap:7px;cursor:pointer;height:44px;padding-left:2px"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day</label></div><div id="m-etime-wrap"><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00" oninput="evRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00" oninput="evRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="evApplyPreset(15)">15m</button><button class="wkb" onclick="evApplyPreset(30)">30m</button><button class="wkb" onclick="evApplyPreset(45)">45m</button><button class="wkb" onclick="evApplyPreset(60)">1h</button><button class="wkb" onclick="evApplyPreset(90)">1h 30m</button><button class="wkb" onclick="evApplyPreset(120)">2h</button></div></div><div id="ev-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr" style="margin-bottom:0"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none;margin-top:11px"><label class="fl2">Repeat until (optional)</label><input type="date" class="inp" id="m-eruntil"></div>`,
     addFood:`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Adding to <strong>${(extra&&extra.meal)||''}</strong> · ${(extra&&extra.date)===TODAYSTR?'Today':((extra&&extra.date)||'')}</div>
       <div class="fr"><label class="fl2">Search a food</label><div class="fl" style="gap:6px"><input class="inp" id="fd-search" placeholder="e.g. banana, chicken breast..." onkeydown="if(event.key==='Enter'){event.preventDefault();fdSearch();}"><button class="btn" style="white-space:nowrap" onclick="fdSearch()">Search</button></div></div>
       <div id="fd-results" style="max-height:150px;overflow-y:auto;margin-bottom:10px"></div>
@@ -2596,6 +2596,7 @@ function openModal(type,extra){
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
   if(type==='timeLog')ttRecalc();
+  if(type==='calEvent')evRecalc();
   setTimeout(()=>{const f=document.querySelector('#modal-body input,#modal-body textarea');if(f)f.focus();},60);
 }
 function closeModal(){document.getElementById('modal').style.display='none';S.activeModal=null;}
@@ -2607,14 +2608,15 @@ function toggleRecurrenceEnd(){
 }
 function toggleAllDayFields(){
   const cb=document.getElementById('m-eallday');
-  const row=document.getElementById('m-etime-row');
+  const row=document.getElementById('m-etime-wrap');
   if(!cb||!row)return;
   row.style.display=cb.checked?'none':'';
 }
 function g(id){const el=document.getElementById(id);return el?el.value:'';}
-function ttRecalc(){
-  const s=document.getElementById('m-tstart')?.value,e=document.getElementById('m-tend')?.value;
-  const out=document.getElementById('tt-duration-preview');
+// Shared start/end-time duration helpers — used by both the "Log time" and "Add calendar event" modals.
+function calcDuration(startId,endId,previewId,suffix){
+  const s=document.getElementById(startId)?.value,e=document.getElementById(endId)?.value;
+  const out=document.getElementById(previewId);
   if(!out)return;
   if(!s||!e){out.textContent='';return;}
   const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
@@ -2624,18 +2626,22 @@ function ttRecalc(){
   const parts=[];
   if(h>0)parts.push(h+'h');
   if(mn>0||h===0)parts.push(mn+'m');
-  out.textContent='= '+parts.join(' ')+' logged';
+  out.textContent='= '+parts.join(' ')+(suffix||'');
   out.style.color='var(--text2)';
 }
-function ttApplyPreset(mins){
-  const s=document.getElementById('m-tstart')?.value||'09:00';
+function applyDurationPreset(startId,endId,previewId,suffix,mins){
+  const s=document.getElementById(startId)?.value||'09:00';
   const [sh,sm]=s.split(':').map(Number);
   const total=sh*60+sm+mins;
   const eh=Math.floor(total/60)%24,em=total%60;
-  const endEl=document.getElementById('m-tend');
+  const endEl=document.getElementById(endId);
   if(endEl)endEl.value=String(eh).padStart(2,'0')+':'+String(em).padStart(2,'0');
-  ttRecalc();
+  calcDuration(startId,endId,previewId,suffix);
 }
+function ttRecalc(){calcDuration('m-tstart','m-tend','tt-duration-preview',' logged');}
+function ttApplyPreset(mins){applyDurationPreset('m-tstart','m-tend','tt-duration-preview',' logged',mins);}
+function evRecalc(){calcDuration('m-estart','m-eend','ev-duration-preview','');}
+function evApplyPreset(mins){applyDurationPreset('m-estart','m-eend','ev-duration-preview','',mins);}
 const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
 const wicos={'Travel':'✈','Skills':'♪','Personal':'◉','Fitness':'◈','Other':'★'};
 
