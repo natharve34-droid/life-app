@@ -2577,7 +2577,7 @@ function openModal(type,extra){
     workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
     weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
     projectNote:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-ntitle" placeholder="e.g. Design decisions, API notes…"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-nbody" placeholder="Write your note here…" style="min-height:120px;"></textarea></div>`,
-    timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00"></div></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
+    timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}" style="color:${p.color}">● ${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00" oninput="ttRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00" oninput="ttRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="ttApplyPreset(15)">15m</button><button class="wkb" onclick="ttApplyPreset(30)">30m</button><button class="wkb" onclick="ttApplyPreset(45)">45m</button><button class="wkb" onclick="ttApplyPreset(60)">1h</button><button class="wkb" onclick="ttApplyPreset(90)">1h 30m</button><button class="wkb" onclick="ttApplyPreset(120)">2h</button></div></div><div id="tt-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
     timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
     calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
@@ -2595,6 +2595,7 @@ function openModal(type,extra){
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
+  if(type==='timeLog')ttRecalc();
   setTimeout(()=>{const f=document.querySelector('#modal-body input,#modal-body textarea');if(f)f.focus();},60);
 }
 function closeModal(){document.getElementById('modal').style.display='none';S.activeModal=null;}
@@ -2611,6 +2612,30 @@ function toggleAllDayFields(){
   row.style.display=cb.checked?'none':'';
 }
 function g(id){const el=document.getElementById(id);return el?el.value:'';}
+function ttRecalc(){
+  const s=document.getElementById('m-tstart')?.value,e=document.getElementById('m-tend')?.value;
+  const out=document.getElementById('tt-duration-preview');
+  if(!out)return;
+  if(!s||!e){out.textContent='';return;}
+  const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
+  const mins=(eh*60+em)-(sh*60+sm);
+  if(mins<=0){out.textContent='End time must be after start time';out.style.color='var(--red)';return;}
+  const h=Math.floor(mins/60),mn=mins%60;
+  const parts=[];
+  if(h>0)parts.push(h+'h');
+  if(mn>0||h===0)parts.push(mn+'m');
+  out.textContent='= '+parts.join(' ')+' logged';
+  out.style.color='var(--text2)';
+}
+function ttApplyPreset(mins){
+  const s=document.getElementById('m-tstart')?.value||'09:00';
+  const [sh,sm]=s.split(':').map(Number);
+  const total=sh*60+sm+mins;
+  const eh=Math.floor(total/60)%24,em=total%60;
+  const endEl=document.getElementById('m-tend');
+  if(endEl)endEl.value=String(eh).padStart(2,'0')+':'+String(em).padStart(2,'0');
+  ttRecalc();
+}
 const pcolors=['#185FA5','#1D9E75','#BA7517','#D85A30','#534AB7','#D4537E'];
 const wicos={'Travel':'✈','Skills':'♪','Personal':'◉','Fitness':'◈','Other':'★'};
 
@@ -2684,7 +2709,8 @@ async function saveModal(){
     document.querySelector('#modal .fl-end .btnp').textContent='Save';
   } else if(m.type==='timeLog'){
     const proj=parseInt(g('m-tproj')),date=g('m-tdate'),start=g('m-tstart'),end=g('m-tend'),notes=g('m-tnotes');
-    if(!date||!start||!end)return;
+    if(!date){alert('Pick a date.');return;}
+    if(!start||!end){alert('Set a start and end time.');return;}
     // Calculate duration in minutes
     const [sh,sm]=start.split(':').map(Number);
     const [eh,em]=end.split(':').map(Number);
