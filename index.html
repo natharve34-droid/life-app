@@ -214,12 +214,12 @@
 
   /* MOBILE HAMBURGER */
   .hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;cursor:pointer;font-size:18px;line-height:1;}
-  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:260;}
 
   /* RESPONSIVE */
   @media(max-width:720px){
     .app{flex-direction:column;}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);width:240px;}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:261;transform:translateX(-100%);width:240px;}
     .sidebar.open{transform:translateX(0);}
     .sidebar-overlay.open{display:block;}
     .hamburger{display:block;}
@@ -1036,12 +1036,17 @@ async function autoPush(data){
 }
 
 // Direct token versions used by init (avoids triggering redirect again)
+// Returns {ok:true,data:<state or null-if-no-file-yet>} on success, or {ok:false,error} on
+// any real failure. Callers MUST distinguish these — "pull failed" is never a safe reason
+// to push local data up, only a confirmed "no file yet" (404) is.
 async function pullWithToken(token){
-  const res=await fetch(OD.downloadUrl,{headers:{'Authorization':'Bearer '+token}});
-  if(res.status===404)return null;
-  if(!res.ok)return null;
-  const data=await res.json().catch(()=>null);
-  return(data&&Object.keys(data).length>0)?data:null;
+  try{
+    const res=await fetch(OD.downloadUrl,{headers:{'Authorization':'Bearer '+token}});
+    if(res.status===404)return{ok:true,data:null};
+    if(!res.ok)return{ok:false,error:'HTTP '+res.status};
+    const data=await res.json().catch(()=>null);
+    return{ok:true,data:(data&&Object.keys(data).length>0)?data:null};
+  }catch(e){return{ok:false,error:(e&&e.message)||'Network error'};}
 }
 
 async function pushWithToken(token,data){
@@ -1182,14 +1187,18 @@ async function sb2SignOut(){
   SB2.loggedIn=false;SB2.email=null;
   if(getSyncProvider()==='supabase')setSyncProvider('onedrive');
 }
+// Returns {ok:true,data:<state or null-if-no-row-yet>} on success, or {ok:false,error} on
+// any real failure. Callers MUST distinguish these — "pull failed" is never a safe reason
+// to push local data up, only a confirmed "no row yet" is.
 async function sb2Pull(){
-  const ok=await sb2Connect();if(!ok)return null;
+  const ok=await sb2Connect();if(!ok)return{ok:false,error:"Can't reach the server — check your connection."};
   try{
     const {data:{user}}=await SB2.client.auth.getUser();
-    if(!user)return null;
+    if(!user)return{ok:false,error:'Not signed in.'};
     const r=await SB2.client.from('harvey_state').select('data').eq('user_id',user.id).maybeSingle();
-    return (r.data&&r.data.data)?r.data.data:null;
-  }catch(e){return null;}
+    if(r.error)return{ok:false,error:r.error.message};
+    return{ok:true,data:(r.data&&r.data.data)?r.data.data:null};
+  }catch(e){return{ok:false,error:(e&&e.message)||'Pull failed.'};}
 }
 async function sb2Push(data){
   const ok=await sb2Connect();if(!ok)return false;
@@ -1235,11 +1244,33 @@ async function sb2DoSignIn(){
   if(msgEl){msgEl.textContent='Signing in…';msgEl.style.color='var(--text2)';}
   const r=await sb2SignIn(email,pass);
   if(r.error){ if(msgEl){msgEl.textContent='✕ '+r.error;msgEl.style.color='var(--red)';} return; }
-  if(msgEl){msgEl.textContent='✓ Signed in! Pulling your data…';msgEl.style.color='var(--green)';}
-  const remote=await sb2Pull();
-  if(!sb2MergeRemote(remote)) await sb2Push(getStateToSave());
+  if(msgEl){msgEl.textContent='✓ Signed in! Checking for existing data…';msgEl.style.color='var(--green)';}
+  const pull=await sb2Pull();
+  if(!pull.ok){
+    // Couldn't reach the cloud — never push blind. Local data on this device stays untouched.
+    renderSettings();
+    if(msgEl){msgEl.textContent='✓ Signed in, but couldn\'t check for existing cloud data ('+pull.error+'). Nothing on this device was changed — use "Pull" below once you\'re back online.';msgEl.style.color='var(--amber)';}
+    return;
+  }
+  if(pull.data){
+    if(!sb2MergeRemote(pull.data)){
+      // Remote has data, but it looks older/different than what's on this device — ambiguous.
+      // Never silently overwrite either side; ask.
+      const wantsRemote=confirm("This account already has data saved in the cloud, but this device's copy looks newer or different.\n\nOK = replace this device's data with the cloud version (recommended on a new device).\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
+      if(wantsRemote){
+        SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+        S._ts=pull.data._ts||Date.now();
+        S.workoutDef=DEFAULT_STATE.workoutDef;
+        try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+        renderHome();
+      }
+    }
+  } else {
+    // Confirmed: no row exists yet for this account — safe to seed it with this device's data.
+    await sb2Push(getStateToSave());
+  }
   renderSettings();
-  if(msgEl)msgEl.textContent='✓ Signed in and synced! Supabase is now this device\'s active sync method.';
+  if(msgEl)msgEl.textContent='✓ Signed in! Supabase is now this device\'s active sync method.';
 }
 async function sb2DoSignUp(){
   const email=(document.getElementById('sb2-email').value||'').trim();
@@ -1277,10 +1308,11 @@ async function sb2DoSignUp(){
 async function sb2DoPull(){
   const msgEl=document.getElementById('sb2-msg2');
   if(msgEl){msgEl.textContent='Pulling…';msgEl.style.color='var(--text2)';}
-  const remote=await sb2Pull();
-  if(remote){
-    SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
-    if(remote._ts)S._ts=remote._ts;
+  const pull=await sb2Pull();
+  if(!pull.ok){ if(msgEl){msgEl.textContent='✕ '+pull.error;msgEl.style.color='var(--red)';} return; }
+  if(pull.data){
+    SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+    if(pull.data._ts)S._ts=pull.data._ts;
     S.workoutDef=DEFAULT_STATE.workoutDef;
     try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
     renderHome();
@@ -1615,7 +1647,61 @@ function renderImportant(){
   });
   const all=[...S.important];
   S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!t.done&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
-  el.innerHTML=all.length?all.map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--blue);min-width:6px"></div><span style="flex:1;font-size:13px">${i.text}</span><span class="tag tp">${i.source}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
+
+  el.innerHTML=all.length?all.map(i=>{
+    // Resolve the underlying project todo (if this item is linked to one) so we can show its subtasks.
+    let pid=null,tid=null,t=null;
+    if(i.ref){
+      [pid,tid]=String(i.ref).split('-').map(Number);
+      const p=S.projects.find(x=>x.id===pid);
+      t=p&&p.todos.find(x=>x.id===tid);
+    }
+    const subs=(t&&t.subtasks)||[];
+    const badge=subs.length?` <span style="font-size:11px;color:var(--text3);">(${subs.filter(s=>s.done).length}/${subs.length})</span>`:'';
+    const activeSubs=subs.filter(s=>!s.done);
+    const doneSubs=subs.filter(s=>s.done);
+    const subsHtml=subs.length?`
+      <div style="margin-left:24px;border-left:2px solid var(--border);padding-left:10px;padding-bottom:8px;">
+        ${activeSubs.map(s=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);">
+            <div onclick="toggleSubtask(${pid},${tid},${s.id})" style="width:13px;height:13px;min-width:13px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;"></div>
+            <span style="flex:1;font-size:12px;color:var(--text2);">${s.text}</span>
+          </div>`).join('')}
+        ${doneSubs.length?`
+          <details>
+            <summary style="font-size:11px;color:var(--text3);cursor:pointer;padding:4px 0;list-style:none;">${doneSubs.length} done</summary>
+            ${doneSubs.map(s=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:4px 0;opacity:0.6;">
+                <div style="width:13px;height:13px;min-width:13px;background:var(--blue);border-radius:3px;display:flex;align-items:center;justify-content:center;color:white;font-size:8px;">✓</div>
+                <span style="flex:1;font-size:12px;text-decoration:line-through;color:var(--text3);">${s.text}</span>
+                <button onclick="toggleSubtask(${pid},${tid},${s.id})" class="btn-icon" style="font-size:11px;color:var(--text3);">↩</button>
+              </div>`).join('')}
+          </details>`:''}
+      </div>`:'';
+    return `<div style="background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--blue);min-width:6px"></div>
+        <span style="flex:1;font-size:13px">${i.text}${badge}</span>
+        <span class="tag tp">${i.source}</span>
+        <button onclick="removeImportant(${i.ref?'null':i.id}, ${i.ref?`'${i.ref}'`:'null'})" class="btn-icon" title="Remove from Important">✕</button>
+      </div>
+      ${subsHtml}
+    </div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
+}
+// Removing a project-linked item un-stars the underlying task (it stays on the project,
+// just no longer pinned here); removing a manually-added item deletes it outright.
+function removeImportant(id,ref){
+  if(ref){
+    const [pid,tid]=String(ref).split('-').map(Number);
+    const p=S.projects.find(x=>x.id===pid);
+    const t=p&&p.todos.find(x=>x.id===tid);
+    if(t)t.important=false;
+    S.important=S.important.filter(x=>x.ref!==ref);
+  } else {
+    S.important=S.important.filter(x=>x.id!==id);
+  }
+  saveState();renderProjects();renderImportant();
 }
 
 // ── BUDGET ──
@@ -2128,7 +2214,7 @@ function toggleSubtask(pid,tid,sid){
   const s=t?.subtasks?.find(x=>x.id===sid);
   if(!s)return;
   s.done=!s.done;
-  saveState();renderProjects();
+  saveState();renderProjects();renderImportant();
   // If just marked done and there are time projects, ask how long it took
   if(s.done && S.timeProjects.length>0){
     const matchProj=S.timeProjects.find(tp=>tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
@@ -4204,17 +4290,35 @@ setTimeout(async()=>{
       // Coming back from login — sync data now
       setSyncStatus('saving');
       // Pull first
-      const remote=await pullWithToken(rr.accessToken);
-      const localTs=S._ts||0;
-      const remoteTs=(remote&&remote._ts)||0;
-      if(remote&&remoteTs>=localTs){
-        SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
-        S._ts=remoteTs;
-        S.workoutDef=DEFAULT_STATE.workoutDef;
-        try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
-        renderHome();
+      const pull=await pullWithToken(rr.accessToken);
+      if(!pull.ok){
+        // Couldn't reach OneDrive — never push blind. Leave local data on this device untouched.
+        console.error('OneDrive pull failed:',pull.error);
+        setSyncStatus('error','✕ Sync failed — local data untouched');
+        setTimeout(()=>setSyncStatus('idle'),5000);
+      } else if(pull.data){
+        const localTs=S._ts||0;
+        const remoteTs=pull.data._ts||0;
+        if(remoteTs>=localTs){
+          SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+          S._ts=remoteTs;
+          S.workoutDef=DEFAULT_STATE.workoutDef;
+          try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+          renderHome();
+        } else {
+          // OneDrive has data, but it looks older/different than this device's copy — ambiguous.
+          // Never silently overwrite either side; ask.
+          const wantsRemote=confirm("OneDrive has data saved, but this device's copy looks newer or different.\n\nOK = replace this device's data with the OneDrive version.\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
+          if(wantsRemote){
+            SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+            S._ts=remoteTs;
+            S.workoutDef=DEFAULT_STATE.workoutDef;
+            try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+            renderHome();
+          }
+        }
       } else {
-        // Local data is newer than (or the cloud has none) — keep local and push it up
+        // Confirmed: no file exists yet on OneDrive — safe to seed it with this device's data.
         await pushWithToken(rr.accessToken,getStateToSave());
         renderHome();
       }
@@ -4255,8 +4359,24 @@ async function sb2SilentInit(){
     if(!session){ setSyncStatus('no-creds'); setTimeout(()=>setSyncStatus('idle'),6000); return; }
     SB2.loggedIn=true; SB2.email=session.user.email; SB2.sessionChecked=true;
     setSyncStatus('saving');
-    const remote=await sb2Pull();
-    if(!sb2MergeRemote(remote)) await sb2Push(getStateToSave());
+    const pull=await sb2Pull();
+    if(!pull.ok){
+      // This runs silently on every page load — a failed pull must NEVER trigger a push.
+      // Just leave local data exactly as it is and surface that sync didn't happen.
+      console.error('sb2 silent pull failed:',pull.error);
+      setSyncStatus('error','✕ Sync check failed');
+      setTimeout(()=>setSyncStatus('idle'),5000);
+      return;
+    }
+    if(pull.data){
+      // If local looks newer/different, sb2MergeRemote does nothing — that's correct here.
+      // Silent background init must never auto-push over remote; only an explicit user
+      // action (Settings → Pull/Push, or sign-in's own confirm prompt) may do that.
+      sb2MergeRemote(pull.data);
+    } else {
+      // Confirmed: no row exists yet for this account — safe to seed it with this device's data.
+      await sb2Push(getStateToSave());
+    }
     setSyncStatus('saved'); setTimeout(()=>setSyncStatus('idle'),3000);
   }catch(e){
     console.error('sb2 init:',e);
