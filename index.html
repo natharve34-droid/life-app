@@ -6,78 +6,114 @@
 <title>Personal Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.0/lib/msal-browser.min.js"></script>
+<!-- Only present/used inside the Android app (Capacitor). On the web version this 404s
+     harmlessly — a failed <script> load doesn't throw, it just does nothing. -->
+<script src="capacitor.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   :root{
-    --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0ede8;
-    --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
-    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
-    --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;
-    --green:#3B6D11;--green-bg:#EAF3DE;--green-text:#27500A;
-    --amber:#BA7517;--amber-bg:#FAEEDA;--amber-text:#633806;
-    --red:#A32D2D;--red-bg:#FCEBEB;--red-text:#791F1F;
-    --purple:#534AB7;--purple-bg:#EEEDFE;--purple-text:#3C3489;
-    --radius:9px;--radius-lg:16px;
-    --shadow:0 1px 2px rgba(20,20,15,.04),0 6px 16px rgba(20,20,15,.06);
-    --shadow-lg:0 20px 50px rgba(20,20,15,.18),0 4px 14px rgba(20,20,15,.08);
-    --shadow-sm:0 1px 2px rgba(20,20,15,.05),0 2px 6px rgba(20,20,15,.05);
-    --grad:linear-gradient(135deg,#185FA5,#534AB7);
-    --grad-soft:linear-gradient(135deg,#E6F1FB,#EEEDFE);
+    --bg:#ffffff;--bg2:#f6f6f9;--bg3:#edecf5;
+    --text:#18181f;--text2:#5c5c6d;--text3:#8b8b9c;
+    --border:rgba(24,24,40,0.10);--border2:rgba(24,24,40,0.18);
+    --blue:#4F46E5;--blue-bg:#EEEDFC;--blue-text:#3730A3;
+    --green:#15803D;--green-bg:#E7F5EC;--green-text:#0F5C2E;
+    --amber:#B45309;--amber-bg:#FBEEDD;--amber-text:#7C3A08;
+    --red:#B91C1C;--red-bg:#FBEAEA;--red-text:#8A1616;
+    --purple:#8B5CF6;--purple-bg:#F1ECFE;--purple-text:#5B21B6;
+    --radius:12px;--radius-lg:24px;
+    --font-display:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --shadow:0 1px 2px rgba(24,24,40,.05),0 8px 20px rgba(24,24,40,.06);
+    --shadow-lg:0 24px 60px rgba(24,24,40,.20),0 6px 16px rgba(24,24,40,.08);
+    --shadow-sm:0 1px 2px rgba(24,24,40,.05),0 3px 8px rgba(24,24,40,.05);
+    --grad:linear-gradient(135deg,#4F46E5,#8B5CF6);
+    --grad-soft:linear-gradient(135deg,#EEEDFC,#F1ECFE);
+    --glass-bg:rgba(255,255,255,.55);--glass-border:rgba(255,255,255,.55);--glass-highlight:rgba(255,255,255,.6);
+    --glass-blur:blur(20px) saturate(180%);
   }
   @media(prefers-color-scheme:dark){
     :root{
-      --bg:#1e1e1c;--bg2:#252523;--bg3:#2c2c2a;
-      --text:#e8e6e0;--text2:#a8a69e;--text3:#6a6860;
-      --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
-      --blue:#378ADD;--blue-bg:#0c2a4a;--blue-text:#85B7EB;
-      --green:#639922;--green-bg:#1a2e0a;--green-text:#97C459;
-      --amber:#EF9F27;--amber-bg:#2e1e08;--amber-text:#FAC775;
-      --red:#E24B4A;--red-bg:#2e0f0f;--red-text:#F09595;
-      --purple:#7F77DD;--purple-bg:#1e1c3a;--purple-text:#AFA9EC;
-      --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3);
-      --shadow-lg:0 24px 60px rgba(0,0,0,.55),0 4px 14px rgba(0,0,0,.35);
-      --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.25);
-      --grad:linear-gradient(135deg,#378ADD,#7F77DD);
-      --grad-soft:linear-gradient(135deg,#0c2a4a,#1e1c3a);
+      --glass-bg:rgba(30,30,42,.5);--glass-border:rgba(255,255,255,.1);--glass-highlight:rgba(255,255,255,.06);
+      --bg:#0c0c12;--bg2:#15151d;--bg3:#1c1c27;
+      --text:#f1f0f7;--text2:#a9a8ba;--text3:#6f6e80;
+      --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+      --blue:#8583F0;--blue-bg:#211f42;--blue-text:#C7C5FB;
+      --green:#4ADE80;--green-bg:#123322;--green-text:#86EFAC;
+      --amber:#FBBF24;--amber-bg:#3a2a08;--amber-text:#FDE68A;
+      --red:#F87171;--red-bg:#3a1414;--red-text:#FCA5A5;
+      --purple:#A78BFA;--purple-bg:#2a2150;--purple-text:#DDD6FE;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+      --shadow-lg:0 28px 70px rgba(0,0,0,.6),0 6px 18px rgba(0,0,0,.4);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 3px 10px rgba(0,0,0,.3);
+      --grad:linear-gradient(135deg,#8583F0,#A78BFA);
+      --grad-soft:linear-gradient(135deg,#211f42,#2a2150);
     }
   }
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:radial-gradient(1100px 700px at 100% 0%,color-mix(in srgb,var(--blue) 5%,var(--bg3)),var(--bg3) 45%);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:radial-gradient(1100px 700px at 100% 0%,color-mix(in srgb,var(--blue) 6%,var(--bg3)),var(--bg3) 45%);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
   .app{display:flex;height:100vh;overflow:hidden;}
 
-  /* SIDEBAR */
-  .sidebar{width:224px;min-width:224px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;transition:transform .25s;}
-  .sb-logo{padding:20px 16px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:11px;}
-  .sb-logo-badge{width:34px;height:34px;min-width:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(24,95,165,.35);}
-  .sb-logo h1{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  /* NAV BUBBLE — a floating glass button that opens the menu, replacing a docked sidebar */
+  .nav-bubble{position:fixed;top:16px;left:16px;z-index:300;width:50px;height:50px;border-radius:50%;
+    background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(20,20,40,.16),0 2px 6px rgba(20,20,40,.08),inset 0 1px 0 rgba(255,255,255,.5);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--text);
+    transition:transform .18s cubic-bezier(.3,1.5,.4,1),box-shadow .18s;}
+  .nav-bubble:hover{transform:scale(1.06);box-shadow:0 10px 28px rgba(20,20,40,.2),0 2px 6px rgba(20,20,40,.1);}
+  .nav-bubble:active{transform:scale(.9);}
+  @media(prefers-color-scheme:dark){
+    .nav-bubble{background:rgba(40,40,52,.55);border-color:rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);}
+  }
+
+  /* SIDEBAR — now always a floating "liquid glass" panel opened from the nav bubble,
+     on desktop and mobile alike, instead of a permanently docked column. */
+  .sidebar{position:fixed;top:76px;left:16px;z-index:261;width:264px;max-width:calc(100vw - 32px);
+    max-height:calc(100vh - 96px);
+    background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(190%);-webkit-backdrop-filter:blur(28px) saturate(190%);
+    border:1px solid rgba(255,255,255,.55);border-radius:26px;
+    box-shadow:0 24px 70px rgba(20,20,40,.28),0 4px 16px rgba(20,20,40,.1),inset 0 1px 0 rgba(255,255,255,.6);
+    display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    transform:translateY(-12px) scale(.94);opacity:0;pointer-events:none;
+    transition:transform .28s cubic-bezier(.2,.9,.25,1),opacity .2s;}
+  .sidebar.open{transform:translateY(0) scale(1);opacity:1;pointer-events:auto;}
+  @media(prefers-color-scheme:dark){
+    .sidebar{background:rgba(28,28,38,.58);border-color:rgba(255,255,255,.12);box-shadow:0 24px 70px rgba(0,0,0,.5),0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);}
+  }
+  .sb-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:11px;}
+  .sb-logo-badge{width:34px;height:34px;min-width:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(79,70,229,.35);}
+  .sb-logo h1{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.01em;}
   .sb-logo p{font-size:11px;color:var(--text3);margin-top:1px;}
   .nav-sec{padding:10px 8px 4px;}
   .nav-lbl{font-size:10px;font-weight:700;color:var(--text3);padding:0 6px 5px;letter-spacing:.08em;text-transform:uppercase;}
   .ni{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:2px;cursor:pointer;font-size:13px;color:var(--text2);border-radius:var(--radius);transition:background .12s,color .12s,transform .08s;}
-  .ni:hover{background:var(--bg);color:var(--text);}
+  .ni:hover{background:rgba(255,255,255,.5);color:var(--text);}
   .ni.active{background:var(--blue-bg);color:var(--blue-text);font-weight:600;box-shadow:inset 2.5px 0 0 var(--blue);}
   .ni:active{transform:scale(.98);}
   .ni-ico{font-size:15px;width:20px;text-align:center;}
+  @media(prefers-color-scheme:dark){.ni:hover{background:rgba(255,255,255,.08);}}
 
-  /* MAIN */
+  /* MAIN — always full width now that the sidebar floats above content instead of
+     sharing space with it. */
   .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  .page{display:none;padding:32px 32px 48px;max-width:1040px;}
+  .page{display:none;padding:88px 32px 48px;max-width:1040px;}
   .page.active{display:block;animation:pageIn .22s cubic-bezier(.2,.7,.3,1);}
   @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   @media(prefers-reduced-motion:reduce){.page.active{animation:none;}}
   .ph{margin-bottom:24px;}
-  .pt{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.02em;}
+  .pt{font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
   .ps{font-size:13px;color:var(--text2);margin-top:4px;}
 
   /* CARDS */
-  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:0;box-shadow:var(--shadow);transition:box-shadow .18s,transform .18s;}
-  .mc{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px 15px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
+  .card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:0;box-shadow:var(--shadow),inset 0 1px 0 var(--glass-highlight);transition:box-shadow .18s,transform .18s;}
+  .mc{background:var(--glass-bg);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid var(--glass-border);border-radius:var(--radius);padding:14px 16px 15px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm),inset 0 1px 0 var(--glass-highlight);}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:.85;}
   .g4 .mc:nth-child(4n+1)::before,.g3 .mc:nth-child(3n+1)::before,.g2 .mc:nth-child(2n+1)::before{background:linear-gradient(135deg,var(--blue),var(--purple));}
   .g4 .mc:nth-child(4n+2)::before,.g3 .mc:nth-child(3n+2)::before,.g2 .mc:nth-child(2n)::before{background:linear-gradient(135deg,var(--green),#8fbf3f);}
   .g4 .mc:nth-child(4n+3)::before{background:linear-gradient(135deg,var(--amber),#e8a33f);}
   .g4 .mc:nth-child(4n+4)::before{background:linear-gradient(135deg,var(--red),#c95656);}
   .ml{font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
-  .mv{font-size:23px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  .mv{font-family:var(--font-display);font-size:25px;font-weight:800;color:var(--text);letter-spacing:-.01em;}
   .ms{font-size:11px;color:var(--text3);margin-top:3px;}
 
   /* GRID */
@@ -98,8 +134,8 @@
   .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .12s,transform .08s,border-color .12s,box-shadow .12s;}
   .btn:hover{background:var(--bg2);}
   .btn:active{transform:scale(.96);}
-  .btnp{background:var(--grad);color:#fff;border:none;font-weight:600;box-shadow:0 3px 10px rgba(24,95,165,.3);}
-  .btnp:hover{box-shadow:0 4px 14px rgba(24,95,165,.42);transform:translateY(-1px);}
+  .btnp{background:var(--grad);color:#fff;border:none;font-weight:600;box-shadow:0 3px 10px rgba(79,70,229,.3);}
+  .btnp:hover{box-shadow:0 4px 14px rgba(79,70,229,.42);transform:translateY(-1px);}
   .btnp:active{transform:scale(.96) translateY(0);}
   .btnd{background:transparent;color:var(--red);border-color:var(--red-text);}
   .btnd:hover{background:var(--red-bg);}
@@ -110,7 +146,7 @@
 
   /* INPUTS */
   .inp{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .12s,box-shadow .12s;}
-  .inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.15);}
+  .inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(79,70,229,.15);}
   textarea.inp{resize:vertical;min-height:72px;}
 
   /* LAYOUT HELPERS */
@@ -172,8 +208,8 @@
   .fab-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:24px;background:var(--bg);border:0.5px solid var(--border2);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap;transition:background .12s,transform .08s;}
   .fab-item:hover{background:var(--bg2);}
   .fab-item:active{transform:scale(.96);}
-  .fab-main{width:56px;height:56px;min-width:56px;border-radius:50%;background:var(--grad);color:#fff;border:none;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 6px 20px rgba(24,95,165,.4);transition:transform .15s,box-shadow .15s;pointer-events:auto;}
-  .fab-main:hover{box-shadow:0 8px 26px rgba(24,95,165,.5);}
+  .fab-main{width:56px;height:56px;min-width:56px;border-radius:50%;background:var(--grad);color:#fff;border:none;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 6px 20px rgba(79,70,229,.4);transition:transform .15s,box-shadow .15s;pointer-events:auto;}
+  .fab-main:hover{box-shadow:0 8px 26px rgba(79,70,229,.5);}
   .fab-main:active{transform:scale(.92);}
   .fab-main.open:active{transform:rotate(45deg) scale(.92);}
   .fab-main.open{transform:rotate(45deg);}
@@ -183,13 +219,30 @@
 
   /* MODAL */
   .mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;animation:overlayIn .15s ease;}
-  .mo-box{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:440px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .18s cubic-bezier(.2,.8,.2,1);}
+  .mo-box{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:22px;width:440px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg),inset 0 1px 0 var(--glass-highlight);animation:modalIn .18s cubic-bezier(.2,.8,.2,1);}
   @keyframes overlayIn{from{opacity:0}to{opacity:1}}
   @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
   @media(prefers-reduced-motion:reduce){.mo-overlay,.mo-box{animation:none;}}
   .mo-box h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text);}
   .fr{margin-bottom:11px;}
   .fl2{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;}
+
+  /* WEATHER HERO — Not Boring-style: the background itself IS the weather, not just
+     an icon sitting on a plain neutral card. */
+  .wx-hero{border-radius:28px;padding:22px 24px;position:relative;overflow:hidden;transition:background 1s ease;}
+  .wx-main{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+  .wx-icon{font-size:56px;line-height:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.15));animation:wxFloat 5s ease-in-out infinite;}
+  @keyframes wxFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+  @media(prefers-reduced-motion:reduce){.wx-icon{animation:none;}}
+  .wx-temp{font-family:var(--font-display);font-size:52px;font-weight:900;line-height:1;letter-spacing:-.02em;}
+  .wx-desc{font-size:14px;font-weight:700;margin-top:4px;}
+  .wx-place{font-size:12px;margin-top:3px;}
+  .wx-days{display:flex;gap:8px;}
+  .wx-day{flex:1;min-width:0;text-align:center;background:rgba(255,255,255,.24);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:16px;padding:10px 4px;}
+  .wx-day-name{font-size:10.5px;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .wx-day-ico{font-size:20px;line-height:1;margin-bottom:4px;}
+  .wx-day-hi{font-family:var(--font-display);font-size:13px;font-weight:800;}
+  .wx-day-lo{font-size:11px;margin-top:1px;}
 
   /* SUMMARY BOXES */
   .sum-box{padding:13px;background:var(--bg2);border-radius:var(--radius);}
@@ -212,19 +265,16 @@
   }
   ::selection{background:var(--blue);color:#fff;}
 
-  /* MOBILE HAMBURGER */
-  .hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;cursor:pointer;font-size:18px;line-height:1;}
-  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:260;}
+  /* GLASS OVERLAY — a soft blur behind the floating menu, not a heavy dark scrim, so it
+     reads as "glass" rather than a modal dimmer. */
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,35,.12);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:255;}
+  .sidebar-overlay.open{display:block;}
 
   /* RESPONSIVE */
   @media(max-width:720px){
     .app{flex-direction:column;}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:261;transform:translateX(-100%);width:240px;}
-    .sidebar.open{transform:translateX(0);}
-    .sidebar-overlay.open{display:block;}
-    .hamburger{display:block;}
     .main{width:100%;}
-    .page{padding:56px 16px 104px;}
+    .page{padding:80px 16px 104px;}
     .g4{grid-template-columns:repeat(2,minmax(0,1fr));}
     .g3{grid-template-columns:repeat(2,minmax(0,1fr));}
     .g2{grid-template-columns:1fr;}
@@ -255,7 +305,7 @@
 </head>
 <body>
 
-<button class="hamburger" onclick="toggleSidebar()">☰</button>
+<button class="nav-bubble" onclick="toggleSidebar()" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
 
 <div class="app">
@@ -281,6 +331,7 @@
   <div class="nav-sec">
     <div class="nav-lbl">Life</div>
     <div class="ni" onclick="nav('wishlist',this)"><span class="ni-ico">✦</span>Wishlist</div>
+    <div class="ni" onclick="nav('dates',this)"><span class="ni-ico">♥</span>Dates</div>
     <!-- Old workout tracker hidden for now — superseded by Hyrox. Uncomment to bring back.
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
     -->
@@ -459,6 +510,23 @@
 <div id="page-wishlist" class="page">
   <div class="ph rb"><div><div class="pt">Wishlist</div></div><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div>
   <div class="g2" id="wish-list"></div>
+</div>
+
+<!-- DATES -->
+<div id="page-dates" class="page">
+  <div class="ph rb">
+    <div><div class="pt">Dates</div><div class="ps">Plan time together</div></div>
+    <div class="fl" style="gap:6px;flex-wrap:wrap">
+      <button class="btn btnp" onclick="openPlanADate()">✨ Plan a date</button>
+      <button class="btn" onclick="openModal('dateIdea')">+ Idea</button>
+    </div>
+  </div>
+  <div id="dates-reminders"></div>
+  <div id="dates-upcoming"></div>
+  <div class="card">
+    <div class="flb mb12"><div class="st" style="margin:0">Date ideas</div><span class="tag tp" id="dates-idea-count"></span></div>
+    <div id="dates-idea-list"></div>
+  </div>
 </div>
 
 <!-- FITNESS -->
@@ -896,6 +964,10 @@ const DEFAULT_STATE = {
   foodDiary:[],
   foodLibrary:[],
   nutritionGoals:{kcal:2000,protein:150,carbs:200,fat:65},
+  dateIdeas:[],       // {id,name,notes,cost,time,type,lastDone,createdAt}
+  plannedDates:[],    // {id,ideaId,date,createdAt,toldHer,reminders:[{seq,fireAt,notifId,text}]}
+  datesWishlistMigrated:false,
+  datesPromptEnabled:true,
 };
 
 // ── ONEDRIVE SYNC ──
@@ -916,7 +988,8 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'timeProjects','timeLog','calorieLog','projectNotes',
   'exercises','workoutTemplates','workoutSessions','workoutMigrated',
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
-  'foodDiary','foodLibrary','nutritionGoals'];
+  'foodDiary','foodLibrary','nutritionGoals',
+  'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -929,6 +1002,150 @@ const OD={
 // MSAL configured with NO cache — sign in fresh every time
 let _msal=null, _msalInit=false;
 let syncTimer=null, syncStatus='idle';
+
+// ── ANDROID SIGN-IN (Capacitor) ──
+// MSAL.js (above) is a browser library — Microsoft's identity servers detect and refuse
+// interactive sign-in from inside an embedded WebView, which is exactly what Capacitor
+// wraps this page in. So on Android we don't use MSAL.js at all; instead we open the
+// REAL Chrome browser (via the Capacitor Browser plugin, which Microsoft is fine with)
+// to do the login, and catch the redirect back with a custom "msauth://" URL that
+// Android hands back to this same app (registered in AndroidManifest.xml). From there
+// it's a plain PKCE authorization-code exchange — no library needed, just fetch().
+//
+// Unlike the web version's deliberate "no session persisted, sign in fresh every time"
+// (fine for a browser on a shared/borrowed machine), the Android app DOES persist a
+// refresh token in this app's private storage. That's necessary for the home-screen
+// widget and background sync to work without prompting an interactive sign-in every
+// time — standard practice for a mobile app, and this data never leaves the device.
+// Note the literal %3D here (not a raw '='): Azure stores the Android redirect URI with
+// the signature hash's trailing "=" pre-encoded as part of the registered string itself,
+// so this constant must match that exactly, character for character.
+const ANDROID_REDIRECT_URI='msauth://com.harvey.dashboard/gJSAdvlenVHwJHzx7Dle3vwJl44%3D';
+let _androidAuthPending=null; // {codeVerifier, state, resolve, reject}
+
+function isAndroidApp(){ return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); }
+
+function _b64url(buf){
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function _randomToken(len){
+  const arr=new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return _b64url(arr.buffer);
+}
+async function _sha256(str){
+  return await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+}
+
+// Registers the listener that catches Microsoft's redirect back into the app.
+// Call once, at startup, only on Android.
+function initAndroidAuthListener(){
+  window.Capacitor.Plugins.App.addListener('appUrlOpen',async(data)=>{
+    const url=(data&&data.url)||'';
+    if(!url.startsWith('msauth://'))return; // not our redirect — ignore
+    window.Capacitor.Plugins.Browser.close().catch(()=>{});
+    const pending=_androidAuthPending;_androidAuthPending=null;
+    if(!pending)return; // redirect arrived but nothing was waiting on it
+    const qIndex=url.indexOf('?');
+    const qs=new URLSearchParams(qIndex>-1?url.slice(qIndex+1):'');
+    const err=qs.get('error');
+    if(err){pending.reject(new Error(qs.get('error_description')||err));return;}
+    if(qs.get('state')!==pending.state){pending.reject(new Error('Sign-in state mismatch — aborting for safety.'));return;}
+    const code=qs.get('code');
+    if(!code){pending.reject(new Error('No authorization code returned.'));return;}
+    try{ pending.resolve(await androidExchangeCode(code,pending.codeVerifier)); }
+    catch(e){ pending.reject(e); }
+  });
+}
+
+// Opens the system browser for an interactive Microsoft sign-in. Resolves with
+// {accessToken,refreshToken,expiresAt} once the user finishes and we catch the redirect.
+async function androidSignIn(){
+  const codeVerifier=_randomToken(64);
+  const codeChallenge=_b64url(await _sha256(codeVerifier));
+  const state=_randomToken(16);
+  const params=new URLSearchParams({
+    client_id:OD.clientId,
+    response_type:'code',
+    redirect_uri:ANDROID_REDIRECT_URI,
+    response_mode:'query',
+    scope:OD.scopes.join(' ')+' offline_access',
+    code_challenge:codeChallenge,
+    code_challenge_method:'S256',
+    state,
+    prompt:'select_account',
+  });
+  const authUrl='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?'+params.toString();
+  return new Promise((resolve,reject)=>{
+    _androidAuthPending={codeVerifier,state,resolve,reject};
+    window.Capacitor.Plugins.Browser.open({url:authUrl});
+  });
+}
+
+// Posts to Microsoft's token endpoint via a native Android HTTP request (NativeHttpPlugin),
+// not fetch(). A fetch() call from the WebView always carries a browser "Origin" header on
+// a cross-origin request, which Microsoft refuses (AADSTS90023) for a redirect URI
+// registered as Android/Native rather than Single-Page Application. A real native request
+// never sends an Origin header, so this isn't a workaround — it just isn't a browser request.
+async function _androidTokenPost(bodyStr){
+  const res=await window.Capacitor.Plugins.NativeHttp.post({url:'https://login.microsoftonline.com/common/oauth2/v2.0/token',body:bodyStr});
+  const data=JSON.parse(res.body);
+  if(res.status<200||res.status>=300)throw new Error(data.error_description||data.error||'Request failed ('+res.status+').');
+  return data;
+}
+
+async function androidExchangeCode(code,codeVerifier){
+  const body=new URLSearchParams({
+    client_id:OD.clientId,grant_type:'authorization_code',code,
+    redirect_uri:ANDROID_REDIRECT_URI,code_verifier:codeVerifier,
+    scope:OD.scopes.join(' ')+' offline_access',
+  });
+  const data=await _androidTokenPost(body.toString());
+  return _saveAndroidTokens(data);
+}
+
+async function androidRefreshToken(refreshToken){
+  const body=new URLSearchParams({
+    client_id:OD.clientId,grant_type:'refresh_token',refresh_token:refreshToken,
+    scope:OD.scopes.join(' ')+' offline_access',
+  });
+  const data=await _androidTokenPost(body.toString());
+  if(!data.refresh_token)data.refresh_token=refreshToken; // Microsoft doesn't always rotate it
+  return _saveAndroidTokens(data);
+}
+
+function _saveAndroidTokens(data){
+  const tokenData={accessToken:data.access_token,refreshToken:data.refresh_token,expiresAt:Date.now()+(data.expires_in*1000)};
+  try{localStorage.setItem('harvey-android-tokens',JSON.stringify(tokenData));}catch(e){}
+  return tokenData;
+}
+
+// The single entry point the rest of the app calls on Android — handles "already
+// signed in", "needs a silent refresh", and "needs a fresh interactive sign-in".
+async function androidGetToken(){
+  let stored=null;
+  try{stored=JSON.parse(localStorage.getItem('harvey-android-tokens')||'null');}catch(e){}
+  if(stored&&stored.expiresAt>Date.now()+60000)return stored.accessToken;
+  if(stored&&stored.refreshToken){
+    try{ return (await androidRefreshToken(stored.refreshToken)).accessToken; }
+    catch(e){ /* refresh token expired/revoked — fall through to interactive sign-in */ }
+  }
+  return (await androidSignIn()).accessToken;
+}
+
+// Never opens the browser — returns null if there's no usable session, exactly
+// mirroring getTokenSilent()'s "never prompts" contract for the web/MSAL path.
+async function androidGetTokenSilent(){
+  let stored=null;
+  try{stored=JSON.parse(localStorage.getItem('harvey-android-tokens')||'null');}catch(e){}
+  if(!stored)return null;
+  if(stored.expiresAt>Date.now()+60000)return stored.accessToken;
+  if(stored.refreshToken){
+    try{ return (await androidRefreshToken(stored.refreshToken)).accessToken; }
+    catch(e){ return null; }
+  }
+  return null;
+}
 
 function getMsalApp(){
   if(_msal)return _msal;
@@ -965,6 +1182,7 @@ function setSyncStatus(status,msg){
 
 // Get token — always via redirect, no silent attempts, no caching
 async function getToken(){
+  if(isAndroidApp())return androidGetToken();
   const app=getMsalApp();
   if(!app)throw new Error('MSAL library not loaded');
   if(!_msalInit){
@@ -1007,6 +1225,7 @@ async function pushToOD(data){
 
 // Silent token — returns null if not already signed in, NEVER redirects.
 async function getTokenSilent(){
+  if(isAndroidApp())return androidGetTokenSilent();
   const app=getMsalApp();
   if(!app)return null;
   if(!_msalInit){try{await app.initialize();_msalInit=true;}catch(e){return null;}}
@@ -1057,39 +1276,6 @@ async function pushWithToken(token,data){
   });
 }
 
-async function pullFromOD(){
-  setSyncStatus('saving');
-  try{
-    const token=await getToken();
-    if(!token)return null;
-    const res=await fetch(OD.downloadUrl,{
-      headers:{'Authorization':'Bearer '+token},
-    });
-    if(res.status===404){
-      // File doesn't exist yet — first time use
-      setSyncStatus('saved');
-      setTimeout(()=>setSyncStatus('idle'),3000);
-      return null;
-    }
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+res.status);}
-    const data=await res.json();
-    if(!data||Object.keys(data).length===0){
-      setSyncStatus('saved');
-      setTimeout(()=>setSyncStatus('idle'),3000);
-      return null;
-    }
-    setSyncStatus('saved');
-    setTimeout(()=>setSyncStatus('idle'),3000);
-    return data;
-  }catch(e){
-    console.error('pull:',e.message);
-    setSyncStatus('error','✕ '+e.message);
-    setTimeout(()=>setSyncStatus('idle'),5000);
-    return null;
-  }
-}
-
-
 // Load from localStorage or use defaults
 function loadState() {
   try {
@@ -1134,13 +1320,6 @@ function getMonthData(key) {
   if (S.monthlyData[key].note === undefined) S.monthlyData[key].note = '';
   if (S.monthlyData[key].billsNote === undefined) S.monthlyData[key].billsNote = '';
   return S.monthlyData[key];
-}
-
-async function syncFromOD(){
-  // This triggers a Microsoft login redirect, then pulls data on return
-  const m=document.getElementById('settings-msg');
-  if(m){m.textContent='Redirecting to Microsoft to sign in…';m.style.color='var(--text2)';}
-  await pullFromOD(); // pullFromOD calls getToken() which redirects if needed
 }
 
 // ── SUPABASE SYNC (alternative to OneDrive — general Harvey data, not Hyrox) ──
@@ -1393,6 +1572,34 @@ function weatherCardHTML(inner){
   return `<div class="card" style="padding:14px 18px">${inner}</div>`;
 }
 
+// Not Boring-style: the background itself IS the weather — every condition (and
+// day/night) gets its own vivid, mood-matched gradient, rather than an icon sitting on
+// a plain neutral card.
+function weatherTheme(code,isDay){
+  if(code===0||code===1)return isDay
+    ?{grad:'linear-gradient(160deg,#FFD666 0%,#FF9D4D 55%,#FF7A5C 100%)',text:'#3D1F00',sub:'rgba(61,31,0,.72)',glow:'255,157,77'}
+    :{grad:'linear-gradient(160deg,#1B1A4A 0%,#3A2E7C 55%,#5B3D9E 100%)',text:'#fff',sub:'rgba(255,255,255,.78)',glow:'91,61,158'};
+  if(code===2)return isDay
+    ?{grad:'linear-gradient(160deg,#7FC7FF 0%,#5FA8F0 55%,#FFD87A 100%)',text:'#12314D',sub:'rgba(18,49,77,.72)',glow:'95,168,240'}
+    :{grad:'linear-gradient(160deg,#232B4D 0%,#3C4576 55%,#5B5FA0 100%)',text:'#fff',sub:'rgba(255,255,255,.78)',glow:'60,69,118'};
+  if(code===3)return isDay
+    ?{grad:'linear-gradient(160deg,#B8C4CE 0%,#8FA0AE 100%)',text:'#20272C',sub:'rgba(32,39,44,.72)',glow:'143,160,174'}
+    :{grad:'linear-gradient(160deg,#3A4048 0%,#23282D 100%)',text:'#fff',sub:'rgba(255,255,255,.78)',glow:'20,20,20'};
+  if(code===45||code===48)return{grad:'linear-gradient(160deg,#D8DEE4 0%,#B9C2CB 100%)',text:'#2A3138',sub:'rgba(42,49,56,.72)',glow:'185,194,203'};
+  if(code>=51&&code<=67)return isDay
+    ?{grad:'linear-gradient(160deg,#6FCBEA 0%,#3E93D6 55%,#3163B0 100%)',text:'#fff',sub:'rgba(255,255,255,.8)',glow:'62,147,214'}
+    :{grad:'linear-gradient(160deg,#1B3A57 0%,#1D2E52 100%)',text:'#fff',sub:'rgba(255,255,255,.75)',glow:'27,58,87'};
+  if((code>=71&&code<=77)||code===85||code===86)return{grad:'linear-gradient(160deg,#EAF6FF 0%,#C7E6FA 60%,#A9D4F0 100%)',text:'#1B3A57',sub:'rgba(27,58,87,.72)',glow:'169,212,240'};
+  if(code>=80&&code<=82)return{grad:'linear-gradient(160deg,#4FB3E8 0%,#2E7BC7 100%)',text:'#fff',sub:'rgba(255,255,255,.8)',glow:'46,123,199'};
+  if(code>=95)return{grad:'linear-gradient(160deg,#3D1E63 0%,#1C1030 100%)',text:'#fff',sub:'rgba(255,255,255,.75)',glow:'61,30,99'};
+  return isDay
+    ?{grad:'linear-gradient(160deg,#7FC7FF,#5FA8F0)',text:'#12314D',sub:'rgba(18,49,77,.72)',glow:'95,168,240'}
+    :{grad:'linear-gradient(160deg,#232B4D,#3C4576)',text:'#fff',sub:'rgba(255,255,255,.78)',glow:'60,69,118'};
+}
+function weatherHeroHTML(theme,inner){
+  return `<div class="wx-hero" style="background:${theme.grad};color:${theme.text};box-shadow:0 20px 50px rgba(${theme.glow},.35),0 4px 14px rgba(${theme.glow},.22)">${inner}</div>`;
+}
+
 async function getCoords(){
   // Try precise browser geolocation first
   const geo=await new Promise(resolve=>{
@@ -1422,7 +1629,7 @@ async function renderWeather(){
   }
   try{
     const url=`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}`+
-      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m`+
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day`+
       `&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
     const r=await fetch(url);
     if(!r.ok)throw new Error('HTTP '+r.status);
@@ -1430,29 +1637,28 @@ async function renderWeather(){
     const cur=d.current;
     const [desc,icon]=WEATHER_CODES[cur.weather_code]||['—','•'];
     const place=coords.city?coords.city:'Your location';
+    const theme=weatherTheme(cur.weather_code,cur.is_day!==0);
     const days=d.daily.time.map((t,i)=>{
       const dt=new Date(t+'T12:00:00');
       const [,ic]=WEATHER_CODES[d.daily.weather_code[i]]||['','•'];
       const dn=i===0?'Today':dt.toLocaleDateString('en-IE',{weekday:'short'});
-      return `<div style="text-align:center;flex:1">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${dn}</div>
-        <div style="font-size:18px;line-height:1;margin-bottom:3px">${ic}</div>
-        <div style="font-size:12px;font-weight:600">${Math.round(d.daily.temperature_2m_max[i])}°</div>
-        <div style="font-size:11px;color:var(--text3)">${Math.round(d.daily.temperature_2m_min[i])}°</div>
+      return `<div class="wx-day">
+        <div class="wx-day-name">${dn}</div>
+        <div class="wx-day-ico">${ic}</div>
+        <div class="wx-day-hi">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+        <div class="wx-day-lo" style="color:${theme.sub}">${Math.round(d.daily.temperature_2m_min[i])}°</div>
       </div>`;
     }).join('');
-    el.innerHTML=weatherCardHTML(`
-      <div class="flb" style="align-items:flex-start;flex-wrap:wrap;gap:12px">
-        <div class="fl" style="gap:14px">
-          <div style="font-size:42px;line-height:1">${icon}</div>
-          <div>
-            <div style="font-size:26px;font-weight:600;line-height:1.1">${Math.round(cur.temperature_2m)}°C</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:2px">${desc} · feels ${Math.round(cur.apparent_temperature)}°</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${place} · wind ${Math.round(cur.wind_speed_10m)} km/h</div>
-          </div>
+    el.innerHTML=weatherHeroHTML(theme,`
+      <div class="wx-main">
+        <div class="wx-icon">${icon}</div>
+        <div>
+          <div class="wx-temp">${Math.round(cur.temperature_2m)}°</div>
+          <div class="wx-desc">${desc} · feels ${Math.round(cur.apparent_temperature)}°</div>
+          <div class="wx-place" style="color:${theme.sub}">${place} · wind ${Math.round(cur.wind_speed_10m)} km/h</div>
         </div>
-        <div class="fl" style="gap:4px;flex:1;min-width:220px;max-width:340px;justify-content:space-between">${days}</div>
-      </div>`);
+      </div>
+      <div class="wx-days">${days}</div>`);
   }catch(e){
     el.innerHTML=weatherCardHTML(`<div style="font-size:13px;color:var(--text3)">Weather unavailable right now.</div>`);
   }
@@ -1748,7 +1954,7 @@ function renderBudget(){
     <div class="mc" style="outline:1.5px solid var(--blue);outline-offset:-1px"><div class="ml">Pockets total</div><div class="mv">${euro(totalPockets)}</div><div class="ms">${mLabel} · all pockets</div></div>
     <div class="mc"><div class="ml">Income</div><div class="mv">${euro(totalIncome)}</div><div class="ms">${mLabel}</div></div>
     <div class="mc"><div class="ml">Spent</div><div class="mv">${euro(totalSpent)}</div><div class="ms">${monthTx.length} transaction${monthTx.length===1?'':'s'}</div></div>
-    <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#3B6D11':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
+    <div class="mc"><div class="ml">Left (after bills &amp; spend)</div><div class="mv" style="color:${left>=0?'#15803D':'#B91C1C'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>`;
 
   const budgetNoteInp=document.getElementById('budget-note-inp');
   if(budgetNoteInp&&document.activeElement!==budgetNoteInp)budgetNoteInp.value=md.note||'';
@@ -1780,10 +1986,10 @@ function renderBudget(){
   document.getElementById('budget-bills-list').innerHTML=activeBills.map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag ${catTag(b.cat)}">${b.cat}</span><span style="font-size:12px;color:var(--text2)">Due ${b.due}th</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
   document.getElementById('budget-summary').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="sum-box"><div class="sum-label">Total income</div><div class="sum-val" style="color:#3B6D11">${euro(totalIncome)}</div></div>
-      <div class="sum-box"><div class="sum-label">Total bills</div><div class="sum-val" style="color:#A32D2D">${euro(totalBills)}</div></div>
+      <div class="sum-box"><div class="sum-label">Total income</div><div class="sum-val" style="color:#15803D">${euro(totalIncome)}</div></div>
+      <div class="sum-box"><div class="sum-label">Total bills</div><div class="sum-val" style="color:#B91C1C">${euro(totalBills)}</div></div>
       <div class="sum-box"><div class="sum-label">Total spent</div><div class="sum-val" style="color:#BA7517">${euro(totalSpent)}</div></div>
-      <div class="sum-box"><div class="sum-label">Left over</div><div class="sum-val" style="color:${left>=0?'#185FA5':'#A32D2D'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>
+      <div class="sum-box"><div class="sum-label">Left over</div><div class="sum-val" style="color:${left>=0?'#4F46E5':'#B91C1C'}">${left>=0?'':'-'}${euro(Math.abs(left))}</div></div>
     </div>`;
 }
 
@@ -1993,7 +2199,7 @@ function renderSavings(){
   document.getElementById('sav-m').innerHTML=`
     <div class="mc"><div class="ml">Current savings</div><input type="number" class="inp" id="sav-current-inp" value="${S.currentSavings||''}" placeholder="0" style="font-size:19px;font-weight:600;padding:2px 4px;border:none;background:transparent;width:100%" onchange="setCurrentSavings(this.value)"></div>
     <div class="mc"><div class="ml">Last entry</div><div class="mv">${euro(last)}</div></div>
-    <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#3B6D11':'#A32D2D'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
+    <div class="mc"><div class="ml">vs prev</div><div class="mv" style="color:${diff>=0?'#15803D':'#B91C1C'}">${diff>=0?'+':''}${euro(diff)}</div></div>`;
   const goalInp=document.getElementById('sav-goal-inp');if(goalInp)goalInp.value=S.savingsGoal||'';
   renderSavingsProjection(tot);
   requestAnimationFrame(()=>{
@@ -2293,11 +2499,346 @@ function addTodoModal(pid){S.activeModal={type:'todo',pid};document.getElementBy
 
 // ── WISHLIST ──
 function renderWishlist(){
+  checkDatesWishlistMigration();
   const cats=[...new Set(S.wishlist.map(w=>w.cat))];
   document.getElementById('wish-list').innerHTML=cats.map(cat=>{
     const items=S.wishlist.filter(w=>w.cat===cat);
     return `<div class="card mb12"><div class="flb mb12"><div class="st" style="margin:0">${cat}</div><span class="tag tb">${items.length}</span></div>${items.map(w=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);"><span style="font-size:15px">${w.ico}</span><span style="flex:1;font-size:13px">${w.name}</span><button class="btn-icon" onclick="S.wishlist=S.wishlist.filter(x=>x.id!==${w.id});saveState();renderWishlist();">✕</button></div>`).join('')}</div>`;
   }).join('');
+}
+
+// ── DATES ──
+// One-time migration: the Wishlist "Other" category is retired now that Dates exists.
+function checkDatesWishlistMigration(){
+  if(S.datesWishlistMigrated)return;
+  if(!S.wishlist.some(w=>w.cat==='Other')){S.datesWishlistMigrated=true;saveState();return;}
+  openModal('migrateOther');
+}
+
+const DATE_COST_TAGS=[{id:'free',label:'Free'},{id:'under30',label:'Under €30'},{id:'30-80',label:'€30–80'},{id:'80+',label:'€80+'}];
+const DATE_TIME_TAGS=[{id:'evening',label:'Evening'},{id:'half-day',label:'Half day'},{id:'full-day',label:'Full day/weekend'}];
+const DATE_TYPE_TAGS=[{id:'home',label:'At home'},{id:'out',label:'Going out'},{id:'trip',label:'Trip'}];
+const DATE_COST_ORDER=['free','under30','30-80','80+'];
+function dateTagLabel(group,id){
+  const map={cost:DATE_COST_TAGS,time:DATE_TIME_TAGS,type:DATE_TYPE_TAGS}[group]||[];
+  return (map.find(t=>t.id===id)||{}).label||'';
+}
+// Generic tap-to-choose single-select pill group, used by the idea form and plan-a-date flow.
+function pickTag(groupId,btn,value){
+  const group=document.getElementById(groupId);if(!group)return;
+  [...group.children].forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  group.dataset.value=value;
+}
+
+function renderDatesPage(){
+  checkDatesWishlistMigration();
+  if(!S.dateIdeas)S.dateIdeas=[];
+  if(!S.plannedDates)S.plannedDates=[];
+  autoMarkPastDatesDone();
+
+  // Reminder cards — any "tell her" reminder whose time has come, for dates not yet told.
+  const now=Date.now();
+  const dueReminders=S.plannedDates.filter(p=>!p.toldHer&&(p.reminders||[]).some(r=>r.fireAt<=now));
+  document.getElementById('dates-reminders').innerHTML=dueReminders.length?dueReminders.map(p=>{
+    const idea=S.dateIdeas.find(i=>i.id===p.ideaId);
+    const due=[...p.reminders].filter(r=>r.fireAt<=now).sort((a,b)=>b.fireAt-a.fireAt)[0];
+    return `<div class="card mb16" style="border-color:var(--amber);background:var(--amber-bg)">
+      <div class="flb" style="align-items:flex-start;gap:10px">
+        <div style="font-size:13px;font-weight:600;color:var(--amber-text)">${due?due.text:'Does she know yet?'}</div>
+        <button class="btn btnp" style="white-space:nowrap" onclick="markToldHer(${p.id})">Told her ✓</button>
+      </div>
+    </div>`;
+  }).join(''):'';
+
+  // Upcoming planned dates
+  const upcoming=S.plannedDates.filter(p=>p.date>=TODAYSTR).sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('dates-upcoming').innerHTML=upcoming.length?`<div class="card mb16">
+    <div class="st">Upcoming</div>
+    ${upcoming.map(p=>{
+      const idea=S.dateIdeas.find(i=>i.id===p.ideaId);
+      return `<div class="pi"><div><span class="pn">${idea?idea.name:'(deleted idea)'}</span><div style="font-size:11px;color:var(--text3)">${fmtDate(p.date)}${p.toldHer?' · she knows ✓':' · she does not know yet'}</div></div><button class="btn-icon" onclick="cancelPlannedDate(${p.id})" title="Cancel">✕</button></div>`;
+    }).join('')}
+  </div>`:'';
+
+  // Idea list
+  document.getElementById('dates-idea-count').textContent=S.dateIdeas.length;
+  document.getElementById('dates-idea-list').innerHTML=S.dateIdeas.length?S.dateIdeas.map(idea=>`
+    <div class="pi" style="align-items:flex-start">
+      <div style="flex:1">
+        <div class="pn">${idea.name}</div>
+        ${idea.notes?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${idea.notes}</div>`:''}
+        <div class="fl" style="gap:4px;margin-top:5px;flex-wrap:wrap">
+          ${idea.cost?`<span class="tag tg">${dateTagLabel('cost',idea.cost)}</span>`:''}
+          ${idea.time?`<span class="tag tb">${dateTagLabel('time',idea.time)}</span>`:''}
+          ${idea.type?`<span class="tag tp">${dateTagLabel('type',idea.type)}</span>`:''}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${idea.lastDone?'Last done '+fmtDate(idea.lastDone):'Never done yet'}</div>
+      </div>
+      <div class="fl" style="gap:2px">
+        <button class="btn-icon" onclick="openModal('dateIdea',{editId:${idea.id}})" title="Edit">✎</button>
+        <button class="btn-icon" onclick="deleteIdea(${idea.id})" title="Delete">✕</button>
+      </div>
+    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No date ideas yet — add one whenever she mentions something.</div>';
+}
+
+function deleteIdea(id){
+  if(!confirm('Delete this date idea?'))return;
+  S.dateIdeas=S.dateIdeas.filter(i=>i.id!==id);
+  saveState();renderDatesPage();
+}
+
+function markToldHer(plannedId){
+  const p=S.plannedDates.find(x=>x.id===Number(plannedId));if(!p)return;
+  p.toldHer=true;
+  cancelTellHerReminders(p);
+  saveState();renderDatesPage();
+}
+
+function cancelPlannedDate(plannedId){
+  if(!confirm('Cancel this planned date? This removes it from your Dates plan and stops any reminders.'))return;
+  const p=S.plannedDates.find(x=>x.id===plannedId);
+  if(p)cancelTellHerReminders(p);
+  S.plannedDates=S.plannedDates.filter(x=>x.id!==plannedId);
+  saveState();renderDatesPage();
+}
+
+// Once a planned date's day has passed, treat it as done — updates the idea's "last done"
+// automatically so the planner naturally deprioritises recently-done ideas.
+function autoMarkPastDatesDone(){
+  let changed=false;
+  S.plannedDates.forEach(p=>{
+    if(p.date<TODAYSTR){
+      const idea=S.dateIdeas.find(i=>i.id===p.ideaId);
+      if(idea&&(!idea.lastDone||idea.lastDone<p.date)){idea.lastDone=p.date;changed=true;}
+    }
+  });
+  if(changed)saveState();
+}
+
+// ── PLAN A DATE ──
+let _planFlow=null; // {budget,day,shownIds:[]} — transient, not persisted
+async function openPlanADate(){
+  S.activeModal={type:'planDate'};
+  document.getElementById('modal-title').textContent='Plan a date';
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.style.display='none';
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('modal-body').innerHTML='<div style="font-size:13px;color:var(--text3)">Checking your calendar…</div>';
+  await renderPlanDateStep1();
+}
+async function renderPlanDateStep1(){
+  const days=await nextFreeDays(7);
+  document.getElementById('modal-body').innerHTML=`
+    <div class="fr"><label class="fl2">What's your budget for this one?</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="pd-budget-group" data-value="">
+      ${DATE_COST_TAGS.map(t=>`<button type="button" class="wkb" onclick="pickTag('pd-budget-group',this,'${t.id}')">${t.label}</button>`).join('')}
+    </div></div>
+    <div class="fr"><label class="fl2">Which day are you free?</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="pd-day-group" data-value="">
+      ${days.map(d=>`<button type="button" class="wkb" onclick="pickTag('pd-day-group',this,'${d.date}')">${d.label}${d.busy===false?' · free':d.busy===true?' · busy':''}</button>`).join('')}
+    </div></div>
+    <div id="pd-step1-err" style="font-size:12px;color:var(--red);margin-top:2px"></div>
+    <button class="btn btnp" style="width:100%;margin-top:10px" onclick="planDateShowSuggestions()">Show me ideas</button>`;
+}
+async function nextFreeDays(n){
+  const days=[];
+  for(let i=0;i<n;i++){
+    const d=new Date();d.setDate(d.getDate()+i);
+    days.push({date:localDateStr(d),label:i===0?'Today':d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric'}),busy:null});
+  }
+  try{
+    const token=await getTokenSilent();
+    if(token){
+      const start=new Date(),end=new Date();end.setDate(end.getDate()+n);
+      const events=await fetchOutlookEvents(start,end,token);
+      const busyDates=new Set(events.map(e=>(e.start.dateTime||'').slice(0,10)));
+      days.forEach(d=>{d.busy=busyDates.has(d.date);});
+    }
+  }catch(e){}
+  return days;
+}
+function planDateShowSuggestions(){
+  const budget=document.getElementById('pd-budget-group').dataset.value;
+  const day=document.getElementById('pd-day-group').dataset.value;
+  if(!budget||!day){document.getElementById('pd-step1-err').textContent='Pick a budget and a day first.';return;}
+  _planFlow={budget,day,shownIds:[]};
+  renderPlanDateSuggestions();
+}
+function ideasWithinBudget(budget){
+  const maxIdx=DATE_COST_ORDER.indexOf(budget);
+  return S.dateIdeas.filter(i=>i.cost&&DATE_COST_ORDER.indexOf(i.cost)<=maxIdx&&DATE_COST_ORDER.indexOf(i.cost)>=0);
+}
+function pickSuggestions(){
+  let pool=ideasWithinBudget(_planFlow.budget);
+  if(!pool.length)pool=S.dateIdeas.slice(); // no ideas tagged at this budget — fall back to any idea
+  let avail=pool.filter(i=>!_planFlow.shownIds.includes(i.id));
+  if(!avail.length){_planFlow.shownIds=[];avail=pool;} // seen them all — recycle for another shuffle
+  const sorted=[...avail].sort((a,b)=>{
+    if(!a.lastDone&&!b.lastDone)return 0;
+    if(!a.lastDone)return -1;
+    if(!b.lastDone)return 1;
+    return a.lastDone.localeCompare(b.lastDone);
+  });
+  const pickCount=Math.min(3,sorted.length);
+  const topPool=sorted.slice(0,Math.max(pickCount*2,pickCount));
+  const picks=[];
+  while(picks.length<pickCount&&topPool.length){
+    picks.push(topPool.splice(Math.floor(Math.random()*topPool.length),1)[0]);
+  }
+  picks.forEach(p=>_planFlow.shownIds.push(p.id));
+  return picks;
+}
+function renderPlanDateSuggestions(){
+  const picks=pickSuggestions();
+  document.getElementById('modal-body').innerHTML=picks.length?`
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">For ${fmtDate(_planFlow.day)}</div>
+    ${picks.map(idea=>`
+      <div class="pi" style="align-items:flex-start">
+        <div style="flex:1">
+          <div class="pn">${idea.name}</div>
+          ${idea.notes?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${idea.notes}</div>`:''}
+          <div class="fl" style="gap:4px;margin-top:5px;flex-wrap:wrap">
+            ${idea.cost?`<span class="tag tg">${dateTagLabel('cost',idea.cost)}</span>`:''}
+            ${idea.time?`<span class="tag tb">${dateTagLabel('time',idea.time)}</span>`:''}
+            ${idea.type?`<span class="tag tp">${dateTagLabel('type',idea.type)}</span>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">${idea.lastDone?'Last done '+fmtDate(idea.lastDone):'Never done yet'}</div>
+        </div>
+        <button class="btn btnp" style="white-space:nowrap" onclick="confirmPlanDate(${idea.id})">Plan this</button>
+      </div>`).join('')}
+    <button class="btn" style="width:100%;margin-top:10px" onclick="renderPlanDateSuggestions()">🔀 Shuffle</button>
+  `:`<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0">No date ideas yet — add some first!</div>
+     <button class="btn" style="width:100%;margin-top:10px" onclick="renderPlanDateStep1()">← Back</button>`;
+}
+async function confirmPlanDate(ideaId){
+  const idea=S.dateIdeas.find(i=>i.id===ideaId);if(!idea||!_planFlow)return;
+  const date=_planFlow.day;
+  const planned={id:Date.now(),ideaId,date,createdAt:Date.now(),toldHer:false,reminders:[]};
+  S.plannedDates.push(planned);
+  scheduleTellHerReminders(planned,idea);
+  saveState();
+  // Best-effort: also add it to Outlook if signed in — never blocks the flow if not.
+  try{
+    const token=await getTokenSilent();
+    if(token){
+      const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const endD=new Date(date+'T00:00:00');endD.setDate(endD.getDate()+1);
+      await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify({subject:'Date: '+idea.name,isAllDay:true,start:{dateTime:date+'T00:00:00',timeZone:tz},end:{dateTime:localDateStr(endD)+'T00:00:00',timeZone:tz}})});
+    }
+  }catch(e){}
+  _planFlow=null;
+  closeModal();
+  renderDatesPage();
+}
+
+// ── "TELL HER" REMINDERS ──
+// Fixed schedule (today/tomorrow evening, then +3, then +6 days), never more than 3, never
+// scheduled on/after the date itself. Increasing gaps + a different message angle each time
+// means nagging never gets more frequent, only more insistent in tone.
+const TELL_HER_MESSAGES=[
+  ["{idea} is set for {day} — does she know yet?",
+   "Heads up: {day} is looking like {idea}. Time to tell her!",
+   "You've got {idea} planned for {day}. She's going to love it — once she knows!",
+   "Secret's safe until you tell her: {idea} on {day}.",
+   "{day} plan locked in: {idea}. Go make her day — tell her!",
+   "Just planned {idea} for {day}. Don't forget the easy part — telling her!"],
+  ["Still haven't told her about {idea} on {day}? She might want to plan around it.",
+   "{idea} is still a secret. {day}'s coming up — might be time to spill it.",
+   "Reminder: {idea} is {day}. Don't leave her guessing what to wear!",
+   "{day} is getting closer — {idea} is planned, but does she know?",
+   "Quick one: has she heard about {idea} yet? It's happening {day}.",
+   "{idea} on {day} is still your little secret. Maybe not for much longer?"],
+  ["Last nudge: {idea} is {day}. Let her know before it sneaks up on you both!",
+   "{day} is close — {idea} is planned. This is your final reminder to tell her!",
+   "One more time: does she know about {idea} on {day}? Don't wait much longer.",
+   "Final call: {idea}, {day}. Time's ticking — tell her!",
+   "{day} is nearly here. {idea} is planned — make sure she knows before it's a scramble."],
+];
+function pickReminderText(tier,idea,dateStr){
+  const pool=TELL_HER_MESSAGES[Math.min(tier,TELL_HER_MESSAGES.length)-1];
+  let choice=pool[Math.floor(Math.random()*pool.length)];
+  if(pool.length>1)while(choice===S.lastReminderText)choice=pool[Math.floor(Math.random()*pool.length)];
+  S.lastReminderText=choice;
+  const dayLabel=dateStr===TODAYSTR?'today':fmtDate(dateStr);
+  return choice.replace(/\{idea\}/g,idea.name).replace(/\{day\}/g,dayLabel);
+}
+// Android notification IDs must fit in a 32-bit int — our data ids are Date.now()-scale
+// (way bigger), so every scheduled notification's id has to be reduced into that range.
+function toNotifId(id,offset){ return (Math.abs(Math.floor(id))%900000000)+(offset||0); }
+function scheduleTellHerReminders(planned,idea){
+  const planDate=new Date(planned.date+'T23:59:59');
+  const now=new Date();
+  const gaps=[0,3,6];
+  const reminders=[];
+  gaps.forEach((gap,i)=>{
+    if(reminders.length>=3)return;
+    let fireDay=new Date(now);fireDay.setDate(fireDay.getDate()+gap);
+    const hour=18+Math.random()*2.5; // natural evening window, 18:00–20:30
+    fireDay.setHours(Math.floor(hour),Math.floor((hour%1)*60),0,0);
+    if(fireDay<=now)fireDay.setDate(fireDay.getDate()+1);
+    if(fireDay>=planDate)return; // never remind on/after the date itself
+    const text=pickReminderText(i+1,idea,planned.date);
+    reminders.push({seq:i+1,fireAt:fireDay.getTime(),text,notifId:toNotifId(planned.id,i)});
+  });
+  planned.reminders=reminders;
+  if(isAndroidApp())scheduleTellHerNotifications(planned);
+}
+function cancelTellHerReminders(planned){
+  if(isAndroidApp()&&window.Capacitor?.Plugins?.LocalNotifications){
+    const ids=(planned.reminders||[]).map(r=>({id:r.notifId}));
+    if(ids.length)window.Capacitor.Plugins.LocalNotifications.cancel({notifications:ids}).catch(()=>{});
+  }
+}
+async function scheduleTellHerNotifications(planned){
+  try{
+    const LN=window.Capacitor.Plugins.LocalNotifications;
+    const perm=await LN.checkPermissions();
+    if(perm.display!=='granted')await LN.requestPermissions();
+    await LN.schedule({notifications:planned.reminders.map(r=>({
+      id:r.notifId,title:'Tell her? 💬',body:r.text,
+      schedule:{at:new Date(r.fireAt)},
+      actionTypeId:'TELL_HER_ACTIONS',
+      extra:{plannedId:planned.id},
+    }))});
+  }catch(e){console.error('tell-her notify:',e);}
+}
+
+// ── MONDAY "PLAN A DATE" PROMPT ──
+// Fixed weekly nudge every Monday evening, regardless of whether a date is already
+// planned — deliberately simple and predictable rather than a rolling/suppressed interval.
+const MONDAY_PROMPT_ID=999999999; // kept well outside toNotifId()'s 0–900000000 range, no collision risk
+async function scheduleMondayPrompt(){
+  if(!isAndroidApp()||!S.datesPromptEnabled)return;
+  try{
+    const LN=window.Capacitor.Plugins.LocalNotifications;
+    const perm=await LN.checkPermissions();
+    if(perm.display!=='granted')await LN.requestPermissions();
+    const next=nextMondayEvening();
+    await LN.schedule({notifications:[{
+      id:MONDAY_PROMPT_ID,title:'Plan a date? 💌',body:'Monday — a good day to line something up for you two.',
+      schedule:{at:next,every:'week'},
+    }]});
+  }catch(e){console.error('monday prompt:',e);}
+}
+function nextMondayEvening(){
+  const d=new Date();
+  const daysUntilMon=(1-d.getDay()+7)%7||7; // next Monday, always in the future
+  d.setDate(d.getDate()+daysUntilMon);
+  d.setHours(18,30,0,0);
+  return d;
+}
+
+// One-time setup, Android only: register the "Told her ✓" action button that can appear
+// directly on a tell-her notification, and listen for it (or a plain tap) being pressed.
+function initDatesNotifications(){
+  if(!isAndroidApp()||!window.Capacitor?.Plugins?.LocalNotifications)return;
+  const LN=window.Capacitor.Plugins.LocalNotifications;
+  LN.registerActionTypes({types:[{id:'TELL_HER_ACTIONS',actions:[{id:'told',title:'Told her ✓'}]}]}).catch(()=>{});
+  LN.addListener('localNotificationActionPerformed',(action)=>{
+    const plannedId=action?.notification?.extra?.plannedId;
+    if(action.actionId==='told'&&plannedId)markToldHer(plannedId);
+    else navById('dates'); // plain tap — just bring them to the Dates page to decide
+  });
+  scheduleMondayPrompt();
 }
 
 // ── FITNESS (session-based) ──
@@ -2392,7 +2933,7 @@ function renderFitness(){
   const weekSessions=S.workoutSessions.filter(s=>new Date(s.date+'T12:00:00')>=weekStart).length;
   document.getElementById('fit-m').innerHTML=`
     <div class="mc"><div class="ml">Current weight</div><div class="mv">${cur} kg</div></div>
-    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${(start-cur).toFixed(1)} kg</div></div>
+    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#15803D">-${(start-cur).toFixed(1)} kg</div></div>
     <div class="mc"><div class="ml">Total sessions</div><div class="mv">${S.workoutSessions.length}</div></div>
     <div class="mc"><div class="ml">This week</div><div class="mv">${weekSessions}</div></div>`;
 
@@ -2609,8 +3150,8 @@ function renderWeightPage(){
   document.getElementById('wt-metrics').innerHTML=`
     <div class="mc"><div class="ml">Current</div><div class="mv">${latest} kg</div></div>
     <div class="mc"><div class="ml">Starting</div><div class="mv">${first} kg</div></div>
-    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#3B6D11">-${lost} kg</div></div>
-    <div class="mc"><div class="ml">To goal</div><div class="mv" style="color:${toGoal<=0?'#3B6D11':'#185FA5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
+    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:#15803D">-${lost} kg</div></div>
+    <div class="mc"><div class="ml">To goal</div><div class="mv" style="color:${toGoal<=0?'#15803D':'#4F46E5'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
   const totalPlan=+(first-goal).toFixed(1);
   const goalPct=sorted.length===0?0:(totalPlan>0?Math.min(100,Math.max(0,(lost/totalPlan)*100)):(latest<=goal?100:0));
   document.getElementById('wt-goal-card').innerHTML=`
@@ -2646,8 +3187,8 @@ function setWeightGoal(val){S.weightGoal=parseFloat(val)||85;saveState();renderW
 // ── MODAL ──
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
-  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.textContent='Save';
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food'};
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn){saveBtn.textContent='Save';saveBtn.style.display='';}
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food',dateIdea:(extra&&extra.editId)?'Edit date idea':'Add date idea',migrateOther:'Move "Other" wishlist items?'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -2657,7 +3198,7 @@ function openModal(type,extra){
     bill:`<div class="fr"><label class="fl2">Name</label><input class="inp" id="m-name" placeholder="e.g. Netflix"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Due day</label><input type="number" class="inp" id="m-due" placeholder="1–31" min="1" max="31"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Transport</option><option>Other</option></select></div>`,
     saving:`<div class="fr"><label class="fl2">Label (e.g. May 2026)</label><input class="inp" id="m-label" placeholder="Month Year"></div><div class="fr"><label class="fl2">Amount saved (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div>`,
     project:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-name" placeholder="e.g. Client App"></div>`,
-    wish:`<div class="fr"><label class="fl2">What do you want to do?</label><input class="inp" id="m-name" placeholder="e.g. Visit Lisbon"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Travel</option><option>Skills</option><option>Personal</option><option>Fitness</option><option>Other</option></select></div>`,
+    wish:`<div class="fr"><label class="fl2">What do you want to do?</label><input class="inp" id="m-name" placeholder="e.g. Visit Lisbon"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Travel</option><option>Skills</option><option>Personal</option><option>Fitness</option></select></div>`,
     important:`<div class="fr"><label class="fl2">Task</label><input class="inp" id="m-text" placeholder="Important task..."></div><div class="fr"><label class="fl2">Source</label><input class="inp" id="m-src" placeholder="e.g. Work, Personal"></div>`,
     note:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-note" placeholder="Write your note..."></textarea></div>`,
     workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
@@ -2678,6 +3219,25 @@ function openModal(type,extra){
       <div class="g3" style="gap:8px"><div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="fd-protein-base" oninput="fdRecalc()"></div><div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="fd-carbs-base" oninput="fdRecalc()"></div><div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="fd-fat-base" oninput="fdRecalc()"></div></div>
       <div id="fd-total-preview" style="font-size:12px;color:var(--text2);margin-top:8px">= 0 kcal · 0P 0C 0F total</div>
       <div class="fr" style="margin-top:10px"><label class="fl2" style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:0"><input type="checkbox" id="fd-savelib" style="width:auto"> Save to my foods for next time</label></div>`,
+    dateIdea:(()=>{
+      const idea=(extra&&extra.editId)?S.dateIdeas.find(i=>i.id===extra.editId):null;
+      const isSel=(g,val)=>idea&&idea[g]===val?'active':'';
+      const esc=s=>(s||'').replace(/"/g,'&quot;');
+      return `<div class="fr"><label class="fl2">What's the idea?</label><input class="inp" id="di-name" placeholder="e.g. Picnic in the park" value="${esc(idea&&idea.name)}"></div>
+      <div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="di-notes" placeholder="Any detail worth remembering" value="${esc(idea&&idea.notes)}"></div>
+      <div class="fr"><label class="fl2">Cost</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="di-cost-group" data-value="${idea?idea.cost||'':''}">
+        ${DATE_COST_TAGS.map(t=>`<button type="button" class="wkb ${isSel('cost',t.id)}" onclick="pickTag('di-cost-group',this,'${t.id}')">${t.label}</button>`).join('')}
+      </div></div>
+      <div class="fr"><label class="fl2">Time needed</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="di-time-group" data-value="${idea?idea.time||'':''}">
+        ${DATE_TIME_TAGS.map(t=>`<button type="button" class="wkb ${isSel('time',t.id)}" onclick="pickTag('di-time-group',this,'${t.id}')">${t.label}</button>`).join('')}
+      </div></div>
+      <div class="fr"><label class="fl2">Type</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="di-type-group" data-value="${idea?idea.type||'':''}">
+        ${DATE_TYPE_TAGS.map(t=>`<button type="button" class="wkb ${isSel('type',t.id)}" onclick="pickTag('di-type-group',this,'${t.id}')">${t.label}</button>`).join('')}
+      </div></div>
+      ${idea?`<input type="hidden" id="di-edit-id" value="${idea.id}">`:''}`;
+    })(),
+    migrateOther:`<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your Wishlist's "Other" category is being retired now that Dates exists. Pick which of these should move into Date ideas — anything left unchecked will be removed.</p>
+      <div id="mo-list">${S.wishlist.filter(w=>w.cat==='Other').map(w=>`<label style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" class="mo-item-cb" data-id="${w.id}" data-name="${w.name.replace(/"/g,'&quot;')}" checked style="width:auto"><span style="font-size:13px">${w.name}</span></label>`).join('')}</div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -2685,7 +3245,13 @@ function openModal(type,extra){
   if(type==='calEvent')evRecalc();
   setTimeout(()=>{const f=document.querySelector('#modal-body input,#modal-body textarea');if(f)f.focus();},60);
 }
-function closeModal(){document.getElementById('modal').style.display='none';S.activeModal=null;}
+function closeModal(){
+  document.getElementById('modal').style.display='none';S.activeModal=null;
+  // Some flows (e.g. Plan a date) hide the generic Save button and drive everything through
+  // their own in-body buttons — always restore it here so it can never get stuck hidden for
+  // whatever modal opens next, regardless of how this one was opened.
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.style.display='';
+}
 function toggleRecurrenceEnd(){
   const sel=document.getElementById('m-erepeat');
   const row=document.getElementById('m-erepeat-end-row');
@@ -2919,6 +3485,30 @@ async function saveModal(){
       }
       saveState();renderNutritionPage();
     }
+  } else if(m.type==='dateIdea'){
+    const name=g('di-name');
+    if(!name){alert('Give the idea a name.');return;}
+    const notes=g('di-notes');
+    const cost=document.getElementById('di-cost-group')?.dataset.value||'';
+    const time=document.getElementById('di-time-group')?.dataset.value||'';
+    const type=document.getElementById('di-type-group')?.dataset.value||'';
+    const editId=document.getElementById('di-edit-id')?.value;
+    if(editId){
+      const idea=S.dateIdeas.find(i=>i.id===Number(editId));
+      if(idea)Object.assign(idea,{name,notes,cost,time,type});
+    } else {
+      S.dateIdeas.push({id:Date.now(),name,notes,cost,time,type,lastDone:null,createdAt:Date.now()});
+    }
+    saveState();renderDatesPage();
+  } else if(m.type==='migrateOther'){
+    const checked=[...document.querySelectorAll('.mo-item-cb:checked')];
+    const idBase=Date.now();
+    checked.forEach((cb,i)=>{
+      S.dateIdeas.push({id:idBase+i,name:cb.dataset.name,notes:'',cost:'',time:'',type:'',lastDone:null,createdAt:Date.now()});
+    });
+    S.wishlist=S.wishlist.filter(w=>w.cat!=='Other');
+    S.datesWishlistMigrated=true;
+    saveState();renderWishlist();renderDatesPage();
   }
   closeModal();renderHome();
 }
@@ -2980,13 +3570,13 @@ async function sb2RenderSignedState(){
 async function odSignIn(){
   setSyncProvider('onedrive');
   const m=document.getElementById('settings-msg');
-  if(m){m.textContent='Redirecting to Microsoft…';m.style.color='var(--text2)';}
+  if(m){m.textContent=isAndroidApp()?'Signing in…':'Redirecting to Microsoft…';m.style.color='var(--text2)';}
   try{
     const token=await getToken();
     if(token){
       renderSettings();
-      if(m){m.textContent='✓ Signed in! Pulling data…';m.style.color='var(--green)';}
-      await syncFromOD();
+      if(m){m.textContent='✓ Signed in! Checking for existing data…';m.style.color='var(--green)';}
+      await odMergeOrSeed(token);
       if(m)m.textContent='✓ Signed in and synced!';
     }
   }catch(e){
@@ -4236,7 +4826,7 @@ window.nav = function(id, el){
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,
-    calendar:renderOutlookPage,hyrox:renderHyroxPage,nutrition:renderNutritionPage};
+    calendar:renderOutlookPage,hyrox:renderHyroxPage,nutrition:renderNutritionPage,dates:renderDatesPage};
   handlers[id]?.();
 };
 
@@ -4276,10 +4866,63 @@ document.addEventListener('click',(e)=>{
   if(wrap&&!wrap.contains(e.target))closeFab();
 });
 
+// Shared by both the web (MSAL redirect-return) and Android (silent-token) init paths:
+// given a valid OneDrive access token, safely pull-and-merge or seed an empty account.
+// Never overwrites ambiguous/newer-looking remote data without asking first.
+async function odMergeOrSeed(token){
+  setSyncStatus('saving');
+  const pull=await pullWithToken(token);
+  if(!pull.ok){
+    console.error('OneDrive pull failed:',pull.error);
+    setSyncStatus('error','✕ Sync failed — local data untouched');
+    setTimeout(()=>setSyncStatus('idle'),5000);
+    return;
+  }
+  if(pull.data){
+    const localTs=S._ts||0;
+    const remoteTs=pull.data._ts||0;
+    if(remoteTs>=localTs){
+      SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+      S._ts=remoteTs;
+      S.workoutDef=DEFAULT_STATE.workoutDef;
+      try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+      renderHome();
+    } else {
+      // OneDrive has data, but it looks older/different than this device's copy — ambiguous.
+      // Never silently overwrite either side; ask.
+      const wantsRemote=confirm("OneDrive has data saved, but this device's copy looks newer or different.\n\nOK = replace this device's data with the OneDrive version.\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
+      if(wantsRemote){
+        SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
+        S._ts=remoteTs;
+        S.workoutDef=DEFAULT_STATE.workoutDef;
+        try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
+        renderHome();
+      }
+    }
+  } else {
+    // Confirmed: no file exists yet on OneDrive — safe to seed it with this device's data.
+    await pushWithToken(token,getStateToSave());
+    renderHome();
+  }
+  setSyncStatus('saved');
+  setTimeout(()=>setSyncStatus('idle'),3000);
+}
+
 // Init — render page immediately, then check if returning from MS login
 renderHome();
 setTimeout(async()=>{
   try{
+    if(isAndroidApp()){
+      // Android never does a page-reload redirect — the sign-in listener just needs to be
+      // armed once so it's ready whenever the user actually signs in (from Settings, or here
+      // if we already have a usable session and can quietly refresh it).
+      initAndroidAuthListener();
+      initDatesNotifications();
+      const token=await androidGetTokenSilent();
+      if(token){ await odMergeOrSeed(token); }
+      else { setSyncStatus('no-creds'); setTimeout(()=>setSyncStatus('idle'),6000); }
+      return;
+    }
     const app=getMsalApp();
     if(!app){ if(getSyncProvider()==='onedrive')setSyncStatus('no-creds'); return; }
     await app.initialize();
@@ -4287,49 +4930,13 @@ setTimeout(async()=>{
     // Check if we just came back from Microsoft login redirect
     const rr=await app.handleRedirectPromise().catch(()=>null);
     if(rr&&rr.accessToken){
-      // Coming back from login — sync data now
-      setSyncStatus('saving');
-      // Pull first
-      const pull=await pullWithToken(rr.accessToken);
-      if(!pull.ok){
-        // Couldn't reach OneDrive — never push blind. Leave local data on this device untouched.
-        console.error('OneDrive pull failed:',pull.error);
-        setSyncStatus('error','✕ Sync failed — local data untouched');
-        setTimeout(()=>setSyncStatus('idle'),5000);
-      } else if(pull.data){
-        const localTs=S._ts||0;
-        const remoteTs=pull.data._ts||0;
-        if(remoteTs>=localTs){
-          SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
-          S._ts=remoteTs;
-          S.workoutDef=DEFAULT_STATE.workoutDef;
-          try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
-          renderHome();
-        } else {
-          // OneDrive has data, but it looks older/different than this device's copy — ambiguous.
-          // Never silently overwrite either side; ask.
-          const wantsRemote=confirm("OneDrive has data saved, but this device's copy looks newer or different.\n\nOK = replace this device's data with the OneDrive version.\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
-          if(wantsRemote){
-            SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
-            S._ts=remoteTs;
-            S.workoutDef=DEFAULT_STATE.workoutDef;
-            try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
-            renderHome();
-          }
-        }
-      } else {
-        // Confirmed: no file exists yet on OneDrive — safe to seed it with this device's data.
-        await pushWithToken(rr.accessToken,getStateToSave());
-        renderHome();
-      }
+      await odMergeOrSeed(rr.accessToken);
       // Check if we came from a push action
       const pending=localStorage.getItem('harvey-pending-push');
       if(pending){
         localStorage.removeItem('harvey-pending-push');
         await pushWithToken(rr.accessToken,getStateToSave());
       }
-      setSyncStatus('saved');
-      setTimeout(()=>setSyncStatus('idle'),3000);
       localStorage.removeItem('harvey-pending-sync');
       // If this sign-in was triggered from the Calendar page, land back there
       const pendingNav=localStorage.getItem('harvey-pending-nav');
