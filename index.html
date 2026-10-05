@@ -404,6 +404,14 @@
 <div id="page-important" class="page">
   <div class="ph rb"><div><div class="pt">Important</div><div class="ps">Pinned tasks</div></div><button class="btn btnp" onclick="openModal('important')">+ Add</button></div>
   <div id="imp-list"></div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="flb mb12">
+      <div><div class="st" style="margin:0">Recurring</div><div class="ps" style="margin-top:2px">Resets every week — tick it off, it's back next week</div></div>
+      <button class="btn btnp" onclick="openModal('recurringTask')">+ Add</button>
+    </div>
+    <div id="recurring-list"></div>
+  </div>
 </div>
 
 <!-- BUDGET -->
@@ -968,6 +976,9 @@ const DEFAULT_STATE = {
   plannedDates:[],    // {id,ideaId,date,createdAt,toldHer,reminders:[{seq,fireAt,notifId,text}]}
   datesWishlistMigrated:false,
   datesPromptEnabled:true,
+  importantPriority:{}, // item key → 1 High / 2 Medium / 3 Low (see impKey)
+  importantOrder:[],    // item keys; manual order within a priority
+  recurringTasks:[],  // {id,text,createdAt,lastDoneWeek} — lastDoneWeek is an ISO week key ('2026-W39'); done for the week when it matches the current one, resets automatically otherwise
 };
 
 // ── ONEDRIVE SYNC ──
@@ -989,7 +1000,7 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'exercises','workoutTemplates','workoutSessions','workoutMigrated',
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
   'foodDiary','foodLibrary','nutritionGoals',
-  'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled'];
+  'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -1299,6 +1310,7 @@ function saveState() {
       if (getSyncProvider()==='supabase') sb2AutoPush(toSave);
       else autoPush(toSave);
     }, 1500);
+    pushWidgetData(); // no-op off Android; cheap and local, so no debounce needed
   } catch(e) {}
 }
 
@@ -1841,6 +1853,49 @@ function editNote(id){
 }
 
 // ── IMPORTANT ──
+// ── IMPORTANT: PRIORITY ORDERING ──
+// Priority is stored in a map keyed by item (so it works for manual pins and project-linked
+// ones alike); within a priority, order is whatever you set with ▲▼ (S.importantOrder).
+const IMP_PRIORITIES={
+  1:{label:'High',color:'#B91C1C',tag:'tr'},
+  2:{label:'Medium',color:'#B45309',tag:'ta'},
+  3:{label:'Low',color:'#4F46E5',tag:'tb'},
+};
+function impKey(i){return i.ref?'r:'+i.ref:'m:'+i.id;}
+function impPriority(i){return (S.importantPriority&&S.importantPriority[impKey(i)])||2;}
+// Every pinned task (manual + starred project tasks), highest priority first. Shared by the
+// Important page and the widget so both always agree on the order.
+function importantItems(){
+  const all=(S.important||[]).filter(i=>{
+    if(!i.ref)return true;
+    const [pid,tid]=String(i.ref).split('-').map(Number);
+    const p=S.projects.find(x=>x.id===pid);
+    const t=p&&p.todos.find(x=>x.id===tid);
+    return t&&!t.done;
+  });
+  S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!t.done&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
+  const order=S.importantOrder||[];
+  const pos=k=>{const n=order.indexOf(k);return n<0?1e9:n;};
+  return all.map((i,idx)=>({i,idx}))
+    .sort((a,b)=>impPriority(a.i)-impPriority(b.i)||pos(impKey(a.i))-pos(impKey(b.i))||a.idx-b.idx)
+    .map(x=>x.i);
+}
+function cycleImportantPriority(key){
+  if(!S.importantPriority)S.importantPriority={};
+  const cur=S.importantPriority[key]||2;
+  S.importantPriority[key]=cur===1?2:cur===2?3:1; // High → Medium → Low → High
+  saveState();renderImportant();
+}
+function moveImportant(key,dir){
+  const list=importantItems();
+  const idx=list.findIndex(i=>impKey(i)===key),j=idx+dir;
+  if(idx<0||j<0||j>=list.length||impPriority(list[idx])!==impPriority(list[j]))return;
+  const keys=list.map(impKey);
+  [keys[idx],keys[j]]=[keys[j],keys[idx]];
+  S.importantOrder=keys;
+  saveState();renderImportant();
+}
+
 function renderImportant(){
   const el=document.getElementById('imp-list');if(!el)return;
   // Drop any manually-pinned items whose source task is now complete/removed
@@ -1851,10 +1906,17 @@ function renderImportant(){
     const t=p&&p.todos.find(x=>x.id===tid);
     return t&&!t.done; // keep only if task still exists and is not done
   });
-  const all=[...S.important];
-  S.projects.forEach(p=>p.todos.forEach(t=>{const ref=`${p.id}-${t.id}`;if(t.important&&!t.done&&!all.find(x=>x.ref===ref))all.push({id:ref,ref,text:t.text,source:p.name});}));
+  const all=importantItems();
+  // Forget priority/order entries for items that no longer exist, so they don't pile up.
+  const liveKeys=new Set(all.map(impKey));
+  Object.keys(S.importantPriority||{}).forEach(k=>{if(!liveKeys.has(k))delete S.importantPriority[k];});
+  S.importantOrder=(S.importantOrder||[]).filter(k=>liveKeys.has(k));
 
-  el.innerHTML=all.length?all.map(i=>{
+  el.innerHTML=all.length?all.map((i,n)=>{
+    const key=impKey(i),pr=IMP_PRIORITIES[impPriority(i)];
+    const canUp=n>0&&impPriority(all[n-1])===impPriority(i);
+    const canDown=n<all.length-1&&impPriority(all[n+1])===impPriority(i);
+    const arrow=(dir,ok,glyph)=>`<button ${ok?`onclick="moveImportant('${key}',${dir})"`:'disabled'} class="btn-icon" style="${ok?'':'opacity:.25;pointer-events:none;'}font-size:11px;padding:2px 3px" title="Move ${dir<0?'up':'down'} within ${pr.label}">${glyph}</button>`;
     // Resolve the underlying project todo (if this item is linked to one) so we can show its subtasks.
     let pid=null,tid=null,t=null;
     if(i.ref){
@@ -1886,18 +1948,24 @@ function renderImportant(){
       </div>`:'';
     return `<div style="background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;">
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--blue);min-width:6px"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:${pr.color};min-width:7px"></div>
         <span style="flex:1;font-size:13px">${i.text}${badge}</span>
         <span class="tag tp">${i.source}</span>
+        <button class="tag ${pr.tag}" style="border:none;cursor:pointer;font-family:inherit" onclick="cycleImportantPriority('${key}')" title="Tap to change priority">${pr.label}</button>
+        <span style="display:inline-flex;flex-direction:column;line-height:1">${arrow(-1,canUp,'▲')}${arrow(1,canDown,'▼')}</span>
         <button onclick="removeImportant(${i.ref?'null':i.id}, ${i.ref?`'${i.ref}'`:'null'})" class="btn-icon" title="Remove from Important">✕</button>
       </div>
       ${subsHtml}
     </div>`;
   }).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
+  renderRecurringTasks();
 }
 // Removing a project-linked item un-stars the underlying task (it stays on the project,
 // just no longer pinned here); removing a manually-added item deletes it outright.
 function removeImportant(id,ref){
+  const key=ref?'r:'+ref:'m:'+id;
+  if(S.importantPriority)delete S.importantPriority[key];
+  S.importantOrder=(S.importantOrder||[]).filter(k=>k!==key);
   if(ref){
     const [pid,tid]=String(ref).split('-').map(Number);
     const p=S.projects.find(x=>x.id===pid);
@@ -1908,6 +1976,45 @@ function removeImportant(id,ref){
     S.important=S.important.filter(x=>x.id!==id);
   }
   saveState();renderProjects();renderImportant();
+}
+
+// ── RECURRING (WEEKLY) TASKS ──
+// ISO-8601 week key ('2026-W39') for a given date — the standard algorithm, correct across
+// year boundaries. Used purely as a comparison key: does lastDoneWeek match "this week"?
+function isoWeekKey(d){
+  const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dayNum=(date.getUTCDay()+6)%7; // Mon=0 .. Sun=6
+  date.setUTCDate(date.getUTCDate()-dayNum+3); // nearest Thursday defines the ISO week/year
+  const firstThursday=new Date(Date.UTC(date.getUTCFullYear(),0,4));
+  const weekNum=1+Math.round(((date-firstThursday)/86400000-3+((firstThursday.getUTCDay()+6)%7))/7);
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+function currentWeekKey(){ return isoWeekKey(new Date()); }
+function renderRecurringTasks(){
+  const el=document.getElementById('recurring-list');if(!el)return;
+  if(!S.recurringTasks)S.recurringTasks=[];
+  const wk=currentWeekKey();
+  el.innerHTML=S.recurringTasks.length?S.recurringTasks.map(t=>{
+    const done=t.lastDoneWeek===wk;
+    return `<div class="pi">
+      <div class="fl" style="gap:9px;flex:1">
+        <div onclick="toggleRecurringTask(${t.id})" style="width:16px;height:16px;min-width:16px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;${done?'background:var(--blue);color:#fff;font-size:10px':'border:1.5px solid var(--border2)'}">${done?'✓':''}</div>
+        <span style="font-size:13px;${done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span>
+      </div>
+      <button class="btn-icon" onclick="deleteRecurringTask(${t.id})" title="Delete">✕</button>
+    </div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No recurring tasks yet — add the stuff you do every week.</div>';
+}
+function toggleRecurringTask(id){
+  const t=S.recurringTasks.find(x=>x.id===id);if(!t)return;
+  const wk=currentWeekKey();
+  t.lastDoneWeek=(t.lastDoneWeek===wk)?null:wk;
+  saveState();renderRecurringTasks();
+}
+function deleteRecurringTask(id){
+  if(!confirm('Delete this recurring task?'))return;
+  S.recurringTasks=S.recurringTasks.filter(x=>x.id!==id);
+  saveState();renderRecurringTasks();
 }
 
 // ── BUDGET ──
@@ -2841,6 +2948,113 @@ function initDatesNotifications(){
   scheduleMondayPrompt();
 }
 
+// ── HOME-SCREEN WIDGET ──
+// Native code can't read the WebView's JS state, so we push a small summary out to it
+// every time Harvey saves (see saveState()) via a custom plugin (WidgetDataPlugin) that
+// stashes it in SharedPreferences and tells the widget to redraw immediately — this is
+// what makes the widget update as soon as data changes, not just on Android's periodic
+// refresh schedule.
+let _widgetTodayEvents=[];
+// A genuine "day at a glance" — a real scrollable list (not a paged card), so there's no
+// artificial cap on how much shows: every event with its time, every pinned important
+// task, every active bill. Sections are separated by small labels the widget's list
+// factory renders as its own row type.
+function buildWidgetSummary(){
+  const items=[];
+
+  // AGENDA — every one of today's events, with times, soonest first. All-day events show
+  // "All day" instead of a clock time.
+  items.push({type:'section',label:'AGENDA'});
+  const todayEvents=[..._widgetTodayEvents]
+    .filter(e=>(e.start?.dateTime||'').slice(0,10)===TODAYSTR)
+    .sort((a,b)=>(a.start.dateTime||'').localeCompare(b.start.dateTime||''));
+  if(todayEvents.length){
+    todayEvents.forEach(e=>{
+      const leading=e.isAllDay?'All day':new Date(e.start.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',hour12:false});
+      items.push({type:'row',leading,text:e.subject||'(No title)',color:'#4F46E5'});
+    });
+  } else {
+    items.push({type:'row',leading:'',text:'Nothing on today',color:'#8B8B9C'});
+  }
+
+  // IMPORTANT TASKS — all of them, not just a top few, in the same priority order as the
+  // Important page.
+  items.push({type:'section',label:'IMPORTANT TASKS'});
+  const tasks=importantItems(); // already priority-sorted; bullet colour = priority
+  if(tasks.length){
+    tasks.forEach(t=>items.push({type:'row',leading:'●',text:t.text,color:IMP_PRIORITIES[impPriority(t)].color}));
+  } else {
+    items.push({type:'row',leading:'',text:'Nothing pinned',color:'#8B8B9C'});
+  }
+
+  // RECURRING — only the ones still pending this week; once you tick one off in the app,
+  // it drops off the widget until it resets next week.
+  items.push({type:'section',label:'RECURRING'});
+  const wk=currentWeekKey();
+  const pendingRecurring=(S.recurringTasks||[]).filter(t=>t.lastDoneWeek!==wk);
+  if((S.recurringTasks||[]).length===0){
+    items.push({type:'row',leading:'',text:'No recurring tasks set up',color:'#8B8B9C'});
+  } else if(pendingRecurring.length){
+    pendingRecurring.forEach(t=>items.push({type:'row',leading:'○',text:t.text,color:'#4F46E5'}));
+  } else {
+    items.push({type:'row',leading:'✓',text:'All done for the week',color:'#15803D'});
+  }
+
+  // BILLS — every active bill, soonest due first. One due today/tomorrow is flagged red
+  // instead of the usual amber, so it actually stands out rather than blending in.
+  items.push({type:'section',label:'BILLS'});
+  const todayDay=new Date().getDate();
+  const bills=(S.bills||[]).filter(b=>b.active!==false).sort((a,b)=>{
+    const da=(a.due-todayDay+31)%31,db=(b.due-todayDay+31)%31;
+    return da-db;
+  });
+  if(bills.length){
+    bills.forEach(b=>{
+      const daysUntilDue=(b.due-todayDay+31)%31;
+      const urgent=daysUntilDue<=1;
+      items.push({type:'row',leading:'',text:b.name,trailing:`€${Math.round(b.amount)} · ${b.due}${ordinalSuffix(b.due)}`,color:urgent?'#B91C1C':'#B45309'});
+    });
+  } else {
+    items.push({type:'row',leading:'',text:'No bills tracked',color:'#8B8B9C'});
+  }
+
+  // NEXT DATE — one line, only if something's actually planned; skipped entirely otherwise
+  // so it doesn't waste space on an empty state of its own. Kept last since it's the
+  // "softer" item, after the day's actionable agenda/tasks/bills.
+  const upcoming=(S.plannedDates||[]).filter(p=>p.date>=TODAYSTR).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const upcomingIdea=upcoming?S.dateIdeas.find(i=>i.id===upcoming.ideaId):null;
+  if(upcoming&&upcomingIdea){
+    const dayLbl=upcoming.date===TODAYSTR?'Today':new Date(upcoming.date+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});
+    items.push({type:'section',label:'NEXT DATE'});
+    items.push({type:'row',leading:'♥',text:upcomingIdea.name,trailing:dayLbl,color:'#8B5CF6'});
+  }
+
+  return {
+    dateLine:new Date().toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'}),
+    items,
+  };
+}
+function ordinalSuffix(n){
+  if(n>=11&&n<=13)return 'th';
+  switch(n%10){case 1:return 'st';case 2:return 'nd';case 3:return 'rd';default:return 'th';}
+}
+function pushWidgetData(){
+  if(!isAndroidApp()||!window.Capacitor?.Plugins?.WidgetData)return;
+  try{ window.Capacitor.Plugins.WidgetData.setData({json:JSON.stringify(buildWidgetSummary())}); }catch(e){}
+}
+// Does the actual (network-dependent) agenda fetch — called at boot only, not on every
+// save, so a normal editing session never spams the Graph API just to keep a widget fresh.
+async function refreshWidgetAgendaThenPush(){
+  try{
+    const token=await getTokenSilent();
+    if(token){
+      const start=new Date(),end=new Date();end.setDate(end.getDate()+1);
+      _widgetTodayEvents=await fetchOutlookEvents(start,end,token);
+    }
+  }catch(e){}
+  pushWidgetData();
+}
+
 // ── FITNESS (session-based) ──
 
 // One-time migration: turn the old W0–W7 week grid (+ any custom edits)
@@ -3188,7 +3402,7 @@ function setWeightGoal(val){S.weightGoal=parseFloat(val)||85;saveState();renderW
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
   const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn){saveBtn.textContent='Save';saveBtn.style.display='';}
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food',dateIdea:(extra&&extra.editId)?'Edit date idea':'Add date idea',migrateOther:'Move "Other" wishlist items?'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food',dateIdea:(extra&&extra.editId)?'Edit date idea':'Add date idea',migrateOther:'Move "Other" wishlist items?',recurringTask:'Add recurring task'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -3238,6 +3452,7 @@ function openModal(type,extra){
     })(),
     migrateOther:`<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your Wishlist's "Other" category is being retired now that Dates exists. Pick which of these should move into Date ideas — anything left unchecked will be removed.</p>
       <div id="mo-list">${S.wishlist.filter(w=>w.cat==='Other').map(w=>`<label style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" class="mo-item-cb" data-id="${w.id}" data-name="${w.name.replace(/"/g,'&quot;')}" checked style="width:auto"><span style="font-size:13px">${w.name}</span></label>`).join('')}</div>`,
+    recurringTask:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-rtext" placeholder="e.g. Take out the bins"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -3509,6 +3724,11 @@ async function saveModal(){
     S.wishlist=S.wishlist.filter(w=>w.cat!=='Other');
     S.datesWishlistMigrated=true;
     saveState();renderWishlist();renderDatesPage();
+  } else if(m.type==='recurringTask'){
+    const t=g('m-rtext');
+    if(!t){alert('Give the task a name.');return;}
+    S.recurringTasks.push({id:Date.now(),text:t,createdAt:Date.now(),lastDoneWeek:null});
+    saveState();renderRecurringTasks();
   }
   closeModal();renderHome();
 }
@@ -4918,6 +5138,8 @@ setTimeout(async()=>{
       // if we already have a usable session and can quietly refresh it).
       initAndroidAuthListener();
       initDatesNotifications();
+      pushWidgetData(); // show something immediately, before any network round-trip
+      refreshWidgetAgendaThenPush(); // then fill in today's agenda once we know if we're signed in
       const token=await androidGetTokenSilent();
       if(token){ await odMergeOrSeed(token); }
       else { setSyncStatus('no-creds'); setTimeout(()=>setSyncStatus('idle'),6000); }
