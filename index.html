@@ -301,6 +301,175 @@
     .fab-wrap{bottom:74px;right:16px;}
     .sync-badge{bottom:70px;}
   }
+  /* ── GOLF PRACTICE — everything scoped to #page-golf / .gf-* ── */
+  #page-golf{max-width:760px;
+    --turf:var(--green);--turf-soft:var(--green-bg);--flag:var(--amber);--flag-soft:var(--amber-bg);
+    --ink:var(--text);--muted:var(--text2);--line:var(--border2);--left:var(--blue);--left-soft:var(--blue-bg);
+    --right:var(--red);--right-soft:var(--red-bg);}
+  #page-golf [hidden],.gf-dock[hidden]{display:none!important;}
+  #page-golf p{margin:0;}
+  #page-golf button{font-family:inherit;color:inherit;}
+  .gf-mono{font-variant-numeric:tabular-nums;}
+  .gf-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);}
+  .gf-tabs{position:sticky;top:64px;z-index:5;display:flex;gap:2px;padding:6px 0;margin:0 0 16px;background:var(--bg3);border-bottom:1px solid var(--border);}
+  .gf-tabs button{flex:1;background:none;border:0;padding:12px 4px;min-height:44px;font:800 14px/1 var(--font-display);color:var(--text3);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;}
+  .gf-tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--blue);}
+  .gf-view{display:grid;gap:16px;}
+  .gf-view h2{font:800 20px/1.15 var(--font-display);letter-spacing:-.01em;margin:0;}
+  .gf-view h3{font:800 16px/1.2 var(--font-display);margin:0;}
+  .gf-head .ps{max-width:62ch;line-height:1.5;}
+  .gf-head .ps b{color:var(--text);}
+  .gf-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+  .gf-chips::-webkit-scrollbar{display:none;}
+  .gf-chips .wkb{flex:none;min-height:40px;}
+  .gf-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .gf-btn{min-height:44px;justify-content:center;}
+  .gf-btn:disabled{opacity:.5;cursor:default;}
+  .gf-cat{display:grid;gap:2px;padding-top:6px;}
+  .gf-cat p{font-size:13px;color:var(--text2);}
+  .gf-list{display:grid;gap:10px;list-style:none;margin:0;padding:0;}
+  .gf-card{background:var(--glass-bg);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow-sm);overflow:hidden;}
+  .gf-card.picked{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue),var(--shadow-sm);}
+  .gf-lrow{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:12px 14px 8px;align-items:start;}
+  .gf-lrow input{width:26px;height:26px;margin:2px 0 0;accent-color:var(--blue);cursor:pointer;}
+  .gf-lmain{display:grid;gap:4px;cursor:pointer;min-width:0;}
+  .gf-lt{font:800 16px/1.2 var(--font-display);}
+  .gf-ls{font-size:13px;color:var(--text);}
+  .gf-tags{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--text2);align-items:center;}
+  .gf-tag-fix{color:var(--green);font-weight:700;}
+  .gf-more{background:none;border:0;border-top:1px dashed var(--border2);width:100%;text-align:left;padding:12px 14px 12px 52px;min-height:44px;font-size:13px;color:var(--text2);cursor:pointer;}
+  .gf-ldetail{padding:0 14px 14px 52px;display:grid;gap:10px;}
+  .gf-sbadge{display:inline-block;font-weight:800;font-size:10.5px;letter-spacing:.05em;border-radius:5px;padding:3px 6px;background:var(--green-bg);color:var(--green-text);}
+  .gf-sbadge.b{background:var(--amber-bg);color:var(--amber-text);}
+  .gf-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .gf-pick{background:var(--glass-bg);border:1px solid var(--border2);border-radius:14px;padding:10px;text-align:left;display:grid;gap:2px;min-width:0;cursor:pointer;min-height:92px;align-content:start;}
+  .gf-pick .k{font:800 26px/1 var(--font-display);color:var(--text3);}
+  .gf-pick .n{font:800 13px/1.15 var(--font-display);}
+  .gf-pick .m{font-size:11px;color:var(--text2);}
+  .gf-pick .nx{font-weight:800;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);min-height:10px;}
+  .gf-pick[aria-pressed="true"]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);}
+  .gf-pick[aria-pressed="true"] .k{color:var(--blue);}
+  .gf-planhead{display:grid;gap:6px;}
+  .gf-meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--text2);font-size:13px;}
+  .gf-meta b{color:var(--text);font-weight:700;}
+  .gf-progress{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+  .gf-progress i{display:block;height:100%;background:var(--green);width:0;transition:width .3s;}
+  .gf-link{background:none;border:0;padding:6px 0;color:var(--blue);font-weight:700;text-decoration:underline;font-size:13px;justify-self:start;cursor:pointer;min-height:36px;}
+  .gf-routine{padding:12px 14px;display:grid;gap:8px;}
+  .gf-routine ol,.gf-steps{margin:0;padding-left:1.3em;display:grid;gap:6px;}
+  .gf-routine li::marker{color:var(--amber);font-weight:700;}
+  .gf-steps li::marker{color:var(--green);font-weight:700;}
+  .gf-blocks{display:grid;gap:12px;list-style:none;margin:0;padding:0;}
+  .gf-group{display:grid;gap:2px;padding-top:8px;}
+  .gf-block{scroll-margin-top:130px;}
+  .gf-block.done{opacity:.72;}
+  .gf-bhead{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;width:100%;min-height:56px;background:none;border:0;text-align:left;cursor:pointer;}
+  .gf-bnum{font:800 22px/1 var(--font-display);color:var(--green);width:1.4em;text-align:center;}
+  .gf-block.tgt .gf-bnum{color:var(--amber);}
+  .gf-block.done .gf-bnum{color:var(--text3);}
+  .gf-btitle{min-width:0;}
+  .gf-btitle h3{font-size:16px;}
+  .gf-btitle .gf-tags{margin-top:3px;}
+  .gf-chev{color:var(--text3);transition:transform .2s;font-size:14px;}
+  .gf-block[open] .gf-chev{transform:rotate(180deg);}
+  .gf-bbody{padding:0 14px 14px;display:grid;gap:12px;}
+  .gf-why{background:var(--amber-bg);color:var(--amber-text);border-radius:10px;padding:8px 10px;font-size:13px;}
+  .gf-why b{font-weight:700;}
+  .gf-sticks{display:flex;gap:10px;align-items:flex-start;font-size:13px;border:1px solid var(--border2);border-radius:10px;padding:8px 10px;}
+  .gf-sticks svg{flex:none;width:76px;height:95px;}
+  .gf-sticks p{min-width:0;}
+  .gf-feel{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;margin:0;}
+  .gf-feel dt{font-weight:800;font-size:10.5px;line-height:1.7;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);}
+  .gf-feel dd{margin:0;}
+  .gf-actions{display:flex;flex-wrap:wrap;gap:8px;}
+  .gf-safety{font-size:12.5px;color:var(--red);}
+  .gf-score{border-top:1px dashed var(--border2);padding-top:10px;display:grid;gap:8px;}
+  .gf-lab{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--text2);}
+  .gf-lab b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums;}
+  .gf-tally{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .gf-tally.two{grid-template-columns:repeat(2,1fr);}
+  .gf-tbtn{border:1px solid var(--border2);border-radius:14px;padding:12px 6px;min-height:76px;background:var(--bg2);display:grid;gap:2px;justify-items:center;align-content:center;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .gf-tbtn:active{transform:scale(.96);}
+  .gf-tbtn .c{font:800 28px/1 var(--font-display);font-variant-numeric:tabular-nums;}
+  .gf-tbtn .t{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);text-align:center;}
+  .gf-tbtn.l{background:var(--blue-bg);} .gf-tbtn.l .c{color:var(--blue);}
+  .gf-tbtn.r{background:var(--red-bg);} .gf-tbtn.r .c{color:var(--red);}
+  .gf-tbtn.f{background:var(--green-bg);} .gf-tbtn.f .c{color:var(--green);}
+  .gf-tbtn.x .c{color:var(--text2);}
+  .gf-undo{justify-self:start;background:none;border:0;color:var(--text2);font-size:13px;text-decoration:underline;padding:8px 0;min-height:36px;cursor:pointer;}
+  .gf-choice{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .gf-choice button{border:1px solid var(--border2);border-radius:12px;padding:10px 6px;min-height:48px;background:var(--bg2);font-weight:700;font-size:13px;cursor:pointer;}
+  .gf-choice button[aria-pressed="true"]{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+  .gf-matrix{width:100%;border-collapse:collapse;font-size:13px;}
+  .gf-matrix th,.gf-matrix td{padding:5px 4px;border-bottom:1px solid var(--border);text-align:left;}
+  .gf-matrix th{font-weight:800;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);}
+  .gf-matrix td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;}
+  .gf-matrix input{width:100%;min-width:3.6em;min-height:44px;border:1px solid var(--border2);background:var(--bg);color:var(--text);border-radius:8px;padding:6px;font:600 16px var(--font-display);text-align:center;}
+  .gf-tablewrap{overflow-x:auto;}
+  .gf-finish{padding:14px;display:grid;gap:10px;}
+  .gf-field{display:grid;gap:6px;}
+  .gf-field label{font-size:12.5px;color:var(--text2);}
+  .gf-status{font-size:13px;color:var(--text2);min-height:1.2em;}
+  .gf-empty{border:1px dashed var(--border2);border-radius:16px;padding:20px;color:var(--text2);text-align:center;display:grid;gap:8px;justify-items:center;}
+  .gf-empty b{color:var(--text);}
+  .gf-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .gf-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .gf-summary .mv small,.gf-stats .mv small{font-size:13px;color:var(--text2);font-weight:700;}
+  .gf-prose{display:grid;gap:10px;max-width:65ch;line-height:1.55;font-size:14px;}
+  .gf-chain{display:grid;list-style:none;margin:0;padding:0;}
+  .gf-chain li{display:grid;grid-template-columns:1.6em 1fr;gap:10px;padding-block:10px;border-bottom:1px solid var(--border);}
+  .gf-chain li:last-child{border-bottom:0;}
+  .gf-chain .n{font:800 19px/1.2 var(--font-display);color:var(--red);}
+  .gf-chain b{display:block;}
+  .gf-chain span{font-size:13px;color:var(--text2);}
+  .gf-frames{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .gf-frames figure{margin:0;padding:12px;display:grid;gap:4px;align-content:start;}
+  .gf-frames figcaption{font-size:13px;color:var(--text2);}
+  .gf-frames figcaption b{color:var(--text);font:800 15px var(--font-display);display:block;margin-bottom:2px;}
+  .gf-drilltab{width:100%;border-collapse:collapse;font-size:13px;}
+  .gf-drilltab th,.gf-drilltab td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:left;}
+  .gf-drilltab th{font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);}
+  .gf-drilltab td.gf-mono{white-space:nowrap;}
+  .gf-meter{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;min-width:60px;}
+  .gf-meter i{display:block;height:100%;background:var(--green);}
+  .gf-disp{display:grid;gap:8px;}
+  .gf-drow{display:grid;grid-template-columns:4.2em 1fr 3.2em;gap:8px;align-items:center;font-size:12px;}
+  .gf-drow .d{color:var(--text2);font-variant-numeric:tabular-nums;}
+  .gf-bar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:var(--bg2);}
+  .gf-bar span{display:block;height:100%;}
+  .gf-bar .bl{background:var(--blue);} .gf-bar .bf{background:var(--green);} .gf-bar .br{background:var(--red);}
+  .gf-legend{display:flex;gap:14px;font-size:12px;color:var(--text2);flex-wrap:wrap;}
+  .gf-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;}
+  .gf-entries{display:grid;gap:8px;list-style:none;margin:0;padding:0;}
+  .gf-entry{padding:10px 12px;display:grid;gap:4px;}
+  .gf-eh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .gf-eh b{font:800 15px/1.2 var(--font-display);}
+  .gf-eh span{font-size:12px;color:var(--text2);}
+  .gf-es{font-size:12.5px;color:var(--text2);}
+  .gf-en{font-size:13.5px;}
+  /* docks: sit above the bottom nav on phones, flush to the bottom on desktop */
+  .gf-dock{display:none;position:fixed;left:0;right:0;bottom:0;z-index:240;background:var(--bg2);border-top:1px solid var(--border2);padding:10px 16px;box-shadow:0 -6px 20px rgba(24,24,40,.08);}
+  body.on-golf .gf-dock:not([hidden]){display:block;}
+  .gf-dock .in{max-width:728px;margin:0 auto;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;}
+  .gf-dock .tl{min-width:0;}
+  .gf-dock .tl .n{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .gf-dock .tl .t{font:800 30px/1 var(--font-display);font-variant-numeric:tabular-nums;}
+  .gf-dock.over .tl .t{color:var(--red);}
+  .gf-pickdock .in{grid-template-columns:1fr auto;}
+  .gf-pickdock .tl .t{font:800 17px/1.15 var(--font-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .gf-pickdock .n.warn{color:var(--red);font-weight:700;}
+  .gf-split{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg3);margin-top:4px;}
+  .gf-split .d{background:var(--green);} .gf-split .t{background:var(--amber);} .gf-split .w{background:var(--text3);}
+  body.on-golf .fab-wrap{display:none!important;}
+  body.on-golf .sync-badge{bottom:92px;}
+  #page-golf{padding-bottom:140px;}
+  @media(max-width:720px){
+    .gf-dock{bottom:58px;}
+    #page-golf{padding-bottom:190px;}
+    body.on-golf .sync-badge{bottom:150px;}
+    .gf-frames{grid-template-columns:1fr;}
+  }
+  @media(prefers-reduced-motion:reduce){.gf-progress i,.gf-chev{transition:none!important;}}
 </style>
 </head>
 <body>
@@ -335,11 +504,9 @@
     <!-- Old workout tracker hidden for now — superseded by Hyrox. Uncomment to bring back.
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
     -->
-    <div class="ni" onclick="nav('hyrox',this)"><span class="ni-ico">▲</span>Hyrox</div>
+    <div class="ni" onclick="nav('golf',this)"><span class="ni-ico">⚑</span>Golf</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
-    <div class="ni" onclick="nav('calories',this)"><span class="ni-ico">◈</span>Calories burned</div>
-    <div class="ni" onclick="nav('nutrition',this)"><span class="ni-ico">▣</span>Nutrition</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">App</div>
@@ -520,6 +687,109 @@
   <div class="g2" id="wish-list"></div>
 </div>
 
+<!-- GOLF PRACTICE -->
+<div id="page-golf" class="page">
+  <div class="ph gf-head">
+    <span class="gf-eyebrow">Two sessions · 100 balls · 60 minutes each · 2 alignment sticks</span>
+    <div class="pt" style="margin-top:6px">The 100-Ball Hour</div>
+    <p class="ps">Alternate them. <b>A · Flip + posture</b> fixes the release with irons and ends on iron targets. <b>B · Wrists, turn + driver</b> fixes the backswing and ends on scored drives. Both sessions are built from your 11 drills.</p>
+  </div>
+
+  <div class="gf-tabs" role="tablist">
+    <button role="tab" id="gf-tab-lib" aria-selected="true" data-view="lib">Drills</button>
+    <button role="tab" id="gf-tab-plan" aria-selected="false" data-view="plan">Session</button>
+    <button role="tab" id="gf-tab-swing" aria-selected="false" data-view="swing">My swing</button>
+    <button role="tab" id="gf-tab-log" aria-selected="false" data-view="log">Log</button>
+  </div>
+
+  <!-- LIBRARY -->
+  <section class="gf-view" id="gf-view-lib">
+    <div class="gf-libhead" style="display:grid;gap:10px">
+      <div class="gf-chips" id="gf-chips"></div>
+      <div class="gf-row">
+        <button class="btn gf-btn" id="gf-useRec">Pick the 11 drills</button>
+        <button class="btn gf-btn" id="gf-clearPicks">Clear all</button>
+      </div>
+    </div>
+    <div id="gf-lib" style="display:grid;gap:14px"></div>
+  </section>
+
+  <!-- SESSION -->
+  <section class="gf-view" id="gf-view-plan" hidden>
+    <div class="gf-picker" id="gf-picker"></div>
+    <div class="gf-planhead" id="gf-planhead"></div>
+    <ol class="gf-blocks" id="gf-blocks"></ol>
+    <div class="gf-card gf-routine" id="gf-routineCard">
+      <span class="gf-eyebrow">Your routine · every target shot</span>
+      <ol>
+        <li>From behind the ball, pick a target and a spot on the ground a foot in front of the ball on that line.</li>
+        <li>Make one rehearsal swing with the feel from the drills.</li>
+        <li>Square the clubface to the spot first, then set your feet.</li>
+        <li>One look at the target, one look at the ball, go. Under 8 seconds over the ball.</li>
+      </ol>
+    </div>
+    <div class="gf-card gf-finish" id="gf-finish">
+      <h3>Wrap up</h3>
+      <div class="gf-field">
+        <label for="gf-notes">One thing to keep, one thing to fix next time</label>
+        <textarea class="inp" id="gf-notes" placeholder="e.g. Pause drill: 9/12 at parallel. Lead-side stick still hits me at 70%."></textarea>
+      </div>
+      <div class="gf-row">
+        <button class="btn btnp gf-btn" id="gf-save">Save session to log</button>
+        <button class="btn gf-btn" id="gf-reset">Clear scores</button>
+      </div>
+      <p class="gf-status" id="gf-saveStatus"></p>
+    </div>
+  </section>
+
+  <!-- SWING -->
+  <section class="gf-view" id="gf-view-swing" hidden>
+    <div class="gf-stats g2">
+      <div class="mc"><div class="mv">112 <small>mph</small></div><div class="ml" style="margin:4px 0 0">Driver club speed</div></div>
+      <div class="mc"><div class="mv">280–309 <small>yd</small></div><div class="ml" style="margin:4px 0 0">Driver carry, straight</div></div>
+      <div class="mc"><div class="mv">170–180 <small>yd</small></div><div class="ml" style="margin:4px 0 0">7-iron carry</div></div>
+      <div class="mc"><div class="mv">130–140 <small>yd</small></div><div class="ml" style="margin:4px 0 0">Pitching wedge carry</div></div>
+    </div>
+    <div class="gf-prose">
+      <h2>How the faults connect</h2>
+      <p>Everything you've described fits one chain. Fix the start of it and the rest gets easier.</p>
+    </div>
+    <ol class="gf-chain gf-card" style="padding:4px 14px">
+      <li><span class="n">1</span><p><b>Not enough body turn</b><span>Your chest stops turning early, so your arms and wrists make up the length of the backswing.</span></p></li>
+      <li><span class="n">2</span><p><b>Wrist collapse at the top</b><span>Your lead wrist over-hinges and cups, and your trail hand loosens, so the club drops past parallel.</span></p></li>
+      <li><span class="n">3</span><p><b>Re-grip in transition</b><span>Your hands tighten again on the way down, and that changes where the clubface points every swing.</span></p></li>
+      <li><span class="n">4</span><p><b>The hands have to rescue it</b><span>To square the face, your lead wrist cups and the clubhead passes your hands. That's the flip.</span></p></li>
+      <li><span class="n">5</span><p><b>Hook, or block when the timing is off</b><span>Swing harder and the swing gets longer and the flip gets bigger. That's why the hook shows up with speed.</span></p></li>
+    </ol>
+    <div class="gf-prose">
+      <p><b>Session B</b> works on links 1 to 3: pre-set and turn, the forearm-stick check and the pause at the top. <b>Session A</b> works on links 4 and 5: toe up, flat trail hand and hold-off, with the stick behind your backside keeping room for your arms. Alternating them works on the whole chain twice a week.</p>
+    </div>
+    <div class="gf-prose">
+      <h2>What I saw on the video</h2>
+      <p>One wedge swing, filmed from behind. The yellow lines show where your hips and cap were at address. Look at where they are at impact.</p>
+    </div>
+    <div class="gf-frames">
+      <figure class="gf-card"><figcaption><b>Address</b>Good athletic posture and your arms hang naturally. These are the reference lines.</figcaption></figure>
+      <figure class="gf-card"><figcaption><b>Top</b>With a wedge your swing stays compact. You say the driver gets long, so film a driver next.</figcaption></figure>
+      <figure class="gf-card"><figcaption><b>Impact</b>Your hips are about 2 inches in front of the line and your head has risen. That takes room from your arms and feeds the flip. The bag drill in the library works on this.</figcaption></figure>
+      <figure class="gf-card"><figcaption><b>Finish</b>Balanced, onto your lead side, chest to the target. Keep this.</figcaption></figure>
+    </div>
+    <div class="gf-prose">
+      <h3>Film these next</h3>
+      <p>Film a driver swing face on, phone square to your chest at hip height. That shows how long your backswing is and whether your lead wrist cups at impact. Film one at your normal swing and one after the pause drill, and send me both.</p>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="gf-view" id="gf-view-log" hidden>
+    <div class="gf-summary" id="gf-summary"></div>
+    <div id="gf-drills" style="display:grid;gap:8px"></div>
+    <div class="gf-disp" id="gf-disp"></div>
+    <ul class="gf-entries" id="gf-entries"></ul>
+    <p class="gf-status" id="gf-logStatus"></p>
+  </section>
+</div>
+
 <!-- DATES -->
 <div id="page-dates" class="page">
   <div class="ph rb">
@@ -692,74 +962,6 @@
 </div>
 
 
-<div id="page-calories" class="page">
-  <div class="ph rb">
-    <div><div class="pt">Calories burned</div><div class="ps">Track activity and calories throughout the week</div></div>
-    <button class="btn btnp" onclick="openModal('calorie')">+ Log activity</button>
-  </div>
-  <div class="g4 mb16" id="cal-metrics"></div>
-  <div class="card mb16">
-    <div class="flb mb12">
-      <div class="st" style="margin:0">Week planner</div>
-      <div class="fl" style="gap:6px">
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(-1)">‹</button>
-        <span id="cal-week-label" style="font-size:12px;color:var(--text2);min-width:150px;text-align:center"></span>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(1)">›</button>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="calWeekNav(0)">This week</button>
-      </div>
-    </div>
-    <div id="cal-week" style="display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;overflow-x:auto"></div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px">Tap + on a day to plan or log a workout for that date.</div>
-  </div>
-  <div class="card mb16">
-    <div class="st">This week</div>
-    <div style="position:relative;height:200px"><canvas id="cal-chart" role="img" aria-label="Calories burned this week">Calorie data</canvas></div>
-  </div>
-  <div class="card">
-    <div class="flb mb12">
-      <div class="st" style="margin:0">Activity log</div>
-      <select class="month-sel" id="cal-filter" onchange="renderCaloriesPage()" style="font-size:12px;padding:5px 8px">
-        <option value="week">This week</option>
-        <option value="month">This month</option>
-        <option value="all">All time</option>
-      </select>
-    </div>
-    <div id="cal-log"></div>
-  </div>
-</div>
-
-<div id="page-nutrition" class="page">
-  <div class="ph"><div class="pt">Nutrition</div><div class="ps">Daily food diary</div></div>
-  <div class="card mb16">
-    <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
-      <div class="st" style="margin:0" id="nut-date-label">Today</div>
-      <div class="fl" style="gap:6px">
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(-1)">‹</button>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(0)">Today</button>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="nutDayNav(1)">›</button>
-      </div>
-    </div>
-    <div class="fl" style="gap:24px;align-items:center;flex-wrap:wrap">
-      <div id="nut-ring"></div>
-      <div style="flex:1;min-width:220px" id="nut-macros"></div>
-    </div>
-  </div>
-  <div class="g2 mb16" id="nut-meals"></div>
-  <div class="card mb16">
-    <div class="st">Last 7 days</div>
-    <div style="position:relative;height:180px"><canvas id="nut-chart" role="img" aria-label="Calories consumed, last 7 days">Nutrition trend</canvas></div>
-  </div>
-  <div class="card">
-    <div class="st">Daily goals</div>
-    <div class="g4" style="gap:8px">
-      <div><label class="fl2">Calories</label><input type="number" class="inp" id="nut-goal-kcal" onchange="setNutGoals()"></div>
-      <div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="nut-goal-protein" onchange="setNutGoals()"></div>
-      <div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="nut-goal-carbs" onchange="setNutGoals()"></div>
-      <div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="nut-goal-fat" onchange="setNutGoals()"></div>
-    </div>
-  </div>
-</div>
-
 <div id="page-calendar" class="page">
   <div class="ph rb">
     <div><div class="pt">Calendar</div><div class="ps">Synced with your Outlook calendar</div></div>
@@ -797,76 +999,11 @@
   </div>
 </div>
 
-<!-- HYROX (Tryka) -->
-<div id="page-hyrox" class="page">
-  <div class="ph rb">
-    <div><div class="pt">Hyrox</div><div class="ps">TRYKA 500 — synced live with your Tryka app</div></div>
-    <div id="hx-race" style="font-size:13px;color:var(--text2)"></div>
-  </div>
-
-  <div id="hx-signed-out" class="card">
-    <div class="st">Sign in to Tryka</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Sign in with the same username and password you use in your Tryka app.</p>
-    <div class="fr"><label class="fl2">Username</label><input class="inp" id="hx-user" placeholder="harvey"></div>
-    <div class="fr"><label class="fl2">Password</label><input type="password" class="inp" id="hx-pass" placeholder="••••••••"></div>
-    <button class="btn btnp" onclick="hxSignIn()">Sign in</button>
-    <div id="hx-err" style="margin-top:10px;font-size:13px;color:var(--red)"></div>
-  </div>
-
-  <div id="hx-content" style="display:none">
-    <div class="flb mb16" style="flex-wrap:wrap;gap:8px">
-      <div class="fl" id="hx-tabs" style="gap:4px"></div>
-      <div class="fl" style="gap:6px">
-        <a href="tryka-12-week-plan_3.html" target="_blank" class="btn" style="font-size:11px;text-decoration:none">Open full Tryka app ↗</a>
-        <button class="btn" style="font-size:11px" onclick="hxSignOut()">Sign out</button>
-      </div>
-    </div>
-    <div class="g3 mb16" id="hx-m"></div>
-    <div class="card mb16" id="hx-week"></div>
-    <div id="hx-workout-editor" style="display:none"></div>
-    <div class="g2 mb16">
-      <div class="card">
-        <div class="st">PR board</div>
-        <div id="hx-prs"></div>
-        <div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">
-          <div class="g2" style="gap:6px;margin-bottom:6px">
-            <select class="inp" id="hx-pr-ath" style="font-size:12px;padding:6px 8px"><option value="0">Harvey</option><option value="1">Doireann</option></select>
-            <select class="inp" id="hx-pr-lift" style="font-size:12px;padding:6px 8px"></select>
-          </div>
-          <div class="fl" style="gap:6px">
-            <input class="inp" id="hx-pr-val" placeholder="e.g. 100 or 2:15" style="font-size:12px;padding:6px 8px">
-            <button class="btn" style="font-size:12px;white-space:nowrap" onclick="hxPrAdd()">Log</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="st">Workouts</div>
-        <div class="fl" style="gap:6px;margin-bottom:10px">
-          <button class="btn" style="font-size:12px" onclick="hxStartWorkout('Push')">Log Push</button>
-          <button class="btn" style="font-size:12px" onclick="hxStartWorkout('Pull')">Log Pull</button>
-        </div>
-        <div id="hx-sessions"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="st">Macro log</div>
-      <div id="hx-macro-list" class="mb12"></div>
-      <div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="hx-macro-date" style="font-size:12px;padding:6px 8px"></div>
-      <div class="g3" style="gap:6px;margin-bottom:10px">
-        <div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="hx-macro-p" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
-        <div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="hx-macro-c" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
-        <div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="hx-macro-f" placeholder="0" style="font-size:12px;padding:6px 8px"></div>
-      </div>
-      <button class="btn btnp" style="font-size:12px" onclick="hxMacroSave()">Save today's macros</button>
-    </div>
-  </div>
-</div>
 
 </main>
 
 <div class="fab-wrap" id="fab-wrap">
   <div class="fab-menu" id="fab-menu">
-    <button class="fab-item" onclick="fabAction('workout')">🏋 Quick log workout</button>
     <button class="fab-item" onclick="fabAction('expense')">€ Add expense</button>
     <button class="fab-item" onclick="fabAction('note')">✎ New note</button>
   </div>
@@ -876,10 +1013,24 @@
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bn-item active" data-page="home" onclick="nav('home',this)"><span class="bn-ico">⌂</span><span>Home</span></button>
   <button class="bn-item" data-page="budget" onclick="nav('budget',this)"><span class="bn-ico">◈</span><span>Budget</span></button>
-  <button class="bn-item" data-page="hyrox" onclick="nav('hyrox',this)"><span class="bn-ico">▲</span><span>Hyrox</span></button>
   <button class="bn-item" data-page="notes" onclick="nav('notes',this)"><span class="bn-ico">✎</span><span>Notes</span></button>
   <button class="bn-item" onclick="toggleSidebar()"><span class="bn-ico">☰</span><span>More</span></button>
 </nav>
+
+<!-- GOLF docks (outside .page so position:fixed is never trapped by the page animation) -->
+<div class="gf-dock gf-pickdock" id="gf-pickdock" hidden>
+  <div class="in">
+    <div class="tl"><div class="t" id="gf-pdTotals">0 drills</div><div class="n" id="gf-pdNote">Pick drills to build your hour</div><div class="gf-split" id="gf-pdSplit"></div></div>
+    <button class="btn btnp gf-btn" id="gf-startSession">Start custom</button>
+  </div>
+</div>
+<div class="gf-dock" id="gf-dock" hidden>
+  <div class="in">
+    <div class="tl"><div class="n" id="gf-timerName">Tap "Start timer" on a drill</div><div class="t" id="gf-timerTime">--:--</div></div>
+    <button class="btn gf-btn" id="gf-timerToggle" disabled>Pause</button>
+    <button class="btn gf-btn" id="gf-timerStop" disabled>Stop</button>
+  </div>
+</div>
 
 <div id="sync-status" class="sync-badge"></div>
 </div>
@@ -911,6 +1062,8 @@ const curKey=mkKey(TODAY.getFullYear(),TODAY.getMonth()+1);
 // ── STATE (loads from localStorage if available) ──
 const DEFAULT_STATE = {
   activeModal:null,
+  golfSessions:[],
+  golfPicks:null,
   currentWeek:6,
   budgetViewMonth:curKey,
   bills:[],
@@ -963,7 +1116,7 @@ const DEFAULT_STATE = {
   workoutMigrated:false,
   timeProjects:[],
   timeLog:[],
-  calorieLog:[],
+  calorieLog:[],      // Calories burned / Nutrition pages were removed; these keys are kept only so any existing data isn't lost
   projectNotes:{},
   savingsGoal:0,
   currentSavings:null,
@@ -1000,7 +1153,8 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'exercises','workoutTemplates','workoutSessions','workoutMigrated',
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
   'foodDiary','foodLibrary','nutritionGoals',
-  'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder'];
+  'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder',
+  'golfSessions','golfPicks'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -3414,7 +3568,7 @@ function setWeightGoal(val){S.weightGoal=parseFloat(val)||85;saveState();renderW
 function openModal(type,extra){
   S.activeModal={type,...(extra||{})};
   const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn){saveBtn.textContent='Save';saveBtn.style.display='';}
-  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',calorie:'Log activity',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',addFood:'Add food',dateIdea:(extra&&extra.editId)?'Edit date idea':'Add date idea',migrateOther:'Move "Other" wishlist items?',recurringTask:'Add recurring task'};
+  const titles={pocket:'Add Revolut pocket',income:'Add income',bill:'Add bill',saving:'Log savings',project:'New project',wish:'Add to wishlist',important:'Add important task',note:'Add note',workout:'Log workout session',weight:'Log weight',todo:'Add task',taskTime:'Task completed!',timeLog:'Log time',timeProject:'New time project',projectNote:'Add note',subtaskTime:'Subtask completed!',spend:'Add spending',calEvent:'Add calendar event',dateIdea:(extra&&extra.editId)?'Edit date idea':'Add date idea',migrateOther:'Move "Other" wishlist items?',recurringTask:'Add recurring task'};
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
@@ -3432,19 +3586,9 @@ function openModal(type,extra){
     projectNote:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-ntitle" placeholder="e.g. Design decisions, API notes…"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-nbody" placeholder="Write your note here…" style="min-height:120px;"></textarea></div>`,
     timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}" style="color:${p.color}">● ${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00" oninput="ttRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00" oninput="ttRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="ttApplyPreset(15)">15m</button><button class="wkb" onclick="ttApplyPreset(30)">30m</button><button class="wkb" onclick="ttApplyPreset(45)">45m</button><button class="wkb" onclick="ttApplyPreset(60)">1h</button><button class="wkb" onclick="ttApplyPreset(90)">1h 30m</button><button class="wkb" onclick="ttApplyPreset(120)">2h</button></div></div><div id="tt-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
     timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
-    calorie:`<div class="fr"><label class="fl2">Activity</label><input class="inp" id="m-cact" placeholder="e.g. Basketball, Gym, Climbing, Run"></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-cdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:10px;"><div><label class="fl2">Duration (mins)</label><input type="number" class="inp" id="m-cdur" placeholder="e.g. 60" min="1"></div><div><label class="fl2">Calories burned</label><input type="number" class="inp" id="m-ccal" placeholder="e.g. 400" min="0"></div></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
     todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
     calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="g2" style="gap:8px;margin-bottom:11px;align-items:end"><div><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><label style="display:flex;align-items:center;gap:7px;cursor:pointer;height:44px;padding-left:2px"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day</label></div><div id="m-etime-wrap"><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00" oninput="evRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00" oninput="evRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="evApplyPreset(15)">15m</button><button class="wkb" onclick="evApplyPreset(30)">30m</button><button class="wkb" onclick="evApplyPreset(45)">45m</button><button class="wkb" onclick="evApplyPreset(60)">1h</button><button class="wkb" onclick="evApplyPreset(90)">1h 30m</button><button class="wkb" onclick="evApplyPreset(120)">2h</button></div></div><div id="ev-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr" style="margin-bottom:0"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none;margin-top:11px"><label class="fl2">Repeat until (optional)</label><input type="date" class="inp" id="m-eruntil"></div>`,
-    addFood:`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Adding to <strong>${(extra&&extra.meal)||''}</strong> · ${(extra&&extra.date)===TODAYSTR?'Today':((extra&&extra.date)||'')}</div>
-      <div class="fr"><label class="fl2">Search a food</label><div class="fl" style="gap:6px"><input class="inp" id="fd-search" placeholder="e.g. banana, chicken breast..." onkeydown="if(event.key==='Enter'){event.preventDefault();fdSearch();}"><button class="btn" style="white-space:nowrap" onclick="fdSearch()">Search</button></div></div>
-      <div id="fd-results" style="max-height:150px;overflow-y:auto;margin-bottom:10px"></div>
-      ${S.foodLibrary.length?`<div class="fr"><label class="fl2">Or pick from your foods</label><select class="inp" id="fd-myfoods" onchange="fdPickMyFood(this.value)"><option value="">Select a saved food…</option>${S.foodLibrary.map(f=>`<option value="${f.id}">${f.name}</option>`).join('')}</select></div>`:''}
-      <div class="fr"><label class="fl2">Food name</label><input class="inp" id="fd-name" placeholder="e.g. Grilled chicken breast"></div>
-      <div class="g2" style="gap:8px;margin-bottom:10px"><div><label class="fl2">Servings</label><input type="number" class="inp" id="fd-servings" value="1" step="0.25" oninput="fdRecalc()"></div><div><label class="fl2">Calories <span id="fd-serving-label" style="text-transform:none">per serving</span></label><input type="number" class="inp" id="fd-kcal-base" oninput="fdRecalc()"></div></div>
-      <div class="g3" style="gap:8px"><div><label class="fl2">Protein (g)</label><input type="number" class="inp" id="fd-protein-base" oninput="fdRecalc()"></div><div><label class="fl2">Carbs (g)</label><input type="number" class="inp" id="fd-carbs-base" oninput="fdRecalc()"></div><div><label class="fl2">Fat (g)</label><input type="number" class="inp" id="fd-fat-base" oninput="fdRecalc()"></div></div>
-      <div id="fd-total-preview" style="font-size:12px;color:var(--text2);margin-top:8px">= 0 kcal · 0P 0C 0F total</div>
-      <div class="fr" style="margin-top:10px"><label class="fl2" style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:0"><input type="checkbox" id="fd-savelib" style="width:auto"> Save to my foods for next time</label></div>`,
     dateIdea:(()=>{
       const idea=(extra&&extra.editId)?S.dateIdeas.find(i=>i.id===extra.editId):null;
       const isSel=(g,val)=>idea&&idea[g]===val?'active':'';
@@ -3622,12 +3766,7 @@ async function saveModal(){
     }
     saveState();renderProjects();renderProjectNotes();
   }
-  else if(m.type==='calorie'){
-    const act=g('m-cact'),date=g('m-cdate'),dur=parseInt(g('m-cdur'))||0,cal=parseInt(g('m-ccal'))||0;
-    if(!act||!date)return;
-    S.calorieLog.push({id:Date.now(),activity:act,date,duration:dur,calories:cal});
-    saveState();renderCaloriesPage();
-  } else if(m.type==='taskTime'){
+  else if(m.type==='taskTime'){
     const hrs=parseInt(g('m-th'))||0,mins=parseInt(g('m-tm'))||0;
     const totalMins=hrs*60+mins;
     if(totalMins>0){
@@ -3691,27 +3830,6 @@ async function saveModal(){
       await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
     }catch(e){}
     closeModal();refreshCalendarViews();return;
-  } else if(m.type==='addFood'){
-    const name=g('fd-name');
-    const kcalBase=parseFloat(g('fd-kcal-base'))||0;
-    const proteinBase=parseFloat(g('fd-protein-base'))||0;
-    const carbsBase=parseFloat(g('fd-carbs-base'))||0;
-    const fatBase=parseFloat(g('fd-fat-base'))||0;
-    const servings=parseFloat(g('fd-servings'))||1;
-    if(name&&kcalBase>0){
-      S.foodDiary.push({
-        id:Date.now(),date:m.date,meal:m.meal,name,
-        kcal:Math.round(kcalBase*servings),
-        protein:+(proteinBase*servings).toFixed(1),
-        carbs:+(carbsBase*servings).toFixed(1),
-        fat:+(fatBase*servings).toFixed(1),
-        servings,at:Date.now(),
-      });
-      if(document.getElementById('fd-savelib')?.checked){
-        S.foodLibrary.push({id:Date.now()+1,name,kcal:kcalBase,protein:proteinBase,carbs:carbsBase,fat:fatBase});
-      }
-      saveState();renderNutritionPage();
-    }
   } else if(m.type==='dateIdea'){
     const name=g('di-name');
     if(!name){alert('Give the idea a name.');return;}
@@ -3932,248 +4050,6 @@ function deleteTimeProject(id){
   if(!confirm('Delete this project? Time entries for it will remain.'))return;
   S.timeProjects=S.timeProjects.filter(p=>p.id!==id);
   saveState();renderTimePage();
-}
-
-// ── CALORIES PAGE ──
-let _calWeekOffset=0;
-function calWeekNav(d){_calWeekOffset=d===0?0:_calWeekOffset+d;renderCalWeek();}
-function planCalorie(date){openModal('calorie');const el=document.getElementById('m-cdate');if(el)el.value=date;}
-function renderCalWeek(){
-  const el=document.getElementById('cal-week');if(!el)return;
-  const now=new Date();
-  const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7)+_calWeekOffset*7);monday.setHours(0,0,0,0);
-  const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
-  const lbl=document.getElementById('cal-week-label');
-  if(lbl)lbl.textContent=`${monday.toLocaleDateString('en-IE',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-IE',{day:'numeric',month:'short'})}`;
-  el.innerHTML=days.map(d=>{
-    const ds=localDateStr(d);
-    const acts=(S.calorieLog||[]).filter(x=>x.date===ds);
-    const tot=acts.reduce((a,x)=>a+x.calories,0);
-    const isToday=ds===TODAYSTR;
-    return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:8px 7px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:96px">
-      <div class="flb" style="margin-bottom:6px">
-        <div><div style="font-size:11px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:14px;font-weight:600">${d.getDate()}</div></div>
-        <button class="btn-icon" style="font-size:14px;color:var(--blue)" onclick="planCalorie('${ds}')" title="Add">+</button>
-      </div>
-      ${acts.map(x=>`<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.activity}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="S.calorieLog=S.calorieLog.filter(y=>y.id!==${x.id});saveState();renderCaloriesPage();">✕</button></div>`).join('')}
-      ${tot?`<div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:right">${tot} cal</div>`:''}
-    </div>`;
-  }).join('');
-}
-function renderCaloriesPage(){
-  renderCalWeek();
-  if(!S.calorieLog)S.calorieLog=[];
-  const filter=document.getElementById('cal-filter')?.value||'week';
-  const now=new Date();
-  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay()+1);weekStart.setHours(0,0,0,0);
-  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-
-  const filtered=S.calorieLog.filter(e=>{
-    const d=new Date(e.date+'T12:00:00');
-    if(filter==='week')return d>=weekStart;
-    if(filter==='month')return d>=monthStart;
-    return true;
-  });
-
-  const totalCal=filtered.reduce((a,b)=>a+b.calories,0);
-  const totalDur=filtered.reduce((a,b)=>a+b.duration,0);
-  const todayCal=S.calorieLog.filter(e=>e.date===TODAYSTR).reduce((a,b)=>a+b.calories,0);
-  const weekCal=S.calorieLog.filter(e=>{const d=new Date(e.date+'T12:00:00');return d>=weekStart;}).reduce((a,b)=>a+b.calories,0);
-
-  document.getElementById('cal-metrics').innerHTML=`
-    <div class="mc"><div class="ml">Today</div><div class="mv">${todayCal.toLocaleString()} cal</div></div>
-    <div class="mc"><div class="ml">This week</div><div class="mv">${weekCal.toLocaleString()} cal</div></div>
-    <div class="mc"><div class="ml">Total duration</div><div class="mv">${Math.floor(totalDur/60)}h ${totalDur%60}m</div></div>
-    <div class="mc"><div class="ml">Activities</div><div class="mv">${S.calorieLog.length}</div></div>`;
-
-  // Build weekly bar chart — last 7 days
-  const days=[];const dayLabels=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(now);d.setDate(now.getDate()-i);
-    const ds=localDateStr(d);
-    days.push(ds);
-    dayLabels.push(d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric'}));
-  }
-  const dayCals=days.map(ds=>S.calorieLog.filter(e=>e.date===ds).reduce((a,b)=>a+b.calories,0));
-
-  requestAnimationFrame(()=>{
-    destroyChart('cal-chart');
-    const ctx=document.getElementById('cal-chart');if(!ctx)return;
-    const amber=cssVar('--amber');
-    charts['cal-chart']=new Chart(ctx,{
-      type:'bar',
-      data:{labels:dayLabels,datasets:[{label:'Calories',data:dayCals,backgroundColor:hexToRgba(amber,.7),borderRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+' cal'},grid:{color:chartGridColor()},beginAtZero:true},
-                x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}
-    });
-  });
-
-  const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('cal-log').innerHTML=sorted.length?sorted.map(e=>`
-    <div style="display:grid;grid-template-columns:90px 1fr auto auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
-      <span style="font-size:12px;color:var(--text3)">${e.date}</span>
-      <span style="font-size:13px;font-weight:500">${e.activity}</span>
-      <span style="font-size:12px;color:var(--text2)">${e.duration?e.duration+'min':''}</span>
-      <span class="tag ta">${e.calories.toLocaleString()} cal</span>
-      <button onclick="S.calorieLog=S.calorieLog.filter(x=>x.id!==${e.id});saveState();renderCaloriesPage();" class="btn-icon">✕</button>
-    </div>`).join('')
-    :'<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">No activities logged yet.</div>';
-}
-
-// ── NUTRITION (food diary, MyFitnessPal-style) ──
-const MEAL_TYPES=['Breakfast','Lunch','Dinner','Snacks'];
-let _nutDayOffset=0;
-function nutDayNav(d){_nutDayOffset=d===0?0:_nutDayOffset+d;renderNutritionPage();}
-function nutCurDate(){const d=new Date();d.setDate(d.getDate()+_nutDayOffset);return localDateStr(d);}
-
-function renderNutritionPage(){
-  if(!S.foodDiary)S.foodDiary=[];
-  if(!S.foodLibrary)S.foodLibrary=[];
-  if(!S.nutritionGoals)S.nutritionGoals={kcal:2000,protein:150,carbs:200,fat:65};
-  const ds=nutCurDate();
-  const dateLabelEl=document.getElementById('nut-date-label');
-  if(dateLabelEl){
-    const d=new Date(ds+'T12:00:00');
-    dateLabelEl.textContent=ds===TODAYSTR?'Today':d.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'});
-  }
-  const todays=S.foodDiary.filter(e=>e.date===ds);
-  const kcalConsumed=todays.reduce((a,e)=>a+e.kcal,0);
-  const proteinConsumed=todays.reduce((a,e)=>a+e.protein,0);
-  const carbsConsumed=todays.reduce((a,e)=>a+e.carbs,0);
-  const fatConsumed=todays.reduce((a,e)=>a+e.fat,0);
-  const exerciseCal=(S.calorieLog||[]).filter(e=>e.date===ds).reduce((a,e)=>a+e.calories,0);
-  const goals=S.nutritionGoals;
-  const remaining=Math.round(goals.kcal-kcalConsumed+exerciseCal);
-  const pct=goals.kcal>0?Math.min(100,Math.max(0,(kcalConsumed/goals.kcal)*100)):0;
-
-  const ringEl=document.getElementById('nut-ring');
-  if(ringEl)ringEl.innerHTML=progressRing(pct,{size:100,stroke:10,color:remaining<0?'var(--red)':'var(--blue)',label:Math.abs(remaining),sub:remaining<0?'over goal':'remaining'});
-
-  const macroBar=(label,val,goal,color)=>{
-    const p=goal>0?Math.min(100,val/goal*100):0;
-    return `<div style="margin-bottom:10px">
-      <div class="flb" style="margin-bottom:3px"><span style="font-size:12px">${label}</span><span style="font-size:12px;color:var(--text2)">${Math.round(val)} / ${Math.round(goal)}g</span></div>
-      <div class="pb"><div class="pbf" style="width:${p}%;background:${color}"></div></div>
-    </div>`;
-  };
-  const macrosEl=document.getElementById('nut-macros');
-  if(macrosEl)macrosEl.innerHTML=`
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Goal ${goals.kcal} · Food ${Math.round(kcalConsumed)}${exerciseCal?' · Exercise +'+exerciseCal:''}</div>
-    ${macroBar('Protein',proteinConsumed,goals.protein,'var(--blue)')}
-    ${macroBar('Carbs',carbsConsumed,goals.carbs,'var(--amber)')}
-    ${macroBar('Fat',fatConsumed,goals.fat,'var(--purple)')}`;
-
-  const mealsEl=document.getElementById('nut-meals');
-  if(mealsEl)mealsEl.innerHTML=MEAL_TYPES.map(meal=>{
-    const items=todays.filter(e=>e.meal===meal);
-    const sub=items.reduce((a,e)=>a+e.kcal,0);
-    return `<div class="card">
-      <div class="flb mb12">
-        <div class="st" style="margin:0">${meal}</div>
-        <div class="fl" style="gap:8px">
-          <span style="font-size:12px;color:var(--text3)">${sub?Math.round(sub)+' kcal':''}</span>
-          <button class="btn-icon" style="font-size:15px;color:var(--blue)" onclick="openModal('addFood',{meal:'${meal}',date:'${ds}'})" title="Add food">+</button>
-        </div>
-      </div>
-      ${items.length?items.map(e=>`<div class="pi"><div><span class="pn">${e.name}</span><div style="font-size:11px;color:var(--text3)">${Math.round(e.kcal)} kcal · ${Math.round(e.protein)}P ${Math.round(e.carbs)}C ${Math.round(e.fat)}F</div></div><button class="btn-icon" onclick="deleteFoodEntry(${e.id})">✕</button></div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:6px 0">Nothing logged yet.</div>'}
-    </div>`;
-  }).join('');
-
-  ['kcal','protein','carbs','fat'].forEach(k=>{
-    const inp=document.getElementById('nut-goal-'+k);
-    if(inp&&document.activeElement!==inp)inp.value=goals[k];
-  });
-
-  requestAnimationFrame(()=>{
-    destroyChart('nut-chart');
-    const ctx=document.getElementById('nut-chart');if(!ctx)return;
-    const days=[],labels=[];
-    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()+_nutDayOffset-i);days.push(localDateStr(d));labels.push(d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric'}));}
-    const kcalByDay=days.map(dds=>S.foodDiary.filter(e=>e.date===dds).reduce((a,e)=>a+e.kcal,0));
-    const blue=cssVar('--blue');
-    charts['nut-chart']=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Calories',data:kcalByDay,backgroundColor:hexToRgba(blue,.7),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+' kcal'},grid:{color:chartGridColor()},beginAtZero:true},x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}});
-  });
-}
-function deleteFoodEntry(id){S.foodDiary=S.foodDiary.filter(e=>e.id!==id);saveState();renderNutritionPage();}
-function setNutGoals(){
-  S.nutritionGoals={
-    kcal:parseFloat(document.getElementById('nut-goal-kcal').value)||2000,
-    protein:parseFloat(document.getElementById('nut-goal-protein').value)||150,
-    carbs:parseFloat(document.getElementById('nut-goal-carbs').value)||200,
-    fat:parseFloat(document.getElementById('nut-goal-fat').value)||65,
-  };
-  saveState();renderNutritionPage();
-}
-
-// Add-food modal helpers
-// USDA FoodData Central — free public food/nutrition database, CORS-enabled.
-// DEMO_KEY works out of the box but is rate-limited (~30 req/hr/IP shared by everyone using it).
-// Get your own free key in seconds at https://fdc.nal.usda.gov/api-key-signup.html and swap it in below.
-const USDA_API_KEY='DEMO_KEY';
-let _fdSearchResults=[];
-async function fdSearch(){
-  const q=(document.getElementById('fd-search').value||'').trim();
-  const resultsEl=document.getElementById('fd-results');
-  if(!resultsEl)return;
-  if(!q){resultsEl.innerHTML='';return;}
-  resultsEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">Searching…</div>';
-  try{
-    const url=`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(q)}&pageSize=12&api_key=${USDA_API_KEY}`;
-    const res=await fetch(url);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    const nVal=(f,id)=>{const n=(f.foodNutrients||[]).find(x=>x.nutrientId===id);return n&&n.value!=null?n.value:null;};
-    const foods=(data.foods||[]).filter(f=>f.description&&nVal(f,1008)!=null).map(f=>({
-      name:f.description,
-      brand:f.brandOwner||f.brandName||'',
-      kcal:nVal(f,1008)||0,
-      protein:nVal(f,1003)||0,
-      carbs:nVal(f,1005)||0,
-      fat:nVal(f,1004)||0,
-    }));
-    _fdSearchResults=foods.slice(0,10);
-    resultsEl.innerHTML=_fdSearchResults.length?_fdSearchResults.map((p,i)=>{
-      return `<div class="pi" style="cursor:pointer" onclick="fdPickSearchResult(${i})">
-        <div><span class="pn">${p.name}</span>${p.brand?`<div style="font-size:11px;color:var(--text3)">${p.brand}</div>`:''}</div>
-        <span style="font-size:12px;color:var(--text2)">${Math.round(p.kcal)} kcal/100g</span>
-      </div>`;
-    }).join(''):'<div style="font-size:12px;color:var(--text3);padding:8px 0">No results — try a different search, or fill it in manually below.</div>';
-  }catch(e){
-    resultsEl.innerHTML='<div style="font-size:12px;color:var(--red);padding:8px 0">Search failed — check your connection, or fill it in manually below.</div>';
-  }
-}
-function fdPickSearchResult(i){
-  const p=_fdSearchResults[i];if(!p)return;
-  document.getElementById('fd-name').value=p.name+(p.brand?' ('+p.brand+')':'');
-  const lbl=document.getElementById('fd-serving-label');if(lbl)lbl.textContent='per 100g';
-  document.getElementById('fd-kcal-base').value=Math.round(p.kcal);
-  document.getElementById('fd-protein-base').value=+p.protein.toFixed(1);
-  document.getElementById('fd-carbs-base').value=+p.carbs.toFixed(1);
-  document.getElementById('fd-fat-base').value=+p.fat.toFixed(1);
-  document.getElementById('fd-servings').value=1;
-  fdRecalc();
-}
-function fdPickMyFood(id){
-  if(!id)return;
-  const f=S.foodLibrary.find(x=>x.id==id);if(!f)return;
-  document.getElementById('fd-name').value=f.name;
-  const lbl=document.getElementById('fd-serving-label');if(lbl)lbl.textContent='per serving';
-  document.getElementById('fd-kcal-base').value=f.kcal;
-  document.getElementById('fd-protein-base').value=f.protein;
-  document.getElementById('fd-carbs-base').value=f.carbs;
-  document.getElementById('fd-fat-base').value=f.fat;
-  document.getElementById('fd-servings').value=1;
-  fdRecalc();
-}
-function fdRecalc(){
-  const kcal=parseFloat(document.getElementById('fd-kcal-base')?.value)||0;
-  const protein=parseFloat(document.getElementById('fd-protein-base')?.value)||0;
-  const carbs=parseFloat(document.getElementById('fd-carbs-base')?.value)||0;
-  const fat=parseFloat(document.getElementById('fd-fat-base')?.value)||0;
-  const servings=parseFloat(document.getElementById('fd-servings')?.value)||1;
-  const totalEl=document.getElementById('fd-total-preview');
-  if(totalEl)totalEl.textContent=`= ${Math.round(kcal*servings)} kcal · ${Math.round(protein*servings)}P ${Math.round(carbs*servings)}C ${Math.round(fat*servings)}F total`;
 }
 
 // ── OUTLOOK CALENDAR (Microsoft Graph) ──
@@ -4422,569 +4298,6 @@ async function renderHomeCalendarWeek(){
   }
 }
 
-// ── HYROX (Tryka integration via Supabase) ──
-const HX_SB_URL='https://foznudyesjdntzaqhxas.supabase.co';
-const HX_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvem51ZHllc2pkbnR6YXFoeGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMjU3ODEsImV4cCI6MjEwMDkwMTc4MX0.eQvoHWtMCUnQKfVN6L3wUFECes_-V6PON_uXGNct-Ao';
-const HX_TEAM='tryka';
-const HX_AUTH_DOMAIN='tryka.app';
-const HX_WEEK_META=[
-  ['Build the base','Learn the movements and learn each other. Nothing should feel hard.'],
-  ['Build the base','Same shapes, a little more of everything. Consistency beats intensity.'],
-  ['Build the base','Sled work begins, and your first real handover practice.'],
-  ['Deload','Volume drops — plus a light benchmark sim to capture your baseline splits.'],
-  ['Build the engine','Race pace becomes normal pace. Loads get heavy.'],
-  ['Build the engine','Mini simulation — your first team time on the clock.'],
-  ['Build the engine','Biggest week of the plan. Everything peaks here.'],
-  ['Deload','Recover properly so week nine can be sharp.'],
-  ['Sharpen','Half simulation at race weights and real splits.'],
-  ['Sharpen','Race-pace running on tired legs — exactly what race day asks.'],
-  ['Peak','Full simulation — 8 stations, 8 runs, one clock.'],
-  ['Race week','Short and fast. The work is done.'],
-];
-function hxDayMeta(w,d){
-  const isSim=(w===3||w===5||w===8||w===10);
-  const days=[
-    {d:0,name:'Intervals',type:'Run',sub:'Day 1 · solo',together:false},
-    {d:1,name:hxPick(['Strength A','Strength']),type:'Strength',sub:'Day 2 · gym, solo',together:false},
-    {d:2,name:w===3?'Benchmark sim':w===5?'Mini simulation':w===8?'Half simulation':w===10?'Full simulation':'Partner session',
-     type:isSim?'Simulation':'Partner',sub:'Day 3 · as a team',together:true},
-    {d:3,name:'Long and easy',type:'Run',sub:hxPick(['Day 5 · aerobic','Day 4 · aerobic']),together:true},
-    {d:4,name:'Strength B',type:'StrengthB',sub:'Day 4 · gym, solo',together:false,only:0},
-  ];
-  return days[d];
-}
-// Which day indices apply to whoever's currently being viewed (Strength B is Harvey-only).
-function hxDaysForView(w){
-  return [0,1,2,3,4].filter(d=>{
-    const dm=hxDayMeta(w,d);
-    return dm.only==null||dm.only===HX.view;
-  });
-}
-function hxTotalDaysForView(){
-  let n=0; for(let w=0;w<12;w++)n+=hxDaysForView(w).length;
-  return n;
-}
-function hxKey(w,d){return w+'-'+d;}
-
-/* Full session content, ported from the Tryka plan so Harvey can show what each workout actually involves. */
-const HX_WHYSET=[
- ["Strength isn't your gap — running volume is, and in doubles you can't hide behind a strong partner because you both run every metre. Your solo gym day keeps the push/pull work you've been doing (it protects upper-body muscle through the cut and transfers straight to the ski, sled and thrusters), with one lower anchor lift and race prep rather than heavy leg volume that would blunt your running.",
-  "You want to run but haven't really run before, so this starts as run/walk and builds one minute at a time. Trust it — by week nine you'll be running the 500s. Never redline in these early weeks."],
- ["One more interval, nothing else changes.","A little more running in each interval. If a walk break feels too long, shorten it — but don't rush the jumps."],
- ["First sled sessions. Expect them to humble you regardless of your squat.","Two-minute runs now. The gym work is light on purpose while your legs adapt to the running."],
- ["Deload. Your tendons need it more than your lungs do.","Deload. Beginners get hurt by doing too much too soon — take the easy week."],
- ["Heavy strength beside race-pace running is the hardest combination in the plan.","Three-minute runs. You're over the hump where running starts to feel like running."],
- ["The mini sim tells you whether your split is realistic while there's still time to change it.","The mini sim is your first taste of the race. Just finish it — the number is for later."],
- ["Peak volume. If something's going to niggle, it's this week — back off early, not late.","Your longest continuous running yet. Sleep and food matter as much as the sessions."],
- ["Second deload. Sharp beats fit from here.","Second deload. You should finish the week itching to train — that's the point."],
- ["Half sim at race weights. Note where the running fell apart, not just the total.","Now you're running the 500s properly. Half sim shows how far you've come since week six."],
- ["Race-pace runs with short rests — the closest thing to the real event.","Race-effort 500s. This is the week it starts to feel genuinely possible."],
- ["Full sim on a Saturday if you can — your predicted time and pacing rehearsal.","Full sim. Whatever the clock says, you've now covered the whole race distance."],
- ["Taper. Feeling flat and restless is normal and means it's working.","Taper. Trust the twelve weeks behind you — arrive fresh, not fit-and-tired."]
-];
-const HX_RUNSET=[
- ["6 × 400 m at 5k effort, 90 s walk back","Run/walk 8 × (1 min run / 90 s walk), easy"],
- ["8 × 400 m at 5k effort, 90 s walk back","Run/walk 8 × (90 s run / 90 s walk)"],
- ["5 × 600 m steady, 2 min","Run/walk 6 × (2 min run / 90 s walk)"],
- ["4 × 400 m relaxed, 2 min — deload","Run/walk 5 × (2 min run / 2 min walk) — deload"],
- ["6 × 500 m at target team pace, 90 s","Run/walk 6 × (3 min run / 90 s walk)"],
- ["8 × 500 m at target team pace, 90 s","Run/walk 5 × (4 min run / 2 min walk)"],
- ["5 × 800 m steady, 2 min","Run/walk 4 × (5 min run / 2 min walk) — longest"],
- ["4 × 500 m relaxed, 90 s — deload","Run/walk 5 × (3 min run / 2 min walk) — deload"],
- ["8 × 400 m hard, 60 s","6 × 400 m continuous, 90 s walk"],
- ["6 × 500 m at race pace, 60 s","6 × 500 m at race effort, 90 s walk"],
- ["4 × 500 m sharp, 90 s","4 × 500 m sharp, 90 s walk"],
- ["3 × 300 m at race pace, full recovery","3 × 300 m easy with strides"]
-];
-const HX_STRSET=[
- ["Back squat 3 × 6 moderate","Goblet squat 3 × 8 · Hip hinge with light bar 3 × 10"],
- ["Back squat 3 × 8","Goblet squat 3 × 10 · Romanian deadlift 3 × 8 light"],
- ["Trap-bar deadlift 3 × 5","Front-rack squat 3 × 8 · Trap-bar deadlift 3 × 6 light"],
- ["Back squat 2 × 6 easy — deload","Goblet squat 2 × 10 · Hinge 2 × 8 — deload"],
- ["Back squat 4 × 5 heavy","Front squat 4 × 6 · Deadlift 3 × 6"],
- ["Trap-bar deadlift 4 × 4 heavy","Front squat 4 × 8 · Deadlift 3 × 8"],
- ["Back squat 4 × 5 heavy","Front squat 4 × 6 · Deadlift 4 × 5"],
- ["Back squat 3 × 5 at 70% — deload","Front squat 3 × 6 · Deadlift 3 × 5 — deload"],
- ["Deadlift 3 × 4","Front squat 4 × 6 · Deadlift 3 × 5"],
- ["Back squat 3 × 5","Front squat 3 × 8 · Deadlift 3 × 6"],
- ["Back squat 2 × 4 crisp, nothing to failure","Front squat 3 × 5 crisp, nothing to failure"],
- ["Back squat 2 × 3 light, feel fast","Front squat 2 × 5 light, feel fast"]
-];
-const HX_ACCSET=[
- ["Bench press 3 × 8 · Barbell row 3 × 8 · Pull-ups 3 × max","Dumbbell thruster 4 × 8 · Walking lunge 3 × 16"],
- ["Bench press 3 × 10 · Barbell row 3 × 10 · Pull-ups 3 × max","Dumbbell thruster 4 × 10 · Walking lunge 3 × 20"],
- ["Overhead press 4 × 6 · Weighted pull-up 4 × 5 · DB row 3 × 10","Dumbbell thruster 4 × 12 · Weighted lunge 3 × 20"],
- ["Bench press 2 × 8 easy · DB row 2 × 10 — deload","Thruster 3 × 8 light · Lunge 2 × 16"],
- ["Bench press 4 × 6 heavy · Weighted pull-up 4 × 5 · Overhead press 3 × 8","Thruster 4 × 12 · Weighted lunge 4 × 20"],
- ["Incline bench 4 × 8 · Barbell row 4 × 8 · Pull-ups 4 × max","Thruster 5 × 12 · Weighted lunge 4 × 24"],
- ["Bench press 5 × 5 heavy · Weighted pull-up 5 × 5 · Overhead press 3 × 6","Thruster 5 × 12 · Lunge 4 × 24"],
- ["Bench press 3 × 6 · Barbell row 3 × 8 — deload","Thruster 3 × 10 · Lunge 3 × 16"],
- ["Overhead press 4 × 6 · Weighted pull-up 4 × 5 · DB bench 3 × 10","Thruster 5 × 12 race weight · Lunge 4 × 24"],
- ["Bench press 4 × 6 · Barbell row 4 × 8 · Pull-ups 3 × max","Thruster 4 × 12 race weight · Lunge 3 × 24"],
- ["Bench press 3 × 5 · Barbell row 3 × 5 crisp","Thruster 3 × 10 race weight · Lunge 2 × 16"],
- ["Bench press 2 × 5 light · Barbell row 2 × 5 light","Thruster 2 × 8 light · Lunge 2 × 12"]
-];
-const HX_CARRYSET=[
- ["Thruster 4 × 10 · Farmer's carry 4 × 40 m · Hanging knee raise 3 × 12","Farmer's carry 4 × 30 m · Dead hang 3 × 20 s"],
- ["Thruster 4 × 12 · Farmer's carry 4 × 50 m · Plank 3 × 45 s","Farmer's carry 4 × 40 m · Dead hang 3 × 25 s"],
- ["Thruster 5 × 10 · Sled push 5 × 20 m · Farmer's carry 4 × 50 m","Farmer's carry 4 × 40 m · Hang 3 × 30 s"],
- ["Thruster 3 × 10 light · Farmer's carry 3 × 40 m — deload","Farmer's carry 3 × 30 m · Hang 2 × 20 s"],
- ["Thruster 5 × 12 · Sled push 5 × 25 m · Farmer's carry 5 × 50 m heavy","Farmer's carry 5 × 40 m · Hang 3 × 35 s"],
- ["Thruster 5 × 15 · Sled push 5 × 25 m · Farmer's carry 5 × 60 m","Farmer's carry 5 × 50 m · Hang 4 × 40 s"],
- ["Thruster 6 × 12 heavy · Sled push 6 × 25 m · Farmer's carry 4 × 80 m","Farmer's carry 4 × 60 m · Hang 4 × 45 s"],
- ["Thruster 3 × 12 · Farmer's carry 3 × 50 m — deload","Farmer's carry 3 × 40 m · Hang 3 × 25 s"],
- ["Thruster 5 × 15 race weight · Farmer's carry 4 × 80 m race weight","Farmer's carry 4 × 60 m race weight · Hang 4 × 45 s"],
- ["Thruster 4 × 15 race weight · Farmer's carry 4 × 60 m race weight","Farmer's carry 4 × 60 m race weight · Hang 3 × 40 s"],
- ["Thruster 3 × 10 race weight · Farmer's carry 3 × 60 m race weight","Farmer's carry 3 × 50 m race weight"],
- ["Thruster 2 × 8 light · Farmer's carry 2 × 40 m light","Farmer's carry 2 × 40 m light"]
-];
-const HX_PARTSET=[
- "3 rounds together — run 500 m side by side, then split 200 m SkiErg and 20 walking lunges. Talk through every handover.",
- "4 rounds together — 500 m run · split 250 m SkiErg and 20 lunges. Try one swap per station and feel how it goes.",
- "4 rounds together — 500 m run · split 20 m sled push and 12 thrusters. First session with the sled as a pair.",
- "BENCHMARK SIM (light) — 3 stations, 3 × 500 m runs at easy-moderate effort. Not a fast time — the point is recording each station split and a rough handover time in the log, so weeks 6, 9 and 11 have a baseline to beat.",
- "5 rounds together — 500 m run · split 20 m sled push and 20 m sled pull. Lock in who takes the bigger share.",
- "MINI SIM — 4 stations, 4 × 500 m runs, race splits, one clock. Use the sim timer and write the number down.",
- "5 rounds together — 500 m run · split 400 m row and 12 burpee broad jumps. Alternate burpees in short sets.",
- "3 easy rounds together — 500 m run · split 200 m ski and 16 lunges. Deload.",
- "HALF SIM — 4 stations, 4 × 500 m runs at race weights and race splits. Time it and compare to week six.",
- "6 rounds together — 500 m run · split 30 m farmer's carry and 12 thrusters. Race-pace runs, short rests.",
- "FULL SIM — all 8 stations, 8 × 500 m runs, 40 m sprint, agreed splits. This is your predicted race time.",
- "2 easy rounds together — 500 m run · 10 m sled push · 10 thrusters. Rehearse handovers, nothing hard."
-];
-const HX_LONGSET=[
- "30 min easy together — run/walk as needed, keep it conversational",
- "35 min easy together — run/walk, conversational",
- "35 min together, aim to run more of it than last week",
- "25 min very easy together — deload",
- "40 min easy together, mostly running now",
- "45 min easy together",
- "50 min easy together — longest of the plan",
- "30 min very easy together — deload",
- "40 min easy continuous together",
- "40 min easy together",
- "30 min easy together, nothing hard",
- "20 min shakeout together, two 30 s strides"
-];
-const HX_FUEL={
-  Run:"Carbs in the meal before so you can hit the efforts; protein + carbs within the hour after. Intervals dry you out more than they feel — drink.",
-  Strength:"Protein is the priority today. A protein + carb meal 2–3 h before, and protein soon after — this is where strength is built and kept.",
-  Partner:"Treat it like a mini race. Bigger, easy-to-digest carb meal 2–3 h before; sip water or electrolytes if it runs past 45 min; carbs + protein to refuel after. Your hardest session of the week.",
-  Simulation:"Fuel it exactly as you'll fuel race day — this is the rehearsal. Familiar carb meal 2–3 h before, water with a pinch of salt, nothing new. Refuel properly afterward.",
-  LongEasy:"Lower intensity, so don't over-fuel — normal balanced meals, good hydration, and a protein-containing meal after. A good day for veg and whole foods."
-};
-// Harvey's second gym day — fixed prescription every week (unlike the periodised
-// Day 2 sets above). Solo: this day never appears for Doireann.
-const HX_STRB={
-  anchor:"Deadlift 3 × 5 moderate",
-  push:"Overhead press 3 × 8 · Dips 3 × 8–10 · Chest-supported T-bar row 3 × 10 · Face pull 3 × 15",
-  carry:"Walking lunges 3 × 20 · Ski Erg 4 × 20 s hard, 40 s easy · Pallof press 3 × 12 each side",
-};
-function hxPick(v){ return Array.isArray(v)?v[HX.view]:v; }
-function hxDayBlocks(w,d){
-  const dm=hxDayMeta(w,d);
-  let blocks,fuelKey;
-  if(d===0){
-    blocks=[
-      {h:'Warm up',lines:['10 min easy jog, leg swings, 3 × 20 s strides']},
-      {h:'Main set',lines:[hxPick(HX_RUNSET[w])]},
-      {h:'Cool down',lines:['10 min easy jog or walk']},
-    ];
-    fuelKey='Run';
-  } else if(d===1){
-    // Harvey's Day 2 is frozen at the week-one prescription so his two gym days
-    // are the same every week. Doireann's side still periodises as before.
-    blocks=[
-      {h:hxPick(['Lower anchor','Lower body']),lines:[hxPick([HX_STRSET[0][0],HX_STRSET[w][1]])]},
-      {h:hxPick(['Push & pull','Race movements']),lines:[hxPick([HX_ACCSET[0][0],HX_ACCSET[w][1]])]},
-      {h:hxPick(['Race prep & carry','Grip and trunk']),lines:[hxPick([HX_CARRYSET[0][0],HX_CARRYSET[w][1]])]},
-    ];
-    fuelKey='Strength';
-  } else if(d===2){
-    blocks=[
-      {h:'Warm up',lines:['8 min easy together, then one round at half effort']},
-      {h:'Main set',lines:[HX_PARTSET[w]]},
-      {h:'Afterwards',lines:['Two minutes on what to change. Write it in the notes below.']},
-    ];
-    fuelKey=dm.type;
-  } else if(d===3){
-    blocks=[
-      {h:'Session',lines:[HX_LONGSET[w]]},
-      {h:'Finish with',lines:['10 min mobility — hips, ankles, thoracic spine']},
-    ];
-    fuelKey='LongEasy';
-  } else {
-    blocks=[
-      {h:'Lower anchor',lines:[HX_STRB.anchor]},
-      {h:'Push & pull',lines:[HX_STRB.push]},
-      {h:'Race prep & carry',lines:[HX_STRB.carry]},
-    ];
-    fuelKey='Strength';
-  }
-  return {blocks,fuel:HX_FUEL[fuelKey]};
-}
-
-let HX={sb:null,loggedIn:false,sessionChecked:false,me:0,view:0,weekOffset:null,data:null};
-let HX_WSES=null;
-
-async function hxConnect(){
-  if(HX.sb)return true;
-  try{
-    const mod=await import('https://esm.sh/@supabase/supabase-js@2');
-    HX.sb=mod.createClient(HX_SB_URL,HX_SB_KEY);
-    return true;
-  }catch(e){ return false; }
-}
-function hxUserToEmail(u){ u=(u||'').trim(); return u.indexOf('@')>-1?u:(u.toLowerCase()+'@'+HX_AUTH_DOMAIN); }
-function hxAthleteFromEmail(email){
-  const u=String(email||'').toLowerCase().split('@')[0];
-  const names=(HX.data&&HX.data.names)||['Harvey','Doireann'];
-  if(u===String(names[1]).toLowerCase()||u==='doireann')return 1;
-  return 0;
-}
-function hxDefaultData(){
-  return {names:['Harvey','Doireann'],race:'2026-10-31',done:[{},{}],notes:[{},{}],
-    prs:[],prlog:[],sims:[],logs:{},extras:{},wtemplates:[{},{}],wsessions:[[],[]],macrolog:[{},{}]};
-}
-async function hxLoad(){
-  try{
-    const r=await HX.sb.from('tryka_state').select('data').eq('team',HX_TEAM).maybeSingle();
-    HX.data=(r.data&&r.data.data)?r.data.data:hxDefaultData();
-  }catch(e){ HX.data=HX.data||hxDefaultData(); }
-}
-function hxMergeRemote(remote){
-  if(!remote||!HX.data)return;
-  const other=1-HX.me;
-  if(remote.done)HX.data.done[other]=remote.done[other]||HX.data.done[other];
-  if(remote.notes)HX.data.notes[other]=remote.notes[other]||HX.data.notes[other];
-  if(remote.wtemplates)HX.data.wtemplates[other]=remote.wtemplates[other]||HX.data.wtemplates[other];
-  if(remote.wsessions)HX.data.wsessions[other]=remote.wsessions[other]||HX.data.wsessions[other];
-  if(remote.macrolog)HX.data.macrolog[other]=remote.macrolog[other]||HX.data.macrolog[other];
-  if(remote.logs){Object.keys(remote.logs).forEach(k=>{ if(k.indexOf(other+'-')===0)HX.data.logs[k]=remote.logs[k]; });}
-  if(Array.isArray(remote.prlog)){
-    const mine=HX.data.prlog.filter(p=>p.ath===HX.me);
-    const theirs=remote.prlog.filter(p=>p.ath===other);
-    HX.data.prlog=mine.concat(theirs);
-  }
-}
-async function hxSave(){
-  if(!HX.sb||!HX.loggedIn)return false;
-  try{
-    const r=await HX.sb.from('tryka_state').select('data').eq('team',HX_TEAM).maybeSingle();
-    if(r.data&&r.data.data)hxMergeRemote(r.data.data);
-    await HX.sb.from('tryka_state').upsert({team:HX_TEAM,data:HX.data,updated_at:new Date().toISOString()});
-    return true;
-  }catch(e){ return false; }
-}
-function hxCanEdit(together){ return together||HX.view===HX.me; }
-
-async function hxSignIn(){
-  const user=document.getElementById('hx-user').value;
-  const pass=document.getElementById('hx-pass').value;
-  const errEl=document.getElementById('hx-err');
-  if(errEl)errEl.textContent='';
-  const ok=await hxConnect();
-  if(!ok){ if(errEl)errEl.textContent="Can't reach the server — check your connection."; return; }
-  try{
-    const res=await HX.sb.auth.signInWithPassword({email:hxUserToEmail(user),password:pass});
-    if(res.error){ if(errEl)errEl.textContent=res.error.message||'Sign-in failed'; return; }
-    HX.loggedIn=true;
-    await hxLoad();
-    HX.me=hxAthleteFromEmail(res.data.user.email);
-    HX.view=HX.me;
-    HX.sessionChecked=true;
-    renderHyroxPage();
-  }catch(e){ if(errEl)errEl.textContent=(e&&e.message)||'Sign-in failed'; }
-}
-async function hxSignOut(){
-  try{ if(HX.sb)await HX.sb.auth.signOut(); }catch(e){}
-  HX.loggedIn=false; HX.data=null;
-  renderHyroxPage();
-}
-
-async function renderHyroxPage(){
-  if(!HX.sessionChecked){
-    HX.sessionChecked=true;
-    const ok=await hxConnect();
-    if(ok){
-      try{
-        const s=await HX.sb.auth.getSession();
-        if(s&&s.data&&s.data.session){
-          HX.loggedIn=true;
-          await hxLoad();
-          HX.me=hxAthleteFromEmail(s.data.session.user.email);
-          HX.view=HX.me;
-        }
-      }catch(e){}
-    }
-  }
-  const signedOut=document.getElementById('hx-signed-out');
-  const content=document.getElementById('hx-content');
-  if(!HX.loggedIn){
-    if(signedOut)signedOut.style.display='';
-    if(content)content.style.display='none';
-    return;
-  }
-  if(signedOut)signedOut.style.display='none';
-  if(content)content.style.display='';
-  if(!HX.data)await hxLoad();
-  hxRenderAll();
-}
-
-function hxWeekIndex(){
-  if(!HX.data||!HX.data.race)return 0;
-  const race=new Date(HX.data.race+'T09:00:00');
-  const blockStart=new Date(race);blockStart.setDate(blockStart.getDate()-12*7);
-  const days=Math.floor((new Date()-blockStart)/86400000);
-  return Math.max(0,Math.min(11,Math.floor(days/7)));
-}
-function hxSetView(i){ HX.view=i; renderHyroxPage(); }
-function hxWeekNav(delta){
-  const cur=HX.weekOffset!=null?HX.weekOffset:hxWeekIndex();
-  HX.weekOffset=delta===0?hxWeekIndex():Math.max(0,Math.min(11,cur+delta));
-  hxRenderAll();
-}
-
-function hxRenderAll(){
-  if(!HX.data)return;
-  const D=HX.data;
-  const names=D.names||['Harvey','Doireann'];
-
-  const raceEl=document.getElementById('hx-race');
-  if(raceEl){
-    if(D.race){
-      const days=Math.ceil((new Date(D.race+'T09:00:00')-new Date())/86400000);
-      raceEl.textContent=days>=0?(days+(days===1?' day':' days')+' to race day'):'Race day has passed';
-    } else raceEl.textContent='';
-  }
-
-  const tabsEl=document.getElementById('hx-tabs');
-  if(tabsEl)tabsEl.innerHTML=[0,1].map(i=>`<button class="wkb ${HX.view===i?'active':''}" onclick="hxSetView(${i})">${names[i]}${HX.me===i?' · you':''}</button>`).join('');
-
-  let doneTotal=0; for(let w=0;w<12;w++)hxDaysForView(w).forEach(d=>{ if(D.done[HX.view][hxKey(w,d)])doneTotal++; });
-  const totalForView=hxTotalDaysForView();
-  const wIdx=HX.weekOffset!=null?HX.weekOffset:hxWeekIndex();
-  const weekDays=hxDaysForView(wIdx);
-  let weekDone=0; weekDays.forEach(d=>{ if(D.done[HX.view][hxKey(wIdx,d)])weekDone++; });
-  const metricsEl=document.getElementById('hx-m');
-  if(metricsEl)metricsEl.innerHTML=`
-    <div class="mc"><div class="ml">This week</div><div class="mv">${weekDone}/${weekDays.length}</div></div>
-    <div class="mc"><div class="ml">Total done</div><div class="mv">${doneTotal}/${totalForView}</div></div>
-    <div class="mc"><div class="ml">Race day</div><div class="mv" style="font-size:16px">${D.race?fmtDate(D.race):'—'}</div></div>`;
-
-  hxRenderWeek(wIdx);
-  hxRenderPRs();
-  hxRenderMacro();
-  hxRenderWorkoutSessions();
-}
-
-function hxRenderWeek(wIdx){
-  const D=HX.data;
-  const meta=HX_WEEK_META[wIdx];
-  const el=document.getElementById('hx-week');
-  if(!el)return;
-  const why=hxPick(HX_WHYSET[wIdx]);
-  const days=hxDaysForView(wIdx).map(d=>{
-    const dm=hxDayMeta(wIdx,d);
-    const k=hxKey(wIdx,d);
-    const isDone=!!D.done[HX.view][k];
-    const editable=hxCanEdit(dm.together);
-    const full=hxDayBlocks(wIdx,d);
-    const blocksHtml=full.blocks.map(b=>`<div style="margin-bottom:10px">
-      <div class="ml" style="margin-bottom:4px">${b.h}</div>
-      ${b.lines.map(l=>`<div style="font-size:12.5px;color:var(--text2);line-height:1.5;padding-left:12px;position:relative;margin-bottom:2px"><span style="position:absolute;left:0;color:var(--text3)">–</span>${l}</div>`).join('')}
-    </div>`).join('');
-    return `<details style="border-top:0.5px solid var(--border);padding:9px 0">
-      <summary style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;list-style:none">
-        <span onclick="event.preventDefault();event.stopPropagation();hxToggleDay(${wIdx},${d})" style="font-size:16px;line-height:1.3;cursor:${editable?'pointer':'default'};color:${isDone?'var(--green)':'var(--text3)'}">${isDone?'✓':'○'}</span>
-        <span style="flex:1">
-          <span style="font-size:13px;font-weight:600;display:block;${isDone?'text-decoration:line-through;opacity:.6':''}">${dm.name}${dm.together?' <span class="tag tg" style="margin-left:4px">Together</span>':''}</span>
-          <span style="font-size:11px;color:var(--text3)">${dm.sub} · ${dm.type}</span>
-        </span>
-      </summary>
-      <div style="padding:10px 0 2px 26px">
-        ${blocksHtml}
-        <div style="font-size:12px;color:var(--text2);border-left:2px solid var(--green);padding-left:10px;margin-top:8px;line-height:1.5">
-          <b style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:2px">Fuel</b>${full.fuel}
-        </div>
-      </div>
-    </details>`;
-  }).join('');
-  el.innerHTML=`
-    <div class="flb mb12" style="flex-wrap:wrap;gap:8px">
-      <div><div class="st" style="margin:0">Week ${wIdx+1} · ${meta[0]}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${meta[1]}</div></div>
-      <div class="fl" style="gap:6px">
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(-1)">‹</button>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(0)">This week</button>
-        <button class="btn" style="font-size:12px;padding:5px 9px" onclick="hxWeekNav(1)">›</button>
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:8px">${why}</p>
-    ${days}`;
-}
-function hxToggleDay(w,d){
-  const D=HX.data;
-  const dm=hxDayMeta(w,d);
-  if(dm.only!=null&&dm.only!==HX.view)return; // e.g. Strength B belongs to Harvey only
-  if(!hxCanEdit(dm.together)){ alert('Sign in as '+D.names[HX.view]+' to edit their plan.'); return; }
-  const k=hxKey(w,d);
-  const val=!D.done[HX.view][k];
-  if(dm.together){ D.done[0][k]=val; D.done[1][k]=val; }
-  else D.done[HX.view][k]=val;
-  hxSave();
-  hxRenderAll();
-}
-
-function hxRenderPRs(){
-  const D=HX.data;
-  const el=document.getElementById('hx-prs');
-  if(!el)return;
-  const prs=(D.prs&&D.prs.length)?D.prs:[
-    {id:'run500',name:'500 m run',kind:'time'},{id:'row2k',name:'2 km row',kind:'time'},
-    {id:'squat',name:'Back squat',kind:'kg'},{id:'deadlift',name:'Deadlift',kind:'kg'},
-    {id:'bench',name:'Bench press',kind:'kg'},{id:'pullup',name:'Pull-up max',kind:'reps'},
-  ];
-  const fmtVal=(v,kind)=>kind==='time'?(Math.floor(v/60)+':'+String(Math.round(v%60)).padStart(2,'0')):(kind==='reps'?Math.round(v)+' reps':v+' kg');
-  const rows=prs.map(p=>{
-    const entries=(D.prlog||[]).filter(x=>x.ath===HX.view&&x.lift===p.id);
-    if(!entries.length)return null;
-    const best=p.kind==='time'?entries.reduce((a,b)=>b.val<a.val?b:a):entries.reduce((a,b)=>b.val>a.val?b:a);
-    return `<div class="pi"><span class="pn">${p.name}</span><span class="pv">${fmtVal(best.val,p.kind)}</span></div>`;
-  }).filter(Boolean);
-  el.innerHTML=rows.length?rows.join(''):`<div style="color:var(--text3);font-size:13px;padding:8px 0">No results logged yet for ${D.names[HX.view]}.</div>`;
-
-  const liftSel=document.getElementById('hx-pr-lift');
-  if(liftSel&&liftSel.options.length!==prs.length){
-    liftSel.innerHTML=prs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  }
-  const athSel=document.getElementById('hx-pr-ath');
-  if(athSel&&athSel.options.length===2){
-    athSel.options[0].textContent=D.names[0]; athSel.options[1].textContent=D.names[1];
-  }
-}
-function hxPrAdd(){
-  const D=HX.data;
-  const ath=parseInt(document.getElementById('hx-pr-ath').value,10);
-  const liftId=document.getElementById('hx-pr-lift').value;
-  const raw=(document.getElementById('hx-pr-val').value||'').trim();
-  if(!raw||!liftId)return;
-  const prs=(D.prs&&D.prs.length)?D.prs:[];
-  const lift=prs.find(p=>p.id===liftId);
-  const kind=lift?lift.kind:'kg';
-  let val;
-  if(kind==='time'){ const parts=raw.split(':'); val=parts.length>1?(parseInt(parts[0],10)*60+parseFloat(parts[1])):parseFloat(raw); }
-  else val=parseFloat(raw);
-  if(!(val>0))return;
-  D.prlog.push({ath,lift:liftId,val,at:Date.now()});
-  document.getElementById('hx-pr-val').value='';
-  hxSave();
-  hxRenderAll();
-}
-
-function hxRenderMacro(){
-  const D=HX.data;
-  const el=document.getElementById('hx-macro-list');
-  if(!el)return;
-  const log=D.macrolog[HX.view]||{};
-  const days=Object.keys(log).sort().reverse().slice(0,7);
-  const kcal=m=>Math.round((+m.p||0)*4+(+m.c||0)*4+(+m.f||0)*9);
-  el.innerHTML=days.length?days.map(d=>{
-    const m=log[d];
-    return `<div class="pi"><span class="pn">${d}</span><span style="font-size:12px;color:var(--text2)">${kcal(m)} kcal · ${m.p||0}P ${m.c||0}C ${m.f||0}F</span></div>`;
-  }).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No days logged yet.</div>';
-  const dateInp=document.getElementById('hx-macro-date');
-  if(dateInp&&!dateInp.value)dateInp.value=TODAYSTR;
-}
-function hxMacroSave(){
-  const D=HX.data;
-  if(!hxCanEdit(false)){ alert('Sign in as '+D.names[HX.view]+' to log their macros.'); return; }
-  const d=document.getElementById('hx-macro-date').value||TODAYSTR;
-  const p=parseFloat(document.getElementById('hx-macro-p').value)||0;
-  const c=parseFloat(document.getElementById('hx-macro-c').value)||0;
-  const f=parseFloat(document.getElementById('hx-macro-f').value)||0;
-  if(!p&&!c&&!f)return;
-  D.macrolog[HX.view][d]={p,c,f};
-  document.getElementById('hx-macro-p').value='';
-  document.getElementById('hx-macro-c').value='';
-  document.getElementById('hx-macro-f').value='';
-  hxSave();
-  hxRenderAll();
-}
-
-function hxWTemplates(ath){ return (HX.data.wtemplates&&HX.data.wtemplates[ath])||{}; }
-function hxLastSets(ath,ex){
-  const list=HX.data.wsessions[ath]||[];
-  for(let i=list.length-1;i>=0;i--){
-    const e=(list[i].entries||[]).find(x=>x.ex===ex);
-    if(e&&e.sets&&e.sets.length)return e.sets;
-  }
-  const tpls=hxWTemplates(ath);
-  let found=null;
-  ['Push','Pull'].forEach(t=>{ (tpls[t]||[]).forEach(x=>{ if(x.ex===ex&&x.seed)found=x.seed; }); });
-  return found;
-}
-function hxFmtSets(sets){ return sets?sets.map(s=>(s[0]==null||s[0]===''?'bw':s[0])+'×'+s[1]).join(', '):'—'; }
-function hxStartWorkout(type){
-  if(!hxCanEdit(false)){ alert('Sign in as '+HX.data.names[HX.view]+' to log their workout.'); return; }
-  const tpl=hxWTemplates(HX.view)[type]||[];
-  HX_WSES={type,entries:tpl.map(e=>({ex:e.ex,sets:[['','']]}))};
-  hxRenderWorkoutEditor();
-}
-function hxAddSet(i){ HX_WSES.entries[i].sets.push(['','']); hxRenderWorkoutEditor(); }
-function hxDelSet(i,j){ HX_WSES.entries[i].sets.splice(j,1); if(!HX_WSES.entries[i].sets.length)HX_WSES.entries[i].sets.push(['','']); hxRenderWorkoutEditor(); }
-function hxSetVal(i,j,c,v){ HX_WSES.entries[i].sets[j][c]=v; }
-function hxCancelWorkout(){ HX_WSES=null; hxRenderWorkoutEditor(); }
-function hxFinishWorkout(){
-  if(!HX_WSES)return;
-  const entries=HX_WSES.entries.map(e=>{
-    const sets=e.sets.filter(s=>s[1]!==''&&s[1]!=null).map(s=>[s[0]===''?null:parseFloat(s[0]),parseInt(s[1],10)]);
-    return {ex:e.ex,sets};
-  }).filter(e=>e.sets.length);
-  if(!entries.length){ alert('Log at least one set.'); return; }
-  const sess={type:HX_WSES.type,date:TODAYSTR,at:Date.now(),entries};
-  HX.data.wsessions[HX.view].push(sess);
-  HX_WSES=null;
-  hxSave();
-  hxRenderAll();
-  hxRenderWorkoutEditor();
-}
-function hxRenderWorkoutEditor(){
-  const el=document.getElementById('hx-workout-editor'); if(!el)return;
-  if(!HX_WSES){ el.innerHTML=''; el.style.display='none'; return; }
-  el.style.display='';
-  el.innerHTML=`<div class="card mb12">
-    <div class="flb mb12">
-      <span style="font-size:14px;font-weight:600">${HX_WSES.type} session</span>
-      <div class="fl" style="gap:6px"><button class="btn btnd" onclick="hxCancelWorkout()">Cancel</button><button class="btn btnp" onclick="hxFinishWorkout()">Finish</button></div>
-    </div>
-    ${HX_WSES.entries.length===0?'<div style="color:var(--text3);font-size:13px">No exercises in this template yet.</div>':HX_WSES.entries.map((e,i)=>{
-      const last=hxLastSets(HX.view,e.ex);
-      return `<div style="margin-bottom:12px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:2px">${e.ex}</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Last time: ${hxFmtSets(last)}</div>
-        ${e.sets.map((s,j)=>`<div style="display:grid;grid-template-columns:26px 1fr 1fr 28px;gap:6px;margin-bottom:5px">
-          <span style="font-size:11px;color:var(--text3);text-align:center">${j+1}</span>
-          <input class="inp inp-sm" type="number" placeholder="kg" value="${s[0]}" onchange="hxSetVal(${i},${j},0,this.value)">
-          <input class="inp inp-sm" type="number" placeholder="reps" value="${s[1]}" onchange="hxSetVal(${i},${j},1,this.value)">
-          <button class="btn-icon" onclick="hxDelSet(${i},${j})">✕</button>
-        </div>`).join('')}
-        <button class="btn" style="font-size:11px" onclick="hxAddSet(${i})">+ Add set</button>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-function hxRenderWorkoutSessions(){
-  const el=document.getElementById('hx-sessions'); if(!el)return;
-  const list=[...(HX.data.wsessions[HX.view]||[])].sort((a,b)=>b.at-a.at).slice(0,8);
-  el.innerHTML=list.length?list.map(s=>`
-    <div class="pi" style="align-items:flex-start">
-      <div>
-        <div style="font-size:13px;font-weight:600">${s.type} <span style="font-size:11px;color:var(--text3);font-weight:400">· ${s.date}</span></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${s.entries.map(e=>e.ex+' ('+hxFmtSets(e.sets)+')').join(' · ')}</div>
-      </div>
-    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions logged yet.</div>';
-}
-
 // ── PROGRESSION ──
 function renderTrend(){
   const sel=document.getElementById('fit-trend-ex');if(!sel)return;
@@ -5045,6 +4358,519 @@ function renderTrend(){
   });
 }
 
+// ── GOLF PRACTICE ──
+// Ported from golf-practice/reference.html. Drill/session data below is copied verbatim from it.
+// Persistence: saved sessions + custom picks live in S (golfSessions/golfPicks, synced like the
+// rest of the app); in-progress drafts and the active session choice are per-device (own LS keys).
+(function(){
+const root=document.getElementById('page-golf');
+if(!root)return;
+/* ---------- stick diagrams ---------- */
+const topv=inner=>`<svg viewBox="0 0 64 80" aria-hidden="true"><line x1="32" y1="2" x2="32" y2="10" stroke="var(--flag)" stroke-width="2"/><polygon points="32,2 40,5 32,8" fill="var(--flag)"/><text x="44" y="9" font-size="7" fill="var(--muted)" font-family="sans-serif">target</text>${inner}</svg>`;
+const frontv=inner=>`<svg viewBox="0 0 64 80" aria-hidden="true"><text x="2" y="9" font-size="7" fill="var(--muted)" font-family="sans-serif">← target</text>${inner}</svg>`;
+const STK='stroke="var(--turf)" stroke-width="3.5" stroke-linecap="round"';
+const INK='stroke="var(--ink)" stroke-width="2" stroke-linecap="round" fill="none"';
+const BALL=(x=32,y=60)=>`<circle cx="${x}" cy="${y}" r="3.5" fill="var(--ink)"/>`;
+const D_AIM=topv(`<line x1="18" y1="36" x2="18" y2="76" ${STK}/>${BALL()}`);
+const D_BALLPOS=topv(`<line x1="18" y1="36" x2="18" y2="76" ${STK}/><line x1="8" y1="60" x2="40" y2="60" ${STK}/>${BALL()}`);
+const D_RAILS=topv(`<line x1="18" y1="36" x2="18" y2="76" ${STK}/><line x1="44" y1="36" x2="44" y2="76" ${STK}/>${BALL()}`);
+const D_GATE=topv(`<line x1="18" y1="36" x2="18" y2="76" ${STK}/><line x1="30" y1="18" x2="30" y2="30" ${STK}/>${BALL()}<path d="M33 56 C38 42 38 28 33 14" fill="none" stroke="var(--muted)" stroke-dasharray="2 3" stroke-width="1.5"/>`);
+const D_FADE=topv(`<line x1="14" y1="40" x2="22" y2="76" ${STK}/><line x1="30" y1="18" x2="30" y2="30" ${STK}/>${BALL()}<path d="M31 56 C26 42 26 28 31 14" fill="none" stroke="var(--muted)" stroke-dasharray="2 3" stroke-width="1.5"/>`);
+const D_DRIVER=topv(`<line x1="18" y1="36" x2="18" y2="76" ${STK}/><line x1="8" y1="52" x2="40" y2="52" ${STK}/>${BALL(32,52)}`);
+const BODY=`<circle cx="32" cy="16" r="5" ${INK}/><line x1="32" y1="21" x2="32" y2="46" ${INK}/><line x1="32" y1="46" x2="24" y2="76" ${INK}/><line x1="32" y1="46" x2="40" y2="76" ${INK}/>`;
+const D_LEADSIDE=frontv(`${BODY}<line x1="26" y1="26" x2="33" y2="50" ${INK}/><line x1="38" y1="26" x2="33" y2="50" ${INK}/><line x1="33" y1="50" x2="38" y2="76" stroke="var(--muted)" stroke-width="2"/><line x1="33" y1="50" x2="20" y2="22" ${STK}/>`);
+const D_SHOULDER=frontv(`${BODY}<line x1="10" y1="27" x2="54" y2="27" ${STK}/><path d="M14 36 Q32 44 50 36" fill="none" stroke="var(--flag)" stroke-width="1.5"/><polygon points="50,36 45,35 47,40" fill="var(--flag)"/>`);
+
+const sidev=inner=>`<svg viewBox="0 0 64 80" aria-hidden="true"><text x="2" y="9" font-size="7" fill="var(--muted)" font-family="sans-serif">side view</text>${inner}</svg>`;
+const D_STICKBUM=sidev(`<circle cx="44" cy="17" r="5" ${INK}/><line x1="41" y1="22" x2="26" y2="44" ${INK}/><line x1="26" y1="44" x2="31" y2="77" ${INK}/><line x1="38" y1="27" x2="44" y2="54" ${INK}/><line x1="44" y1="54" x2="55" y2="77" stroke="var(--muted)" stroke-width="2"/><line x1="20" y1="28" x2="20" y2="78" ${STK}/>`);
+const D_FOREARM=`<svg viewBox="0 0 64 80" aria-hidden="true"><text x="2" y="9" font-size="7" fill="var(--muted)" font-family="sans-serif">lead arm at the top</text><line x1="10" y1="72" x2="38" y2="34" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/><circle cx="42" cy="29" r="5" fill="var(--ink)"/><line x1="44" y1="27" x2="60" y2="14" stroke="var(--muted)" stroke-width="2"/><line x1="6" y1="70" x2="44" y2="23" ${STK}/></svg>`;
+const IRON_L=[["L","Hook","l"],["F","Good draw","f"],["R","Straight / right","r"]];
+const DRV_L=[["L","Left","l"],["F","Fairway","f"],["R","Right","r"]];
+const CLUBS=["50°","54°","58°"], LENS=["9:00","10:30","Full"];
+
+const CATS={
+  setup:{title:"Set up",text:"Sticks down, aim checked, body loose. Do these first."},
+  flip:{title:"Flip + face",text:"Irons and wedges at controlled speed. Lead wrist flat, toe up, body turning through."},
+  posture:{title:"Posture",text:"Keep your hips back and your spine angle through the strike so your arms have room."},
+  over:{title:"Backswing + turn",text:"Set your wrists once, keep them there, and let a bigger body turn make the length."},
+  tempo:{title:"Tempo",text:"The same rhythm at every speed, so a harder swing doesn't mean a longer one."},
+  target:{title:"Targets",text:"Take the feels onto targets and score them. Full routine on every ball.",tgt:true}
+};
+const CAT_ORDER=["setup","flip","posture","over","tempo","target"];
+
+const LIB=[
+ /* ---- set up ---- */
+ {id:"setup",cat:"setup",rec:true,title:"Sticks + aim check",min:3,balls:0,club:"Any club",sticks:1,
+  summary:"Find out where you really aim, then set your toe-line stick.",
+  diagram:D_AIM,stickNote:"<b>Stick 1</b> on the ground along your toe line, parallel left of the target. It stays there all session.",
+  why:"<b>Why:</b> you've never checked your aim, and a closed setup makes the hook worse.",
+  steps:["Before putting any sticks down, set up to a flag the way you normally would.",
+    "Lay stick 1 along your toes, step back behind it and see where it points. Record it below.",
+    "Move it so it runs parallel left of the target line, like a railway track."],
+  scores:[{key:"aim",type:"choice",label:"Where you were aiming",opts:["Right","Square","Left"]}]},
+ {id:"warm",cat:"setup",rec:true,title:"Warm-up",min:4,balls:9,club:"58° → PW",sticks:0,warm:true,
+  summary:"Turn-focused mobility, then easy wedges before any speed.",
+  steps:["1 minute: 10 leg swings each side, then 10 open-book rotations each side. Make the rotations big, because more turn is what you're training today.",
+    "5 half swings with the 58°, then 4 three-quarter PWs. Hold each finish."]},
+
+ /* ---- flip ---- */
+ {id:"toeup",cat:"flip",rec:true,title:"Toe up to toe up",min:5,balls:8,club:"PW or 8-iron",sticks:2,fixes:"Face shutting",
+  summary:"Hip-high swings between two rails. The toe points up on both sides of the ball.",
+  diagram:D_RAILS,stickNote:"Leave stick 1 on your toe line. Lay <b>stick 2</b> parallel to it, a few inches past the ball. The ball sits between the rails.",
+  why:"<b>Fixes:</b> the face shutting. If your hands roll the club over, it shows straight away at hip height.",
+  feel:[["Back","At hip height the shaft is parallel to the sticks and the toe points to the sky."],["Through","At hip height the shaft is parallel again and the toe points to the sky, not the ground."],["Check","Hold the through position for a second after every ball."]],
+  steps:["Hip-high to hip-high swings at 60%.","If the toe points down through the ball, you flipped. Turn your chest more and keep your hands quieter.","Tap the result for every ball."],
+  scores:[{key:"toeup",type:"hit",label:"Through position",yes:"Toe up",no:"Rolled over",max:8,log:"Toe up through"}]},
+ {id:"leadside",cat:"flip",title:"Lead-side stick drill",min:8,balls:12,club:"8-iron",sticks:1,fixes:"Cupped lead wrist",
+  summary:"A stick gripped with the club. If you flip, it hits your side.",
+  diagram:D_LEADSIDE,stickNote:"Hold <b>stick 2</b> against the grip and grip them together, so about 60 cm of stick sticks up past your lead hip.",
+  why:"<b>Fixes:</b> the cupped lead wrist. If the clubhead passes your hands, the stick hits your side and you feel the flip straight away.",
+  safety:"Half swings only with the stick in, 9 o'clock to 3 o'clock at 50–60%. Never a full swing.",
+  feel:[["Through","Your hands lead and your lead wrist stays flat. Your chest keeps turning, so the stick stays clear of your side."],["Finish","Swing to 3 o'clock only, with your belt buckle facing left of the target."]],
+  steps:["Hit 2 balls with the stick, then 1 without it using the same feel. Repeat 4 times.","On the balls without the stick, picture it there and check the finish.","Score every ball: did the stick stay clear, or would it have?"],
+  scores:[{key:"lead",type:"hit",label:"Lead side",yes:"Stick clear",no:"Hit my side",max:12,log:"Lead-side stick clear"}]},
+ {id:"opentrail",cat:"flip",rec:true,title:"Flat trail hand",min:5,balls:8,club:"PW or 9-iron",sticks:0,fixes:"Trail hand flipping",
+  summary:"Trail hand open and flat against the grip. It can push the club through, but it can't flip it.",
+  why:"<b>Fixes:</b> the flip. Wrapped trail fingers can throw the clubhead past your hands. A flat trail palm can only push, so your lead wrist stays flat and the face stays quiet.",
+  feel:[["Grip","Lead hand as normal. Trail hand open, palm flat against the side of the grip, facing the target. Fingers straight down the shaft, thumb alongside."],["Through","Push the trail palm toward the target as your chest turns. The trail wrist stays bent back through impact."],["Check","At hip height through, the trail palm still faces down the target line. Not rolled over to the ground, not turned up to the sky."]],
+  steps:["Make 2 rehearsals first, hip high to chest high.","8 balls at 60%. Swing back only as far as you can keep the palm on the grip.","If the palm comes off the grip, rolls over or turns up, score it as a flip."],
+  scores:[{key:"trail",type:"hit",label:"Trail palm",yes:"Held flat",no:"Flipped / rolled",max:8,log:"Trail palm held flat"}]},
+ {id:"holdoff",cat:"flip",rec:true,title:"Hold-off three-quarters",min:6,balls:10,club:"7-iron",sticks:2,fixes:"Hook at speed",
+  summary:"Three-quarter 7-irons through a start-line gate, finishing with the face to the sky.",
+  diagram:D_GATE,stickNote:"<b>Stick 2 as a start-line gate.</b> On grass, push it into the ground about 3 metres ahead, on the target line. On mats, lay it flat from in front of the ball, pointing about 5 yards right of the flag.",
+  why:"<b>Fixes:</b> the hook at speed. Ball flight is the feedback.",
+  feel:[["Back","Lead arm to 10 o'clock, about three-quarters. 80% speed."],["Finish","Hands chest high, clubface pointing at the sky, lead wrist flat."],["Ball","Starts just right of the stick and draws back a little."]],
+  steps:["10 balls at one flag. Use the flat-trail-hand feel with your normal grip.","Hit a hook? Make your next swing a no-ball rehearsal of your finish, then hit again.","Tap every ball."],
+  scores:[{key:"hold",type:"tally3",label:"Ball flight",labels:IRON_L,max:10,log:"Hold-off good draws"}]},
+ {id:"split",cat:"flip",title:"Split-hand swings",min:5,balls:8,club:"8-iron or PW",sticks:0,fixes:"Trail hand taking over",
+  summary:"Hands apart on the grip. You feel it straight away if your trail hand overtakes your lead hand.",
+  why:"<b>Fixes:</b> the flip. Splitting your hands exaggerates what each one is doing.",
+  feel:[["Grip","Hands 5–8 cm apart on the grip."],["Through","Your lead hand stays ahead of your trail hand past impact. The butt of the club points at your lead hip, not your belly."]],
+  steps:["Half swings, 9 o'clock to 3 o'clock, at 60%.","Hold the 3 o'clock position and check the butt of the club after every ball.","8 balls."],
+  scores:[{key:"split",type:"hit",label:"Through the ball",yes:"Lead hand led",no:"Trail took over",max:8,log:"Split-hand lead hand led"}]},
+ {id:"leadarm",cat:"flip",title:"Lead-arm-only swings",min:4,balls:6,club:"PW or 58°",sticks:0,fixes:"Cupped lead wrist",
+  summary:"One arm only. A flat lead wrist is the only way to strike it solidly.",
+  why:"<b>Fixes:</b> the cupped lead wrist. Without your trail hand there's nothing to rescue the face.",
+  feel:[["Impact","The back of your lead hand faces the target and your lead wrist is flat or slightly bowed."]],
+  steps:["Grip down an inch. Put your trail hand on your lead shoulder.","Make 3 rehearsals, then hit 1 ball, with 8 o'clock to 4 o'clock swings at slow speed.","6 balls in total."],
+  scores:[{key:"leadarm",type:"hit",label:"Strike",yes:"Flat wrist, solid",no:"Cupped / thin",max:6,log:"Lead-arm flat wrist"}]},
+ {id:"teefront",cat:"flip",title:"Ball then tee",min:5,balls:8,club:"9-iron or PW",sticks:0,fixes:"Scooping",
+  summary:"A tee in the ground in front of the ball. Hit the ball, then the tee.",
+  why:"<b>Fixes:</b> flipping and scooping. You can only clip the tee after the ball if your hands are ahead at impact.",
+  steps:["On grass, push a tee into the ground about 10 cm in front of the ball, on the target line, flush with the ground. On mats, lay a tee flat in the same spot.",
+    "Three-quarter swings at 75%.","Hit the ball first, then the tee."],
+  scores:[{key:"tee",type:"hit",label:"Contact",yes:"Ball then tee",no:"Missed / behind",max:8,log:"Ball then tee"}]},
+ {id:"fade",cat:"flip",title:"Fade on demand",min:5,balls:6,club:"8-iron",sticks:2,fixes:"Face control",
+  summary:"Curve it right on purpose to learn to hold the face off instead of timing it.",
+  diagram:D_FADE,stickNote:"Angle <b>stick 1</b> a touch left of the target for an open stance. Keep <b>stick 2</b> as a start-line gate on the target line.",
+  why:"<b>Fixes:</b> the face shutting. If you can make the ball go right on purpose, you control the face.",
+  feel:[["Setup","Clubface aimed at the flag, stance along the angled stick."],["Finish","Hold the face off through the finish. Toe up, no roll."]],
+  steps:["6 balls. The ball should start at or just left of the stick and curve right.","Any curve right at all counts."],
+  scores:[{key:"fade",type:"hit",label:"Ball flight",yes:"Curved right",no:"Straight / left",max:6,log:"Fades on demand"}]},
+
+ /* ---- posture ---- */
+ {id:"stickbum",cat:"posture",rec:true,title:"Stick behind backside",min:5,balls:8,club:"7-iron",sticks:1,fixes:"Standing up / early extension",
+  summary:"A stick upright behind you. Keep your backside on it through impact so your hips don't move toward the ball.",
+  diagram:D_STICKBUM,stickNote:"On grass, push <b>stick 2</b> into the ground just behind you, upright, so it lightly touches your backside at address. On mats, stand it upright in your bag or the ball basket behind you.",
+  why:"<b>Fixes:</b> your hips moving about 2 inches toward the ball at impact, as on your video. Keeping them back gives your arms room, so your hands don't need to flip.",
+  feel:[["Address","Backside just touching the stick."],["Down","Your lead hip moves back toward the stick, not away from it. Keep contact through impact."],["Head","Stays at the same height until the ball has gone."]],
+  steps:["2 slow rehearsals, then hit 1 ball at 70%. Repeat until you've hit 8.","Score each ball: did you stay on the stick through impact?"],
+  scores:[{key:"stickbum",type:"hit",label:"Posture",yes:"Kept contact",no:"Moved off it",max:8,log:"Stayed on the stick"}]},
+
+ /* ---- overswing ---- */
+ {id:"turn",cat:"over",title:"Shoulder-stick turn",min:2,balls:0,club:"No club",sticks:1,fixes:"Arms outrunning the turn",
+  summary:"A stick across your shoulders shows where your backswing really ends.",
+  diagram:D_SHOULDER,stickNote:"Hold <b>stick 2</b> across the front of your shoulders, arms crossed over it.",
+  why:"<b>Fixes:</b> overswing. It shows where your body's backswing ends. Your arms should stop there too.",
+  steps:["Get into driver posture with the stick across your shoulders.","Turn back until the stick points at the ball, or just behind it. That's a full turn.","5 slow reps, with your trail knee flexed and your head steady.","Pick up the driver and make 3 practice swings where your hands stop as soon as your shoulders stop."]},
+ {id:"wristcheck",cat:"over",rec:true,title:"Forearm-stick wrist check",min:2,balls:0,club:"Driver",sticks:1,fixes:"Wrist collapse at the top",
+  summary:"A stick along your lead forearm. If your wrist cups or over-hinges at the top, it comes away from your arm.",
+  diagram:D_FOREARM,stickNote:"Slide one end of <b>stick 2</b> under the Velcro strap on the back of your glove, so the stick lies flat along the back of your lead forearm.",
+  why:"<b>Fixes:</b> all three parts of your collapse. The stick shows a cupped or over-hinged lead wrist, and the tray check catches a loose trail hand.",
+  safety:"Rehearsals only, in slow motion, no balls. Keep the far end of the stick clear of your face.",
+  feel:[["Lead wrist","Flat at the top. The stick stays touching your forearm all the way up."],["Hinge","The shaft stops at or short of parallel, with your lead thumb under the shaft."],["Trail hand","Under the shaft like a waiter holding a tray, fingers still wrapped. The club hasn't sunk into your palm."]],
+  steps:["5 slow-motion swings to the top with the stick on. Hold each top for 2 seconds and check all three points.","Take the stick off and make 3 more, copying the same top.","Score each rep."],
+  scores:[{key:"wrist",type:"hit",label:"Top position (reps)",yes:"Stick on, hands firm",no:"Gap / loose",max:8,log:"Wrists set at the top"}]},
+ {id:"preset",cat:"over",rec:true,title:"Pre-set and turn",min:6,balls:10,club:"7-iron → Driver",sticks:0,fixes:"Not turning enough",
+  summary:"Set your wrists before you start. The backswing is then only your body turning.",
+  why:"<b>Fixes:</b> not rotating enough, and the wrists making up the length instead. With the hinge already set, your body has to make the backswing and your hands just go along with it.",
+  feel:[["Pre-set","At address, hinge your wrists so the clubhead rises in front of you until the shaft is about level with the ground. Your arms don't move. Lead wrist flat, trail hand firm."],["Turn","Keep that exact wrist set and turn your chest until your back faces the target. Let your lead heel come up a little if it helps you turn further."],["Top","Your hands stop where the turn stops."]],
+  steps:["5 balls with the 7-iron, then 5 drivers off a tee, all at 70%.","Pre-set, turn, then swing down without re-setting your wrists at the top.","Score it as held if your wrists didn't add any hinge at the top."],
+  scores:[{key:"preset",type:"hit",label:"Top",yes:"Full turn, wrists held",no:"Wrists added hinge",max:10,log:"Turned with wrists held"}]},
+ {id:"pause",cat:"over",rec:true,title:"Pause at the top",min:7,balls:12,club:"Driver",sticks:2,fixes:"Wrist collapse + re-grip",
+  summary:"Hold the top for 2 seconds. You score the top position, not the shot.",
+  diagram:D_DRIVER,stickNote:"<b>Stick 2</b> across stick 1, pointing at the ball off your lead heel. Medium tee height.",
+  why:"<b>Fixes:</b> wrist collapse and re-gripping. You can't hold a collapsed top for 2 seconds.",
+  feel:[["Top","Shaft at or short of parallel. The same flat lead wrist as the forearm-stick check, and your back to the target."],["Grip","The last three fingers of your lead hand stay firm and your trail hand stays a tray under the shaft. No opening and closing."],["Down","Swing from the pause at 75%. It'll feel short. That's the point."]],
+  steps:["Swing to the top, hold for 2 seconds, check, then go.","Score the top: at or short of parallel, with no re-grip?","If you go long two balls in a row, make one forearm-stick rehearsal before the next ball."],
+  scores:[{key:"pause",type:"hit",label:"Top position",yes:"In control",no:"Too long / re-grip",max:12,log:"Top in control"}]},
+ {id:"feet",cat:"over",title:"Feet-together driver",min:4,balls:8,club:"Driver",sticks:0,fixes:"Overswing + lunging",
+  summary:"With your feet touching, any extra length or effort throws you off balance.",
+  why:"<b>Fixes:</b> overswing and lunging. The swing gets compact on its own.",
+  steps:["Feet touching, ball just forward of centre, 70% speed.","Use the pause-drill backswing length, without the pause.","Hold every finish for 3 seconds."],
+  scores:[{key:"feet",type:"hit",label:"Finish",yes:"Balanced",no:"Lost balance",max:8,log:"Balanced finish"}]},
+ {id:"armpit",cat:"over",title:"Headcover under the arm",min:5,balls:8,club:"Driver",sticks:0,fixes:"Arms running away",
+  summary:"A headcover under your lead armpit stays put only if your arms and body move together.",
+  why:"<b>Fixes:</b> your arms running on after your body stops, which is where the extra length comes from.",
+  steps:["Tuck a headcover or glove under your lead armpit.","Three-quarter swings at 70%. It should stay in place until after impact.","8 balls."],
+  scores:[{key:"armpit",type:"hit",label:"Headcover",yes:"Kept it",no:"Dropped it",max:8,log:"Kept the headcover"}]},
+
+ /* ---- tempo ---- */
+ {id:"tempo",cat:"tempo",title:"One-two-three count",min:5,balls:8,club:"Driver",sticks:0,fixes:"Rushing at speed",
+  summary:"The same count at 80% and at 100%, so more speed doesn't mean a longer swing.",
+  why:"<b>Fixes:</b> the backswing getting longer and quicker when you go after it.",
+  feel:[["Count","Say \"one-two\" on the way back so you reach the top on \"two\". \"Three\" is impact."]],
+  steps:["4 balls at 80% speed, then 4 at 100%, with the same count for both.","If the 100% swings need a longer \"two\", you overswung. Score it as rushed."],
+  scores:[{key:"tempo",type:"hit",label:"Rhythm",yes:"Kept the count",no:"Rushed / long",max:8,log:"Kept the count"}]},
+
+ /* ---- targets ---- */
+ {id:"dlad",cat:"target",rec:true,title:"Driver speed ladder",min:8,balls:15,club:"Driver",sticks:2,
+  summary:"5 drives each at 80%, 90% and 100%, to find where the miss starts.",
+  diagram:D_DRIVER,stickNote:"<b>Stick 2</b> across stick 1, pointing at the ball off your lead heel.",
+  why:"<b>Why:</b> your stock driver speed is the fastest one that stays in the fairway.",
+  steps:["Pick a 35-yard fairway.","5 balls at 80%, 5 at 90%, 5 at 100%. Hold every finish for 3 seconds.","Tap the result for every ball in the row for that speed."],
+  scores:[{key:"dl1",type:"tally3",label:"80% speed",labels:DRV_L,max:5,log:"Driver 80% fairways"},{key:"dl2",type:"tally3",label:"90% speed",labels:DRV_L,max:5,log:"Driver 90% fairways"},{key:"dl3",type:"tally3",label:"100% speed",labels:DRV_L,max:5,log:"Driver 100% fairways"}]},
+ {id:"fw",cat:"target",rec:true,title:"Fairway challenge",min:9,balls:20,club:"Driver",sticks:2,
+  summary:"20 drives at 90% into 35-yard fairways, recorded left, fairway or right.",
+  diagram:D_DRIVER,stickNote:"Keep both sticks down. Turn to face each new fairway and move stick 1 so it stays parallel.",
+  why:"<b>Why:</b> your drill feels under your routine. This is the number to track every week.",
+  steps:["Pick two markers about 35 yards apart as the fairway. Change to a new fairway every 4 balls.","Use your stock speed from the ladder and the pause-drill top, without the pause.","Full routine on every ball. Target: 12 or more out of 20, with misses spread evenly left and right."],
+  scores:[{key:"drive",type:"tally3",label:"Tee shots",labels:DRV_L,max:20}]},
+ {id:"press",cat:"target",title:"Pressure five",min:3,balls:5,club:"Driver",sticks:0,
+  summary:"Five drives into a 25-yard fairway. Hit 4 to pass.",
+  steps:["Pick a 25-yard fairway. Hit 4 out of 5 to pass.","Same swing every ball. The only thing that changes is your target."],
+  scores:[{key:"press",type:"tally3",label:"Pressure tee shots",labels:DRV_L,max:5}]},
+ {id:"appr",cat:"target",title:"Approach game",min:4,balls:11,club:"58° → 7-iron",sticks:0,
+  summary:"A new club and target every ball, finishing with the face held off.",
+  steps:["For each ball, pick a new flag and the club for it.","Use the hold-off finish on every shot. It scores if it lands in a green-sized circle, about 15 yards across.","Target: 6 or more out of 11."],
+  scores:[{key:"green",type:"hit",label:"Greens hit",yes:"Green",no:"Miss",max:11}]},
+ {id:"irons",cat:"target",title:"Iron windows",min:12,balls:15,club:"9i · 7i · 5i",sticks:2,
+  summary:"5 balls each with three irons through a start-line gate.",
+  diagram:D_GATE,stickNote:"<b>Stick 2</b> as a start-line gate, as in the hold-off drill.",
+  steps:["5 balls each with the 9-iron, 7-iron and 5-iron, at a different flag for each club.","It scores if it starts right of the stick and finishes within a flag-width of the target.","Two hooks in a row? Hit the next ball as a hold-off three-quarter."],
+  scores:[{key:"iron",type:"tally3",label:"Ball flight",labels:IRON_L,max:15,log:"Iron windows good draws"}]},
+ {id:"wedgem",cat:"target",title:"Wedge matrix",min:10,balls:18,club:"50° · 54° · 58°",sticks:2,
+  summary:"Three swing lengths with three wedges. Type each carry into a grid.",
+  diagram:D_BALLPOS,stickNote:"<b>Stick 2</b> across stick 1, pointing at the ball in the middle of your stance.",
+  why:"<b>Why:</b> after a 290-yard drive you'll often have a wedge in. Knowing your carries saves shots.",
+  steps:["Swing lengths: lead arm to 9 o'clock, to 10:30, and full.","2 balls per club per length, 18 in total. Judge each carry against the range flags.","Type the carries in the grid. Last session's numbers show in grey."],
+  scores:[{key:"matrix",type:"matrix"}]}
+];
+const BY_ID=Object.fromEntries(LIB.map(d=>[d.id,d]));
+const SCORE_DEFS={};for(const d of LIB)for(const s of d.scores||[])SCORE_DEFS[s.key]=s;
+const REC=LIB.filter(d=>d.rec).map(d=>d.id);
+/* Two fixed sessions built from the 11 chosen drills. Overrides change balls, minutes, steps and score max for that session only. */
+const SESSIONS={
+ A:{name:"Flip + posture",short:"Irons · release",items:[
+  {id:"setup"},
+  {id:"warm"},
+  {id:"toeup",balls:16,min:9,max:16,steps:["Hip-high to hip-high swings at 60%.","First 8 with the PW, then 8 with the 8-iron.","If the toe points down through the ball, you flipped. Turn your chest more and keep your hands quieter.","Tap the result for every ball."]},
+  {id:"opentrail",balls:16,min:9,max:16,steps:["Make 2 rehearsals first, hip high to chest high.","8 balls with the PW at 60%, then 8 with the 9-iron at 70%. Swing back only as far as you can keep the palm on the grip.","If the palm comes off the grip, rolls over or turns up, score it as a flip."]},
+  {id:"stickbum",balls:16,min:9,max:16,steps:["First 8 balls: 2 slow rehearsals, then hit 1 ball at 70%.","Last 8 balls: 1 rehearsal, then hit at 80%.","Score each ball: did you stay on the stick through impact?"]},
+  {id:"holdoff",balls:18,min:9,max:18,steps:["18 balls at one flag: 6 at 70%, 6 at 80%, 6 at 90%. Use the flat-trail-hand feel with your normal grip.","Hit a hook? Make your next swing a no-ball rehearsal of your finish, then hit again.","Tap every ball."]},
+  {id:"irons",min:10},
+  {id:"appr",balls:10,min:7,max:10,steps:["For each ball, pick a new flag and the club for it, from the 58° to the 7-iron.","Use the hold-off finish on every shot. It scores if it lands in a green-sized circle, about 15 yards across.","Target: 6 or more out of 10."]}
+ ]},
+ B:{name:"Wrists, turn + driver",short:"Driver · backswing",items:[
+  {id:"setup"},
+  {id:"warm",balls:15,min:6,club:"58° → Driver",steps:["1 minute: 10 leg swings each side, then 10 big open-book rotations each side.","5 half swings with the 58°, 5 seven-irons at 75%, then 5 drivers at 70%. Hold each finish."]},
+  {id:"wristcheck",min:4,max:12,steps:["8 slow-motion swings to the top with the stick on. Hold each top for 2 seconds and check all three points.","Take the stick off and make 4 more, copying the same top.","Score each rep."]},
+  {id:"preset",balls:20,min:11,max:20,steps:["8 balls with the 7-iron, then 12 drivers off a tee, all at 70%.","Pre-set, turn, then swing down without re-setting your wrists at the top.","Score it as held if your wrists didn't add any hinge at the top."]},
+  {id:"pause",balls:20,min:11,max:20,steps:["Swing to the top, hold for 2 seconds, check, then go.","First 10 at 75%, last 10 at 85%. Keep the same top as the speed goes up.","Score the top: at or short of parallel, with no re-grip?","If you go long two balls in a row, make one forearm-stick rehearsal before the next ball."]},
+  {id:"dlad",min:9},
+  {id:"fw",balls:25,min:13,max:25,steps:["Pick two markers about 35 yards apart as the fairway. Change to a new fairway every 5 balls.","Use your stock speed from the ladder and the pause-drill top, without the pause.","Full routine on every ball. Target: 15 or more out of 25, with misses spread evenly left and right."]},
+  {id:"press"}
+ ]}
+};
+function resolveItem(it){const d=BY_ID[it.id];const o={...d,...it};if(it.max&&d.scores)o.scores=d.scores.map(sc=>({...sc,max:it.max}));return o}
+const IN_SESS={};for(const[k,S]of Object.entries(SESSIONS))for(const it of S.items)(IN_SESS[it.id]||(IN_SESS[it.id]=[])).push(k);
+
+/* ---------- state ---------- */
+const store={get(k,d){try{const v=LS.get(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{LS.set(k,JSON.stringify(v))}catch(e){}}};
+const blank=()=>({done:{},open:{},scores:{},notes:"",aim:null,matrix:{}});
+let drafts=store.get("harvey-golf-drafts",null)||{};for(const k of ["A","B","C"])drafts[k]=Object.assign(blank(),drafts[k]||{});
+let sessKey=store.get("harvey-golf-sess",null);
+if(sessKey!=="A"&&sessKey!=="B"&&sessKey!=="C")sessKey=null;
+let state=drafts[sessKey||"A"];
+let libOpen={}, filter="all", view="lib";
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const getPicks=()=>Array.isArray(S.golfPicks)?S.golfPicks.filter(id=>BY_ID[id]):REC.slice();
+const setPicks=p=>{S.golfPicks=p;saveState()};
+const getSessions=()=>Array.isArray(S.golfSessions)?S.golfSessions:[];
+function saveDraft(){store.set("harvey-golf-drafts",drafts)}
+function scrollTop0(){const m=document.querySelector('.main');if(m)m.scrollTo({top:0})}
+function orderedPicks(){const picks=getPicks();return CAT_ORDER.flatMap(c=>LIB.filter(d=>d.cat===c&&picks.includes(d.id)))}
+function nextUp(){const last=[...getSessions()].sort((a,b)=>b.createdAt-a.createdAt).find(x=>x.session==="A"||x.session==="B");return last?(last.session==="A"?"B":"A"):"A"}
+function activeKey(){return sessKey||nextUp()}
+function currentItems(){const k=activeKey();return k==="C"?orderedPicks():SESSIONS[k].items.map(resolveItem)}
+function setSession(k){sessKey=k;store.set("harvey-golf-sess",k);state=drafts[k]}
+function totals(list){const balls=list.reduce((s,d)=>s+d.balls,0),min=list.reduce((s,d)=>s+d.min,0);
+  const drill=list.filter(d=>!d.warm&&d.cat!=="target"&&d.cat!=="setup").reduce((s,d)=>s+d.balls,0);
+  const tgt=list.filter(d=>d.cat==="target").reduce((s,d)=>s+d.balls,0);
+  const drv=list.filter(d=>d.club==="Driver").reduce((s,d)=>s+d.balls,0);
+  return{balls,min,drill,tgt,warm:balls-drill-tgt,drv}}
+function stickTag(n){return n===0?"No sticks":n===1?"1 stick":"2 sticks"}
+
+/* ---------- shared renderers ---------- */
+function detailHTML(d){
+  return `${d.why?`<p class="gf-why">${d.why}</p>`:''}
+    ${d.stickNote?`<div class="gf-sticks">${d.diagram||''}<p>${d.stickNote}</p></div>`:''}
+    ${d.safety?`<p class="gf-safety">${d.safety}</p>`:''}
+    ${d.feel?`<dl class="gf-feel">${d.feel.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`:''}
+    <ol class="gf-steps">${d.steps.map(s=>`<li>${s}</li>`).join("")}</ol>`;
+}
+function tagsHTML(d,withRec){
+  return `<span class="gf-tags">${withRec?(IN_SESS[d.id]||[]).map(k=>`<span class="gf-sbadge ${k==="B"?"b":""}">Session ${k}</span>`).join(""):''}${d.fixes?`<span class="gf-tag-fix">${esc(d.fixes)}</span>`:''}<span class="gf-mono">${d.balls?d.balls+' balls':'no balls'}</span><span class="gf-mono">${d.min} min</span><span>${esc(d.club)}</span><span>${stickTag(d.sticks)}</span></span>`;
+}
+
+/* ---------- library ---------- */
+function renderChips(){
+  const opts=[["all","All"],["sA","Session A"],["sB","Session B"],["picked","My picks"],...CAT_ORDER.map(c=>[c,CATS[c].title])];
+  $("#gf-chips").innerHTML=opts.map(([k,l])=>`<button class="wkb ${filter===k?'active':''}" data-filter="${k}" aria-pressed="${filter===k}">${l}</button>`).join("");
+}
+function renderLib(){
+  renderChips();
+  const picks=getPicks();
+  let html="";
+  for(const c of CAT_ORDER){
+    let items=LIB.filter(d=>d.cat===c);
+    if(filter==="sA"||filter==="sB")items=items.filter(d=>(IN_SESS[d.id]||[]).includes(filter.slice(1)));
+    else if(filter==="picked")items=items.filter(d=>picks.includes(d.id));
+    else if(filter!=="all"&&filter!==c)items=[];
+    if(!items.length)continue;
+    html+=`<div><div class="gf-cat"><span class="gf-eyebrow">${items.length} drill${items.length>1?'s':''}</span><h2>${CATS[c].title}</h2><p>${CATS[c].text}</p></div><ul class="gf-list" style="margin-top:10px">`;
+    html+=items.map(d=>{const on=picks.includes(d.id),open=!!libOpen[d.id];return `<li class="gf-card ${on?'picked':''}">
+      <div class="gf-lrow"><input type="checkbox" id="gf-pk-${d.id}" data-pick="${d.id}" ${on?'checked':''}>
+        <label class="gf-lmain" for="gf-pk-${d.id}"><span class="gf-lt">${d.title}</span><span class="gf-ls">${d.summary}</span>${tagsHTML(d,true)}</label></div>
+      <button class="gf-more" data-more="${d.id}" aria-expanded="${open}">${open?'Hide how to do it ▴':'How to do it ▾'}</button>
+      ${open?`<div class="gf-ldetail">${detailHTML(d)}</div>`:''}</li>`}).join("");
+    html+=`</ul></div>`;
+  }
+  $("#gf-lib").innerHTML=html||`<div class="gf-empty"><b>Nothing picked yet</b><span>Switch to All and tick the drills you want.</span></div>`;
+  renderPickDock();
+}
+function renderPickDock(){
+  const list=orderedPicks(),t=totals(list);
+  $("#gf-pdTotals").textContent=`${list.length} drill${list.length===1?'':'s'} · ${t.balls} balls · ${t.min} min`;
+  const notes=[];
+  if(t.balls>100)notes.push(`${t.balls-100} balls over 100`);
+  if(t.min>60)notes.push(`${t.min-60} min over the hour`);
+  const nEl=$("#gf-pdNote");
+  nEl.textContent=notes.length?notes.join(" · "):(t.balls?`${t.drill} drill · ${t.tgt} target · ${t.drv} drivers`:"Pick drills to build your hour");
+  nEl.classList.toggle("warn",!!notes.length);
+  const b=t.balls||1;
+  $("#gf-pdSplit").innerHTML=`<span class="d" style="width:${t.drill/b*100}%"></span><span class="w" style="width:${t.warm/b*100}%"></span><span class="t" style="width:${t.tgt/b*100}%"></span>`;
+  $("#gf-startSession").disabled=!list.length;
+}
+
+/* ---------- session ---------- */
+function lastMatrix(){const s=[...getSessions()].sort((a,b)=>b.createdAt-a.createdAt).find(s=>s.matrix&&Object.keys(s.matrix).length);return s?s.matrix:{}}
+function renderScore(sc){
+  if(sc.type==="choice"){
+    return `<div class="gf-score"><div class="gf-lab"><span>${sc.label}</span></div><div class="gf-choice">${sc.opts.map(o=>`<button data-aim="${o}" aria-pressed="${state.aim===o}">${o}</button>`).join("")}</div></div>`;
+  }
+  if(sc.type==="matrix"){
+    const prev=lastMatrix();
+    return `<div class="gf-score"><div class="gf-lab"><span>Carry in yards</span></div><div class="gf-tablewrap"><table class="gf-matrix"><thead><tr><th>Club</th>${LENS.map(l=>`<th>${l}</th>`).join("")}</tr></thead><tbody>
+      ${CLUBS.map(c=>`<tr><td>${c}</td>${LENS.map(l=>{const k=c+"|"+l;const id="gf-m-"+c.replace("°","")+"-"+l.replace(":","");return `<td><input id="${id}" inputmode="numeric" data-cell="${esc(k)}" value="${esc(state.matrix[k]||"")}" placeholder="${esc(prev[k]||"–")}" aria-label="${c} ${l} carry"></td>`}).join("")}</tr>`).join("")}
+      </tbody></table></div></div>`;
+  }
+  const t=state.scores[sc.key]||{};
+  if(sc.type==="tally3"){
+    const vals=sc.labels.map(([k])=>t[k]||0),n=vals.reduce((a,b)=>a+b,0),good=t.F||0;
+    return `<div class="gf-score" data-key="${sc.key}">
+      <div class="gf-lab"><span>${sc.label}</span><b>${good}/${n} good · ${n}/${sc.max} hit</b></div>
+      <div class="gf-tally">${sc.labels.map(([k,lab,cls],i)=>`<button class="gf-tbtn ${cls}" data-tally="${k}"><span class="c">${vals[i]}</span><span class="t">${lab}</span></button>`).join("")}</div>
+      ${n?'<button class="gf-undo" data-undo="1">Undo last</button>':''}</div>`;
+  }
+  const Y=t.Y||0,N=t.N||0,n=Y+N;
+  return `<div class="gf-score" data-key="${sc.key}">
+    <div class="gf-lab"><span>${sc.label}</span><b>${Y}/${n} · ${n}/${sc.max} hit</b></div>
+    <div class="gf-tally two">
+      <button class="gf-tbtn f" data-tally="Y"><span class="c">${Y}</span><span class="t">${sc.yes}</span></button>
+      <button class="gf-tbtn x" data-tally="N"><span class="c">${N}</span><span class="t">${sc.no}</span></button>
+    </div>${n?'<button class="gf-undo" data-undo="1">Undo last</button>':''}</div>`;
+}
+function renderSessPicker(){
+  const nx=nextUp(),cur=activeKey();
+  const card=(k,name,meta)=>`<button class="gf-pick" data-sess="${k}" aria-pressed="${k===cur}"><span class="nx">${k===nx?"Up next":""}</span><span class="k">${k==="C"?"+":k}</span><span class="n">${name}</span><span class="m">${meta}</span></button>`;
+  const tA=totals(SESSIONS.A.items.map(resolveItem)),tB=totals(SESSIONS.B.items.map(resolveItem)),tC=totals(orderedPicks());
+  $("#gf-picker").innerHTML=card("A",SESSIONS.A.name,`${tA.balls} balls · ${tA.min} min`)+card("B",SESSIONS.B.name,`${tB.balls} balls · ${tB.min} min`)+card("C","Custom",`${tC.balls} balls · ${tC.min} min`);
+}
+function renderBlocks(){
+  renderSessPicker();
+  state=drafts[activeKey()];
+  const list=currentItems();
+  if(!list.length){
+    $("#gf-planhead").innerHTML="";
+    $("#gf-blocks").innerHTML=`<li class="gf-empty"><b>No drills picked for your custom session</b><span>Tick drills on the Drills tab, or pick Session A or B above.</span><button class="btn btnp gf-btn" data-view="lib">Pick drills</button></li>`;
+    $("#gf-routineCard").hidden=true;$("#gf-finish").hidden=true;return;
+  }
+  $("#gf-routineCard").hidden=!list.some(d=>d.cat==="target");$("#gf-finish").hidden=false;
+  const t=totals(list), firstIdx=list.findIndex(d=>!state.done[d.id]);
+  const doneCount=list.filter(d=>state.done[d.id]).length;
+  $("#gf-planhead").innerHTML=`<span class="gf-eyebrow">${activeKey()==="C"?"Custom session":`Session ${activeKey()} · ${SESSIONS[activeKey()].short}`}</span><h2>${activeKey()==="C"?"My picks":SESSIONS[activeKey()].name}</h2>
+    <div class="gf-meta"><span><b>${t.min}</b> min</span><span><b>${t.balls}</b> balls</span><span><b>${t.drv}</b> drivers</span><span><b>${doneCount}/${list.length}</b> done</span></div>
+    <div class="gf-progress"><i style="width:${doneCount/list.length*100}%"></i></div>
+    ${activeKey()==="C"?'<button class="gf-link" data-view="lib">Change drills</button>':''}`;
+  let lastC=null,html="";
+  list.forEach((d,i)=>{
+    if(d.cat!==lastC){lastC=d.cat;html+=`<li class="gf-group"><span class="gf-eyebrow">${CATS[d.cat].tgt?'Target':'Drills'}</span><h2>${CATS[d.cat].title}</h2></li>`}
+    const done=!!state.done[d.id], open=state.open[d.id]??(i===firstIdx);
+    html+=`<li class="gf-card gf-block ${done?'done':''} ${d.cat==="target"?'tgt':''}" ${open?'open':''}>
+      <button class="gf-bhead" data-toggle="${d.id}" aria-expanded="${open}">
+        <span class="gf-bnum">${done?'✓':i+1}</span>
+        <span class="gf-btitle"><h3>${d.title}</h3>${tagsHTML(d,false)}</span>
+        <span class="gf-chev" aria-hidden="true">▾</span></button>
+      ${open?`<div class="gf-bbody">${detailHTML(d)}
+        ${(d.scores||[]).map(renderScore).join("")}
+        <div class="gf-actions">
+          <button class="btn gf-btn" data-timer="${d.id}" data-min="${d.min}" data-name="${esc(d.title)}">Start ${d.min}:00 timer</button>
+          <button class="btn gf-btn ${done?'':'btnp'}" data-done="${d.id}">${done?'Mark not done':'Done, next drill'}</button>
+        </div></div>`:''}
+    </li>`;
+  });
+  $("#gf-blocks").innerHTML=html;
+  $("#gf-notes").value=state.notes||"";
+}
+
+/* ---------- events ---------- */
+root.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t||!root.contains(t))return;
+  if(t.dataset.view){showView(t.dataset.view);return}
+  if(t.dataset.sess){setSession(t.dataset.sess);renderBlocks();scrollTop0();return}
+  if(t.dataset.filter){filter=t.dataset.filter;renderLib();return}
+  if(t.dataset.more){libOpen[t.dataset.more]=!libOpen[t.dataset.more];renderLib();return}
+  if(t.dataset.toggle){const id=t.dataset.toggle;const li=t.closest(".gf-block");state.open[id]=!li.hasAttribute("open");saveDraft();renderBlocks();return}
+  if(t.dataset.done){const id=t.dataset.done;state.done[id]=!state.done[id];if(state.done[id]){state.open[id]=false;const nb=currentItems().find(d=>!state.done[d.id]);if(nb)state.open[nb.id]=true}saveDraft();renderBlocks();
+    if(state.done[id]){const li=root.querySelector(`.gf-block[open]`);if(li)li.scrollIntoView({behavior:"smooth",block:"start"})}return}
+  if(t.dataset.aim){state.aim=state.aim===t.dataset.aim?null:t.dataset.aim;saveDraft();renderBlocks();return}
+  if(t.dataset.tally){const key=t.closest(".gf-score").dataset.key;const s=state.scores[key]||(state.scores[key]={});s[t.dataset.tally]=(s[t.dataset.tally]||0)+1;(s._h||(s._h=[])).push(t.dataset.tally);saveDraft();renderBlocks();return}
+  if(t.dataset.undo){const key=t.closest(".gf-score").dataset.key;const s=state.scores[key];if(s&&s._h&&s._h.length){const l=s._h.pop();s[l]=Math.max(0,(s[l]||0)-1)}saveDraft();renderBlocks();return}
+  if(t.dataset.timer){startTimer(+t.dataset.min*60,t.dataset.name);return}
+  if(t.dataset.del){deleteSession(t.dataset.del,t);return}
+});
+root.addEventListener("change",e=>{
+  if(e.target.dataset.pick){const id=e.target.dataset.pick;const cur=getPicks();const picks=e.target.checked?[...new Set([...cur,id])]:cur.filter(p=>p!==id);setPicks(picks);
+    const li=e.target.closest(".gf-card");if(li)li.classList.toggle("picked",e.target.checked);renderPickDock();}
+});
+root.addEventListener("input",e=>{
+  if(e.target.dataset.cell){const v=e.target.value.replace(/[^0-9]/g,"").slice(0,3);e.target.value=v;if(v)state.matrix[e.target.dataset.cell]=v;else delete state.matrix[e.target.dataset.cell];saveDraft()}
+  if(e.target.id==="gf-notes"){state.notes=e.target.value;saveDraft()}
+});
+$("#gf-useRec").addEventListener("click",()=>{setPicks(REC.slice());renderLib()});
+let clearArmed=false;
+$("#gf-clearPicks").addEventListener("click",()=>{
+  if(!clearArmed){clearArmed=true;$("#gf-clearPicks").textContent="Tap again to clear";setTimeout(()=>{clearArmed=false;$("#gf-clearPicks").textContent="Clear all"},3000);return}
+  clearArmed=false;$("#gf-clearPicks").textContent="Clear all";setPicks([]);renderLib();
+});
+$("#gf-startSession").addEventListener("click",()=>{setSession("C");showView("plan")});
+let resetArmed=false;
+$("#gf-reset").addEventListener("click",()=>{
+  if(!resetArmed){resetArmed=true;$("#gf-reset").textContent="Tap again to clear";setTimeout(()=>{resetArmed=false;$("#gf-reset").textContent="Clear scores"},3000);return}
+  resetArmed=false;state=drafts[activeKey()]=blank();saveDraft();$("#gf-reset").textContent="Clear scores";renderBlocks();$("#gf-saveStatus").textContent="Scores cleared.";
+});
+
+/* ---------- tabs ---------- */
+function showView(v){
+  view=v;
+  for(const b of root.querySelectorAll(".gf-tabs button"))b.setAttribute("aria-selected",b.dataset.view===v);
+  for(const s of ["lib","plan","swing","log"])$("#gf-view-"+s).hidden=s!==v;
+  $("#gf-pickdock").hidden=v!=="lib";$("#gf-dock").hidden=v!=="plan";
+  if(v==="lib")renderLib();
+  if(v==="plan")renderBlocks();
+  if(v==="log")renderLog();
+  scrollTop0();
+}
+
+/* ---------- timer ---------- */
+let tEnd=0,tLeft=0,tRun=false,tInt=null,wake=null,beeped=false;
+function fmt(s){const neg=s<0;s=Math.abs(Math.round(s));return (neg?"+":"")+String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+async function startTimer(sec,label){
+  tLeft=sec;tEnd=Date.now()+sec*1000;tRun=true;beeped=false;
+  $("#gf-timerName").textContent=label;$("#gf-timerToggle").disabled=false;$("#gf-timerStop").disabled=false;$("#gf-timerToggle").textContent="Pause";
+  clearInterval(tInt);tInt=setInterval(tick,250);tick();
+  try{wake=await navigator.wakeLock?.request("screen")}catch(e){}
+}
+function tick(){
+  if(tRun)tLeft=(tEnd-Date.now())/1000;
+  $("#gf-timerTime").textContent=fmt(tLeft);
+  $("#gf-dock").classList.toggle("over",tLeft<0);
+  if(tLeft<=0&&!beeped){beeped=true;beep()}
+}
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(d=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(a.destination);o.start(a.currentTime+d);o.stop(a.currentTime+d+.15)})}catch(e){} try{navigator.vibrate?.([200,100,200])}catch(e){}}
+$("#gf-timerToggle").addEventListener("click",()=>{
+  if(tRun){tRun=false;$("#gf-timerToggle").textContent="Resume"}else{tEnd=Date.now()+tLeft*1000;tRun=true;$("#gf-timerToggle").textContent="Pause"}
+});
+$("#gf-timerStop").addEventListener("click",()=>{tRun=false;clearInterval(tInt);$("#gf-timerTime").textContent="--:--";$("#gf-timerName").textContent='Tap "Start timer" on a drill';$("#gf-timerToggle").disabled=true;$("#gf-timerStop").disabled=true;$("#gf-dock").classList.remove("over");try{wake?.release()}catch(e){}});
+// The OS drops the wake lock when the page is hidden; take it again if a timer is still running.
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&tRun){try{wake=await navigator.wakeLock?.request("screen")}catch(e){}}});
+
+/* ---------- saving + log ---------- */
+function cleanScores(){const ids=new Set(currentItems().flatMap(d=>(d.scores||[]).map(s=>s.key)));const o={};for(const[k,v]of Object.entries(state.scores)){if(!ids.has(k))continue;const c={};for(const[a,b]of Object.entries(v))if(a!=="_h")c[a]=b;o[k]=c}return o}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+$("#gf-save").addEventListener("click",()=>{
+  const list=currentItems(),k=activeKey(),ids=list.map(d=>d.id);
+  const rec={version:5,session:k,date:today(),createdAt:Date.now(),drills:ids,scores:cleanScores(),aim:ids.includes("setup")?state.aim:null,matrix:ids.includes("wedgem")?{...state.matrix}:{},notes:(state.notes||"").slice(0,2000),blocksDone:list.filter(d=>state.done[d.id]).length,blocksTotal:list.length};
+  rec.id="g-"+rec.createdAt;
+  S.golfSessions=[...getSessions(),rec];saveState();
+  state=drafts[k]=blank();saveDraft();if(k!=="C"){sessKey=null;store.set("harvey-golf-sess",null)}
+  renderBlocks();
+  $("#gf-saveStatus").textContent="Saved to your log.";
+});
+
+const t3=v=>{v=v||{};return{L:v.L||0,F:v.F||0,R:v.R||0,n:(v.L||0)+(v.F||0)+(v.R||0)}};
+function rateOf(key,v){const def=SCORE_DEFS[key];if(!def||!v)return null;if(def.type==="tally3"){const x=t3(v);return x.n?{g:x.F,n:x.n}:null}if(def.type==="hit"){const n=(v.Y||0)+(v.N||0);return n?{g:v.Y||0,n}:null}return null}
+function driveOf(s){const sc=s.scores||{};const a=t3(sc.drive),b=t3(sc.press);return{L:a.L+b.L,F:a.F+b.F,R:a.R+b.R,n:a.n+b.n}}
+function statLine(s){
+  const sc=s.scores||{},out=[];
+  for(const[k,v]of Object.entries(sc)){const def=SCORE_DEFS[k];const r=rateOf(k,v);if(!def||!r)continue;
+    if(k==="drive"||k==="press"){const x=t3(v);out.push(`${k==="press"?"Pressure":"Drives"} ${x.F}/${x.n} · L${x.L} R${x.R}`)}
+    else out.push(`${def.log||def.label} ${r.g}/${r.n}`)}
+  if(s.aim)out.push(`Aim ${s.aim.toLowerCase()}`);
+  return out.join("  ·  ")||"No scores recorded";
+}
+function pct(a,b){return b?Math.round(a/b*100)+"%":"–"}
+function renderLog(){
+  const list=[...getSessions()].sort((a,b)=>b.createdAt-a.createdAt);
+  if(!list.length){
+    $("#gf-summary").innerHTML="";$("#gf-disp").innerHTML="";$("#gf-drills").innerHTML="";
+    $("#gf-entries").innerHTML=`<li class="gf-empty"><b>No sessions yet</b><span>Finish a session and tap "Save session to log". Drill pass rates, fairway rate and misses by side will show up here.</span></li>`;
+    $("#gf-logStatus").textContent="";return;
+  }
+  const recent=list.slice(0,5), prev=list.slice(5,10);
+  let L=0,F=0,R=0;for(const s of recent){const d=driveOf(s);L+=d.L;F+=d.F;R+=d.R}
+  const n=L+F+R;
+  const agg=(arr,k)=>{let g=0,c=0;for(const s of arr){const r=rateOf(k,(s.scores||{})[k]);if(r){g+=r.g;c+=r.n}}return{g,c}};
+  const drillKeys=Object.values(SCORE_DEFS).filter(s=>s.log).map(s=>s.key).filter(k=>list.slice(0,10).some(s=>(s.scores||{})[k]));
+  let dg=0,dc=0;for(const k of drillKeys){const a=agg(recent,k);dg+=a.g;dc+=a.c}
+  $("#gf-summary").innerHTML=`
+    <div class="mc"><div class="mv">${pct(F,n)}</div><div class="ml" style="margin:4px 0 0">Fairways, last 5 sessions</div></div>
+    <div class="mc"><div class="mv">${n?`${L}<small> L</small> ${R}<small> R</small>`:"–"}</div><div class="ml" style="margin:4px 0 0">Driver misses by side</div></div>
+    <div class="mc"><div class="mv">${pct(dg,dc)}</div><div class="ml" style="margin:4px 0 0">Drill pass rate, last 5</div></div>`;
+  $("#gf-drills").innerHTML=drillKeys.length?`<h3>Drill pass rates</h3><div class="gf-tablewrap gf-card" style="padding:4px 10px"><table class="gf-drilltab"><thead><tr><th>Drill</th><th>Last 5</th><th></th><th>5 before</th></tr></thead><tbody>
+    ${drillKeys.map(k=>{const a=agg(recent,k),b=agg(prev,k);const w=a.c?Math.round(a.g/a.c*100):0;return `<tr><td>${esc(SCORE_DEFS[k].log)}</td><td class="gf-mono">${pct(a.g,a.c)}</td><td><div class="gf-meter"><i style="width:${w}%"></i></div></td><td class="gf-mono">${pct(b.g,b.c)}</td></tr>`}).join("")}
+    </tbody></table></div>`:"";
+  const dr=list.filter(s=>driveOf(s).n).slice(0,10);
+  $("#gf-disp").innerHTML=dr.length?`<h3>Driver dispersion</h3><div class="gf-legend"><span><i style="background:var(--blue)"></i>Left</span><span><i style="background:var(--green)"></i>Fairway</span><span><i style="background:var(--red)"></i>Right</span></div>`+
+    dr.map(s=>{const d=driveOf(s);return `<div class="gf-drow"><span class="d">${esc(s.date.slice(5))}</span><div class="gf-bar" role="img" aria-label="${d.L} left, ${d.F} fairway, ${d.R} right"><span class="bl" style="width:${d.L/d.n*100}%"></span><span class="bf" style="width:${d.F/d.n*100}%"></span><span class="br" style="width:${d.R/d.n*100}%"></span></div><span class="gf-mono">${Math.round(d.F/d.n*100)}%</span></div>`}).join(""):"";
+  $("#gf-entries").innerHTML=list.map(s=>`<li class="gf-card gf-entry"><div class="gf-eh"><b>${s.session&&SESSIONS[s.session]?`Session ${s.session} · ${esc(SESSIONS[s.session].name)}`:s.session==="C"?"Custom session":(s.drills?s.drills.length+" drills":"Session")}</b><span class="gf-mono">${esc(s.date)}</span></div>
+    <div class="gf-es">${esc(statLine(s))}</div>${s.notes?`<div class="gf-en">${esc(s.notes)}</div>`:""}
+    <button class="gf-undo" data-del="${esc(s.id)}">Delete</button></li>`).join("");
+  $("#gf-logStatus").textContent="";
+}
+const delArm={};
+function deleteSession(id,btn){
+  if(!delArm[id]){delArm[id]=true;btn.textContent="Tap again to delete";setTimeout(()=>{delArm[id]=false;if(btn.isConnected)btn.textContent="Delete"},3000);return}
+  S.golfSessions=getSessions().filter(s=>s.id!==id);saveState();renderLog();
+}
+
+/* ---------- entry point (called by nav) ---------- */
+window.renderGolfPage=function(){showView(view)};
+})();
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -5055,10 +4881,11 @@ window.nav = function(id, el){
   document.getElementById('sb-overlay').classList.remove('open');
   document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
   closeFab();
+  document.body.classList.toggle('on-golf',id==='golf');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
-    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,calories:renderCaloriesPage,
-    calendar:renderOutlookPage,hyrox:renderHyroxPage,nutrition:renderNutritionPage,dates:renderDatesPage};
+    fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,
+    calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage};
   handlers[id]?.();
 };
 
@@ -5083,9 +4910,7 @@ function closeFab(){
 }
 function fabAction(kind){
   closeFab();
-  if(kind==='workout'){
-    navById('hyrox');
-  } else if(kind==='expense'){
+  if(kind==='expense'){
     navById('budget');
     setTimeout(()=>openModal('spend'),80);
   } else if(kind==='note'){
