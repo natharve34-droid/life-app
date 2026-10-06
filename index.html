@@ -470,6 +470,102 @@
     .gf-frames{grid-template-columns:1fr;}
   }
   @media(prefers-reduced-motion:reduce){.gf-progress i,.gf-chev{transition:none!important;}}
+  /* ── MOBILITY — everything scoped to #page-mobility / .mb-* ── */
+  #page-mobility{max-width:760px;}
+  #page-mobility [hidden],.mb-dock[hidden]{display:none!important;}
+  #page-mobility p{margin:0;}
+  #page-mobility button{font-family:inherit;color:inherit;}
+  .mb-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);}
+  .mb-tabs{position:sticky;top:64px;z-index:5;display:flex;gap:2px;padding:6px 0;margin:0 0 16px;background:var(--bg3);border-bottom:1px solid var(--border);}
+  .mb-tabs button{flex:1;background:none;border:0;padding:12px 4px;min-height:44px;font:800 14px/1 var(--font-display);color:var(--text3);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;}
+  .mb-tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--blue);}
+  .mb-view{display:grid;gap:14px;}
+  .mb-view h2{font:800 20px/1.15 var(--font-display);letter-spacing:-.01em;margin:0;}
+  .mb-view h3{font:800 16px/1.2 var(--font-display);margin:0;}
+  .mb-card{background:var(--glass-bg);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow-sm);padding:14px;display:grid;gap:10px;}
+  .mb-safety{background:var(--amber-bg);color:var(--amber-text);border-color:transparent;font-size:14px;line-height:1.5;}
+  .mb-safety b{font-weight:800;}
+  .mb-sess.next{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue),var(--shadow-sm);}
+  .mb-sess .nx{font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);}
+  .mb-sess .k{font:800 30px/1 var(--font-display);color:var(--blue);}
+  .mb-sess .n{font:800 18px/1.2 var(--font-display);}
+  .mb-meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--text2);font-size:14px;}
+  .mb-meta b{color:var(--text);font-weight:700;}
+  .mb-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .mb-chip{display:inline-block;font-weight:700;font-size:11.5px;border-radius:6px;padding:4px 8px;background:var(--blue-bg);color:var(--blue-text);}
+  .mb-chip.g{background:var(--green-bg);color:var(--green-text);}
+  .mb-chip.a{background:var(--amber-bg);color:var(--amber-text);}
+  .mb-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .mb-btn{min-height:52px;justify-content:center;font-size:15px;}
+  .mb-btn:disabled{opacity:.5;cursor:default;}
+  .mb-list{margin:0;padding:0;list-style:none;display:grid;gap:0;}
+  .mb-list li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+  .mb-list li:last-child{border-bottom:0;}
+  .mb-list li span{color:var(--text2);font-size:12.5px;text-align:right;}
+  .mb-empty{border:1px dashed var(--border2);border-radius:16px;padding:20px;color:var(--text2);text-align:center;display:grid;gap:8px;justify-items:center;}
+  .mb-empty b{color:var(--text);}
+  /* guide */
+  .mb-now{gap:12px;}
+  .mb-now.work{border-color:var(--green);box-shadow:inset 0 0 0 2px var(--green),var(--shadow-sm);}
+  .mb-now.gap{border-color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber),var(--shadow-sm);}
+  .mb-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .mb-phase{font:800 15px/1 var(--font-display);letter-spacing:.08em;text-transform:uppercase;}
+  .mb-now.work .mb-phase{color:var(--green);}
+  .mb-now.gap .mb-phase{color:var(--amber);}
+  .mb-name{font:800 28px/1.12 var(--font-display);letter-spacing:-.01em;}
+  .mb-side{font:800 20px/1.2 var(--font-display);color:var(--blue);}
+  .mb-time{font:800 84px/1 var(--font-display);font-variant-numeric:tabular-nums;text-align:center;padding:6px 0;}
+  .mb-now.paused .mb-time{opacity:.45;}
+  .mb-target{text-align:center;font-size:16px;color:var(--text2);}
+  .mb-cue{font-size:18px;line-height:1.5;}
+  .mb-feel{font-size:16px;line-height:1.45;background:var(--green-bg);color:var(--green-text);border-radius:12px;padding:10px 12px;}
+  .mb-feel b{font-weight:800;}
+  .mb-warn{font-size:15px;line-height:1.4;color:var(--red);font-weight:600;}
+  .mb-bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+  .mb-bar i{display:block;height:100%;background:var(--blue);width:0;}
+  .mb-progress{display:grid;gap:6px;font-size:13.5px;color:var(--text2);}
+  .mb-upnext{font-size:14px;color:var(--text2);}
+  .mb-upnext b{color:var(--text);}
+  /* check-in */
+  .mb-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .mb-scale button{min-height:56px;border:1px solid var(--border2);border-radius:12px;background:var(--bg2);font:800 20px var(--font-display);cursor:pointer;}
+  .mb-scale button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .mb-ci-lab{display:flex;justify-content:space-between;font-size:15px;font-weight:700;}
+  .mb-ci-lab span{font-weight:500;color:var(--text2);font-size:12.5px;}
+  /* body map */
+  .mb-area{padding:12px 14px;}
+  .mb-area.none{border-style:dashed;}
+  .mb-area h3{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .mb-area .cnt{font:700 12px var(--font-display);color:var(--text3);}
+  .mb-area li{align-items:center;}
+  .mb-badge{display:inline-block;font-weight:800;font-size:10.5px;border-radius:5px;padding:3px 6px;background:var(--green-bg);color:var(--green-text);margin-right:8px;}
+  .mb-badge.b{background:var(--amber-bg);color:var(--amber-text);}
+  /* history */
+  .mb-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .mb-entry{padding:12px 14px;}
+  .mb-eh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .mb-eh b{font:800 15px/1.2 var(--font-display);}
+  .mb-eh span{font-size:12px;color:var(--text2);}
+  .mb-pill{display:inline-flex;gap:5px;align-items:center;font-weight:700;font-size:12.5px;border-radius:8px;padding:5px 9px;}
+  .mb-pill.lo{background:var(--red-bg);color:var(--red-text);}
+  .mb-pill.mid{background:var(--amber-bg);color:var(--amber-text);}
+  .mb-pill.hi{background:var(--green-bg);color:var(--green-text);}
+  .mb-undo{justify-self:start;background:none;border:0;color:var(--text2);font-size:13px;text-decoration:underline;padding:8px 0;min-height:36px;cursor:pointer;}
+  /* dock: above the bottom nav on phones, flush to the bottom on desktop */
+  .mb-dock{display:none;position:fixed;left:0;right:0;bottom:0;z-index:240;background:var(--bg2);border-top:1px solid var(--border2);padding:10px 16px;box-shadow:0 -6px 20px rgba(24,24,40,.08);}
+  body.on-mobility .mb-dock:not([hidden]){display:block;}
+  .mb-dock .in{max-width:728px;margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:10px;}
+  .mb-dbtn{min-height:60px;justify-content:center;font-size:16px;}
+  .mb-dmain{font-size:18px;}
+  body.on-mobility .fab-wrap{display:none!important;}
+  body.on-mobility .sync-badge{bottom:96px;}
+  #page-mobility{padding-bottom:140px;}
+  @media(max-width:720px){
+    .mb-dock{bottom:58px;}
+    #page-mobility{padding-bottom:200px;}
+    body.on-mobility .sync-badge{bottom:150px;}
+    .mb-time{font-size:76px;}
+  }
 </style>
 </head>
 <body>
@@ -505,6 +601,7 @@
     <div class="ni" onclick="nav('fitness',this)"><span class="ni-ico">◈</span>Fitness</div>
     -->
     <div class="ni" onclick="nav('golf',this)"><span class="ni-ico">⚑</span>Golf</div>
+    <div class="ni" onclick="nav('mobility',this)"><span class="ni-ico">⟲</span>Mobility</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
   </div>
@@ -685,6 +782,24 @@
 <div id="page-wishlist" class="page">
   <div class="ph rb"><div><div class="pt">Wishlist</div></div><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div>
   <div class="g2" id="wish-list"></div>
+</div>
+
+<!-- MOBILITY -->
+<div id="page-mobility" class="page">
+  <div class="ph">
+    <div class="pt">Mobility</div>
+    <p class="ps">Two sessions, head to toe. Alternate A and B.</p>
+  </div>
+  <div class="mb-tabs" role="tablist">
+    <button role="tab" id="mb-tab-home" aria-selected="true" data-view="home">Sessions</button>
+    <button role="tab" id="mb-tab-guide" aria-selected="false" data-view="guide">Guide</button>
+    <button role="tab" id="mb-tab-map" aria-selected="false" data-view="map">Body map</button>
+    <button role="tab" id="mb-tab-hist" aria-selected="false" data-view="hist">History</button>
+  </div>
+  <section class="mb-view" id="mb-view-home"></section>
+  <section class="mb-view" id="mb-view-guide" hidden></section>
+  <section class="mb-view" id="mb-view-map" hidden></section>
+  <section class="mb-view" id="mb-view-hist" hidden></section>
 </div>
 
 <!-- GOLF PRACTICE -->
@@ -1017,6 +1132,15 @@
   <button class="bn-item" onclick="toggleSidebar()"><span class="bn-ico">☰</span><span>More</span></button>
 </nav>
 
+<!-- MOBILITY dock (outside .page so position:fixed is never trapped by the page animation) -->
+<div class="mb-dock" id="mb-dock" hidden>
+  <div class="in">
+    <button class="btn mb-dbtn" data-ctl="back" aria-label="Back">⏮ Back</button>
+    <button class="btn btnp mb-dbtn mb-dmain" id="mb-pause" data-ctl="pause">Pause</button>
+    <button class="btn mb-dbtn" data-ctl="skip" aria-label="Skip">Skip ⏭</button>
+  </div>
+</div>
+
 <!-- GOLF docks (outside .page so position:fixed is never trapped by the page animation) -->
 <div class="gf-dock gf-pickdock" id="gf-pickdock" hidden>
   <div class="in">
@@ -1064,6 +1188,7 @@ const DEFAULT_STATE = {
   activeModal:null,
   golfSessions:[],
   golfPicks:null,
+  mobilityLog:[],
   currentWeek:6,
   budgetViewMonth:curKey,
   bills:[],
@@ -1154,7 +1279,7 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
   'foodDiary','foodLibrary','nutritionGoals',
   'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder',
-  'golfSessions','golfPicks'];
+  'golfSessions','golfPicks','mobilityLog'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -4871,6 +4996,418 @@ function deleteSession(id,btn){
 window.renderGolfPage=function(){showView(view)};
 })();
 
+// ── MOBILITY ──
+// Two guided sessions (A lower body, B spine/core/upper body). Exercise content is the MB_* data
+// block at the top of this module. Check-ins live in S.mobilityLog (synced like the rest of the app).
+(function(){
+const root=document.getElementById('page-mobility');
+if(!root)return;
+/* ═══════════════ MOBILITY DATA — edit exercises here ═══════════════
+   Each exercise:
+     id, name, areas[]        area ids from MB_AREAS (drives the Body map and the "areas covered" chips)
+     secs                     length of one interval in seconds (a hold), OR
+     reps + tempo             rep-based move: reps x seconds-per-rep gives a paced timer
+     sets                     optional, default 1
+     each:true                unilateral: runs Left side then Right side for every set
+     intervals:[{label,secs}] optional explicit intervals (overrides sets/each)
+     target                   text shown under the clock
+     cue                      short "how to"
+     feel                     "feel it here"
+     safety                   optional warning
+   Timing: MB_GAP seconds of "get ready" before every exercise, MB_SWITCH between sides/sets. */
+const MB_GAP=10, MB_SWITCH=5;
+const MB_AREAS=[
+  ["feet","Feet"],["ankles","Ankles"],["shins","Shins"],["calves","Calves"],["knees","Knees"],["quads","Quads"],
+  ["hamstrings","Hamstrings"],["adductors","Adductors"],["hips","Hips"],["glutes","Glutes"],["lowerback","Lower back"],
+  ["core","Core"],["thoracic","Thoracic spine"],["lats","Lats"],["chest","Chest"],["shoulders","Shoulders"],
+  ["cuff","Rotator cuff"],["neck","Neck"],["wrists","Wrists / forearms"]
+];
+const MB_SAFETY="Tension and a good stretch feeling are fine. Sharp pain is not. Stop any move that sends pain down a leg or causes sharp pain on the shin bone.";
+const MB_SESSIONS={
+ A:{name:"Lower body: feet to hips",short:"Feet · shins · calves · hips",exercises:[
+  {id:"a1",name:"Foot roll with ball",areas:["feet"],secs:60,each:true,target:"60s per foot",
+   cue:"Ball under the arch. Roll slowly from heel to the ball of the foot, pausing on tender spots. Light to moderate weight through the foot.",
+   feel:"Underside of the foot, arch to heel (plantar fascia).",
+   safety:"A firm ache is fine. Back off if it is sharp."},
+  {id:"a2",name:"Toe yoga + big toe stretch",areas:["feet","ankles"],secs:30,each:true,target:"30s per foot",
+   cue:"Press the big toe down and lift the other four, then lift the big toe and press the other four down. Finish by pulling the big toe back with your hand.",
+   feel:"Underside of the big toe and along the arch."},
+  {id:"a3",name:"Ankle circles",areas:["ankles"],reps:20,tempo:2,each:true,target:"10 each direction per foot",
+   cue:"Lift one foot and draw big slow circles with the toes: 10 one way, then 10 the other. Move only the ankle, keep the shin still.",
+   feel:"All the way round the ankle joint."},
+  {id:"a4",name:"Foam roll calves",areas:["calves"],secs:60,each:true,target:"60s per leg",
+   cue:"Sit with the roller under the calf (cross the other leg on top for more pressure). Lift your hips and roll slowly from above the ankle to below the knee, turning the foot in and out.",
+   feel:"The belly of the calf muscle.",
+   safety:"Roll the muscle at the back of the leg. NOT directly on the shin bone and not behind the knee."},
+  {id:"a5",name:"Knee-to-wall ankle mobilisation",areas:["ankles","calves"],sets:2,reps:10,tempo:3,each:true,target:"2 x 10 per side",
+   cue:"Toes about a hand-width from the wall. Keep the heel flat and drive the knee forward to touch the wall, then return. Move the foot back as it gets easy.",
+   feel:"Front of the ankle, and the calf and Achilles at the back.",
+   safety:"Pinching at the front of the ankle? Move the foot closer to the wall."},
+  {id:"a6",name:"Straight-leg calf stretch (wall)",areas:["calves"],secs:30,each:true,target:"30s per side",
+   cue:"Hands on the wall. Back leg straight, heel down, toes forward. Lean your hips toward the wall until you feel it.",
+   feel:"Upper calf, the belly of the muscle (gastrocnemius)."},
+  {id:"a7",name:"Bent-knee calf stretch (wall)",areas:["calves","ankles"],secs:30,each:true,target:"30s per side",
+   cue:"Same wall position, back foot a little closer. Bend the back knee and sink down, keeping the heel flat.",
+   feel:"Lower calf just above the Achilles (soleus). This one matters most for shins."},
+  {id:"a8",name:"Kneeling shin (tibialis) stretch",areas:["shins","ankles"],sets:2,secs:30,target:"2 x 30s",
+   cue:"Kneel with the tops of your feet flat and toes pointing back. Sit gently back toward your heels, hands on the floor to take weight. Lift your knees a little to ease it.",
+   feel:"Front of the shins and the top of the foot.",
+   safety:"Ease off if you feel sharp pain on the shin bone itself, or knee pain."},
+  {id:"a9",name:"Tibialis raises against a wall",areas:["shins"],sets:2,reps:15,tempo:2,target:"2 x 15",
+   cue:"Lean back on a wall, heels about 30-40 cm out, legs straight. Lift the toes toward your shins as high as you can, then lower with control.",
+   feel:"Muscle along the front-outside of the shin.",
+   safety:"Muscle burn is fine. Stop for sharp pain on the bone."},
+  {id:"a10",name:"Slow eccentric calf raises off a step",areas:["calves","ankles"],sets:2,reps:12,tempo:4,each:true,target:"2 x 12 per leg, 3s lowering",
+   cue:"Forefoot on the edge of a step, hold something for balance. Rise on both feet, shift onto one, then lower the heel for a slow 3-count below the step.",
+   feel:"Calf and Achilles working as they lengthen.",
+   safety:"Calf fatigue is fine. Stop for sharp shin or Achilles pain."},
+  {id:"a11",name:"Foam roll quads & IT band area",areas:["quads","knees"],secs:60,each:true,target:"60s per leg",
+   cue:"Face down, roller under the front of the thigh, weight on your forearms. Roll from above the knee to the hip crease, then turn slightly onto the outer thigh for a short while.",
+   feel:"Front and outer thigh.",
+   safety:"Stay off the kneecap and avoid pressing hard on the outside of the knee."},
+  {id:"a12",name:"Couch stretch (quad / hip flexor)",areas:["quads","hips","glutes"],secs:45,each:true,target:"45s per side, squeeze glute",
+   cue:"Back knee on the floor near a wall or couch, back foot up on it. Other foot forward in a lunge. Squeeze the back-leg glute, tuck the pelvis and lift your chest.",
+   feel:"Front of the thigh and hip on the back leg.",
+   safety:"Use a cushion under the knee. Reduce the range if the knee pinches."},
+  {id:"a13",name:"Supine hamstring stretch with strap",areas:["hamstrings"],secs:45,each:true,target:"45s per side",
+   cue:"Lie on your back, strap around the ball of one foot, leg lifted fairly straight and the other leg down. Pull gently, keep your lower back flat.",
+   feel:"Back of the thigh, from behind the knee up toward the sit bone.",
+   safety:"Stop if pain or tingling runs down the leg."},
+  {id:"a14",name:"Frog stretch / adductor rock-backs",areas:["adductors","hips"],secs:45,target:"45s",
+   cue:"Frog: on forearms and knees, widen the knees until you feel a stretch, feet turned out in line with the knees, and rock the hips gently back. Or side-lying version: rock back with one leg out straight.",
+   feel:"Inner thighs and groin.",
+   safety:"Go gently, groin tissue does not like being forced."},
+  {id:"a15",name:"Cossack squat",areas:["adductors","hips","knees","ankles"],reps:6,tempo:5,each:true,target:"6 per side, slow",
+   cue:"Wide stance, toes out. Shift into one leg and sit deep while the other leg stays straight with the toes up. Return slowly. Hold something for balance if needed.",
+   feel:"Inner thigh of the straight leg and the hip of the bent leg.",
+   safety:"Keep the bent knee tracking over the toes."},
+  {id:"a16",name:"90/90 hip switches",areas:["hips","glutes"],reps:10,tempo:3,target:"10 total",
+   cue:"Sit with both knees bent to 90 degrees, one leg in front and one to the side. Lift the knees and rotate to switch sides, hands off the floor if you can. Stay tall and focus on turning the back leg inward.",
+   feel:"Deep in the hips and outer glutes."},
+  {id:"a17",name:"Deep squat hold",areas:["hips","ankles","knees","adductors","lowerback"],secs:45,target:"45s",
+   cue:"Feet a bit wider than shoulders, toes slightly out. Hold a post or door frame, sit down between your heels with a tall chest, and push the knees out over the toes.",
+   feel:"Hips, groin and ankles, with the lower back relaxed."}
+ ]},
+ B:{name:"Spine, core & upper body",short:"Back · shoulders · core",exercises:[
+  {id:"b1a",name:"Neck: chin tucks",areas:["neck"],reps:10,tempo:3,target:"10 reps",
+   cue:"Sit or stand tall. Draw the head straight back as if making a double chin, without tilting. Hold one second, release.",
+   feel:"Back of the neck and the base of the skull."},
+  {id:"b1b",name:"Neck: side-bend",areas:["neck","shoulders"],secs:20,each:true,target:"20s per side",
+   cue:"Sit tall. Let one ear drop toward the shoulder while the other shoulder stays down. Keep it gentle.",
+   feel:"The side of the neck away from the tilt."},
+  {id:"b1c",name:"Neck: rotation",areas:["neck"],reps:5,tempo:4,each:true,target:"5 per side",
+   cue:"Turn the head slowly to look over one shoulder, chin level, and return. Do not force the end of the range.",
+   feel:"A smooth turn with no pinching."},
+  {id:"b2",name:"Cat-cow",areas:["lowerback","thoracic","core"],reps:10,tempo:4,target:"10 slow reps",
+   cue:"Hands under shoulders, knees under hips. Breathe in: belly drops, chest and tailbone lift. Breathe out: round the spine up, tuck chin and tail.",
+   feel:"The whole spine moving one segment at a time."},
+  {id:"b3",name:"Child's pose with side reach",areas:["lats","lowerback","shoulders"],intervals:[{label:"Centre",secs:30},{label:"Reach left",secs:30},{label:"Reach right",secs:30}],target:"30s centre, 30s each side",
+   cue:"Hips back to heels, arms long, forehead down. For the side reach, walk both hands to one side and sink the opposite hip toward the heel.",
+   feel:"Side of the ribs and under the arm (lats)."},
+  {id:"b4",name:"Quadruped thoracic rotation",areas:["thoracic","shoulders"],reps:8,tempo:4,each:true,target:"8 per side",
+   cue:"Hands and knees, one hand behind your head. Rotate the elbow down toward the opposite wrist, then open it up to the ceiling, following with your eyes. Hips stay square.",
+   feel:"Mid-back between the shoulder blades."},
+  {id:"b5",name:"Open books (side-lying)",areas:["thoracic","chest","shoulders"],reps:8,tempo:4,each:true,target:"8 per side",
+   cue:"Lie on your side, knees stacked and bent to 90 degrees, arms together in front. Lift the top arm and open it across to the other side, eyes following, knees staying together.",
+   feel:"Mid-back rotation and the front of the chest."},
+  {id:"b6",name:"Foam roller thoracic extensions",areas:["thoracic"],reps:8,tempo:4,target:"8 reps",
+   cue:"Roller across the upper back below the shoulder blades, hands behind your head, hips on the floor. Lean back over the roller, then come up. Move the roller a few cm between reps.",
+   feel:"Mid-back easing backwards.",
+   safety:"Stay on the upper back. Do not roll the lower back and keep the abs lightly braced."},
+  {id:"b7",name:"Doorway chest / pec stretch",areas:["chest","shoulders"],secs:30,each:true,target:"30s per side",
+   cue:"Forearm on the door frame with the elbow at about shoulder height or a little lower. Step through and turn your body away.",
+   feel:"Front of the chest and shoulder."},
+  {id:"b8",name:"Wall slides / wall angels",areas:["shoulders","thoracic","cuff"],reps:10,tempo:4,target:"10 reps",
+   cue:"Back, head and hips against the wall, elbows and wrists touching it like a goalpost. Slide the arms up overhead keeping contact, then lower slowly.",
+   feel:"Between the shoulder blades and in the shoulders."},
+  {id:"b9",name:"Sleeper stretch",areas:["cuff","shoulders"],secs:30,each:true,target:"30s per side",
+   cue:"Lie on your side, arm out in front with the elbow bent to 90 degrees and the forearm pointing up. Use the other hand to press the forearm gently toward the floor.",
+   feel:"Back of the shoulder (rotator cuff).",
+   safety:"Light pressure only. Stop if you feel pinching at the front of the shoulder."},
+  {id:"b10",name:"Cross-body shoulder stretch",areas:["shoulders","cuff"],secs:30,each:true,target:"30s per side",
+   cue:"Bring one arm across your chest at shoulder height and draw it in with the other hand, just above the elbow. Keep the shoulder down.",
+   feel:"Back of the shoulder (rear delt)."},
+  {id:"b11a",name:"Wrist flexor stretch",areas:["wrists"],secs:20,each:true,target:"20s per side",
+   cue:"Arm out, palm up, fingers pointing down. Gently pull the fingers back with the other hand, elbow straight.",
+   feel:"Underside of the forearm."},
+  {id:"b11b",name:"Wrist extensor stretch",areas:["wrists"],secs:20,each:true,target:"20s per side",
+   cue:"Arm out, palm down. Gently press the back of the hand so the fingers point toward you, elbow straight.",
+   feel:"Top of the forearm."},
+  {id:"b12",name:"Wrist circles + prayer stretch",areas:["wrists"],secs:30,target:"30s",
+   cue:"Make slow circles with both wrists, then press the palms together in front of the chest and lower them toward the waist.",
+   feel:"The wrists and the inside of the forearms."},
+  {id:"b13",name:"Half-kneeling hip flexor stretch",areas:["hips","quads","lowerback"],secs:45,each:true,target:"45s per side, pelvis tucked",
+   cue:"Half kneel on a cushion. Tuck the pelvis (tailbone down), squeeze the back-leg glute and shift forward slightly. Do not arch the lower back.",
+   feel:"Front of the hip on the kneeling side."},
+  {id:"b14",name:"Figure-4 glute / piriformis stretch",areas:["glutes","hips"],secs:45,each:true,target:"45s per side",
+   cue:"Lie on your back, cross one ankle over the opposite knee and pull the bottom thigh toward your chest.",
+   feel:"Outer hip and glute on the crossed leg.",
+   safety:"Stop if pain or tingling runs down the leg."},
+  {id:"b15",name:"World's greatest stretch",areas:["hips","hamstrings","thoracic","adductors","chest","glutes"],reps:5,tempo:6,each:true,target:"5 per side",
+   cue:"Deep lunge with both hands inside the front foot. Drop the inside elbow toward the floor, then rotate that arm up to the ceiling. Return, then straighten the front leg to stretch the hamstring.",
+   feel:"Hip, groin, hamstring and mid-back, all in one flow."},
+  {id:"b16",name:"Dead bug",areas:["core","lowerback"],sets:2,reps:8,tempo:3,each:true,target:"2 x 8 per side, lower back pressed down",
+   cue:"On your back, arms up, hips and knees at 90 degrees. Press the lower back into the floor and lower the opposite arm and leg slowly toward the floor, then return. Left side = left arm and right leg.",
+   feel:"Deep abs, with the lower back staying flat."},
+  {id:"b17",name:"Bird dog",areas:["core","lowerback","glutes"],sets:2,reps:8,tempo:4,each:true,target:"2 x 8 per side, 2s hold",
+   cue:"Hands and knees. Reach one arm and the opposite leg out long, hold 2 seconds without twisting, then return. Left side = left arm and right leg.",
+   feel:"Core, glute and the muscles along the spine."},
+  {id:"b18",name:"Side plank",areas:["core","shoulders","glutes"],secs:30,each:true,target:"20-30s per side (from knees if needed)",
+   cue:"Elbow under the shoulder, body in a straight line from head to knees or feet. Lift the hips and hold. Tap Skip to end early if it gets sloppy.",
+   feel:"The side of the trunk and hip."},
+  {id:"b19",name:"Glute bridge",areas:["glutes","lowerback","hamstrings","core"],sets:2,reps:12,tempo:4,target:"2 x 12, 2s squeeze",
+   cue:"On your back, feet flat, knees bent. Push through the heels, squeeze the glutes and hold 2 seconds at the top, then lower slowly. Do not over-arch the lower back.",
+   feel:"Glutes and back of the thighs, not the lower back."}
+ ]}
+};
+/* ═══════════════ end of mobility data ═══════════════ */
+
+const $=s=>document.getElementById(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const AREA=Object.fromEntries(MB_AREAS);
+const getLog=()=>Array.isArray(S.mobilityLog)?S.mobilityLog:[];
+let view="home", G=null;   // G = the session in progress (kept in memory only)
+let tInt=null, wake=null, actx=null;
+
+/* ---------- building a session ---------- */
+function secsOf(ex){return ex.secs!=null?ex.secs:ex.reps*ex.tempo}
+function intervalsOf(ex){
+  if(ex.intervals)return ex.intervals.map(iv=>({label:iv.label,secs:iv.secs}));
+  const sets=ex.sets||1,sides=ex.each?["Left side","Right side"]:[null],out=[];
+  for(let s=1;s<=sets;s++)for(const side of sides){
+    const parts=[];if(side)parts.push(side);if(sets>1)parts.push(`Set ${s} of ${sets}`);
+    out.push({label:parts.join(" · "),secs:secsOf(ex),side,set:s});
+  }
+  return out;
+}
+function buildItems(key){
+  const items=[];
+  MB_SESSIONS[key].exercises.forEach((ex,ei)=>intervalsOf(ex).forEach((iv,ij)=>items.push({ex,ei,ij,iv,gap:ij===0?MB_GAP:MB_SWITCH})));
+  return items;
+}
+function totalSecs(key){return buildItems(key).reduce((s,it)=>s+it.gap+it.iv.secs,0)}
+function areasOf(key){const set=new Set();MB_SESSIONS[key].exercises.forEach(e=>e.areas.forEach(a=>set.add(a)));return MB_AREAS.map(([id])=>id).filter(id=>set.has(id))}
+function nextUp(){const last=[...getLog()].sort((a,b)=>b.createdAt-a.createdAt)[0];return last?(last.session==="A"?"B":"A"):"A"}
+function fmt(s){s=Math.max(0,Math.ceil(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function niceDate(s){try{return new Date(s+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}catch(e){return s}}
+
+/* ---------- sound, vibration, wake lock ---------- */
+function ensureAudio(){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){}}
+function beeps(n,freq){try{ensureAudio();if(!actx)return;for(let i=0;i<n;i++){const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=freq;g.gain.value=.18;o.connect(g);g.connect(actx.destination);const t=actx.currentTime+i*.25;o.start(t);o.stop(t+.15)}}catch(e){}}
+function buzz(p){try{navigator.vibrate?.(p)}catch(e){}}
+async function lockScreen(){try{wake=await navigator.wakeLock?.request("screen")}catch(e){}}
+function unlockScreen(){try{wake?.release()}catch(e){}wake=null}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&G&&G.stage==="run"&&G.run)lockScreen()});
+
+/* ---------- the guided timer ---------- */
+function phaseSecs(){const it=G.items[G.i];return G.phase==="gap"?it.gap:it.iv.secs}
+function suffixAfter(i){let s=0;for(let k=i+1;k<G.items.length;k++)s+=G.items[k].gap+G.items[k].iv.secs;return s}
+function remaining(){const it=G.items[G.i];return G.tLeft+(G.phase==="gap"?it.iv.secs:0)+suffixAfter(G.i)}
+function begin(i,phase){
+  G.i=i;G.phase=phase;G.tLeft=phaseSecs();G.tEnd=Date.now()+G.tLeft*1000;G.run=true;
+  renderGuide();syncDock();
+}
+function startSession(key){
+  ensureAudio();
+  G={key,items:buildItems(key),i:0,phase:"gap",tLeft:0,tEnd:0,run:true,stage:"run",ci:{shins:0,back:0,overall:0},note:"",startedAt:Date.now()};
+  lockScreen();
+  clearInterval(tInt);tInt=setInterval(tick,250);
+  begin(0,"gap");
+  showView("guide");
+}
+function tick(){
+  if(!G||G.stage!=="run")return;
+  if(G.run)G.tLeft=(G.tEnd-Date.now())/1000;
+  if(G.tLeft<=0){advance();return}
+  updateClock();
+}
+function advance(){
+  if(G.phase==="gap"){beeps(1,660);buzz([80]);begin(G.i,"work");return}
+  beeps(2,880);buzz([200,100,200]);
+  if(G.i+1<G.items.length)begin(G.i+1,"gap");else finish();
+}
+function finish(){
+  clearInterval(tInt);unlockScreen();
+  G.stage="checkin";G.run=false;G.finished=true;
+  beeps(3,880);buzz([300,100,300,100,300]);
+  renderGuide();syncDock();
+}
+function skipNext(){if(G.i+1<G.items.length)begin(G.i+1,"gap");else{finish()}}
+function goBack(){
+  const it=G.items[G.i];
+  const elapsed=G.phase==="gap"?it.gap-G.tLeft:it.gap+(it.iv.secs-G.tLeft);
+  if(elapsed>3||G.i===0)begin(G.i,"gap");else begin(G.i-1,"gap");
+}
+function togglePause(){
+  if(G.run){G.run=false}else{G.tEnd=Date.now()+G.tLeft*1000;G.run=true;lockScreen()}
+  syncDock();updateClock();
+  const n=root.querySelector(".mb-now");if(n)n.classList.toggle("paused",!G.run);
+}
+function doneCount(){return G.finished?MB_SESSIONS[G.key].exercises.length:G.items[G.i].ei}
+function control(c){
+  if(!G||G.stage!=="run")return;
+  if(c==="pause")togglePause();
+  else if(c==="skip")skipNext();
+  else if(c==="back")goBack();
+  else if(c==="now"){if(G.phase==="gap")begin(G.i,"work")}
+}
+function syncDock(){
+  const show=view==="guide"&&G&&G.stage==="run";
+  $("mb-dock").hidden=!show;
+  if(show)$("mb-pause").textContent=G.run?"Pause":"Resume";
+}
+function updateClock(){
+  const t=$("mb-time");if(!t)return;
+  t.textContent=fmt(G.tLeft);
+  const rem=remaining(),tot=G.items.reduce((s,it)=>s+it.gap+it.iv.secs,0);
+  const r=$("mb-remain");if(r)r.textContent=`${fmt(rem)} left`;
+  const b=$("mb-bar");if(b)b.style.width=Math.min(100,(1-rem/tot)*100)+"%";
+}
+
+/* ---------- renderers ---------- */
+function chips(ids,cls){return ids.map(a=>`<span class="mb-chip ${cls||""}">${esc(AREA[a])}</span>`).join("")}
+function renderHome(){
+  const nx=nextUp(),hasLog=getLog().length>0;
+  const card=k=>{
+    const s=MB_SESSIONS[k],secs=totalSecs(k),areas=areasOf(k),mins=Math.round(secs/60);
+    return `<div class="mb-card mb-sess ${k===nx?"next":""}">
+      <span class="nx">${k===nx?"Up next":"&nbsp;"}</span>
+      <div><span class="k">${k}</span> <span class="n">${esc(s.name)}</span></div>
+      <div class="mb-meta"><span><b>~${mins}</b> min</span><span><b>${s.exercises.length}</b> moves</span><span><b>${areas.length}</b> body areas</span></div>
+      <div class="mb-chips">${chips(areas)}</div>
+      <div class="mb-row">
+        <button class="btn btnp mb-btn" data-start="${k}" style="flex:1">${G&&G.key===k&&G.stage==="run"?"Restart":"Start"} Session ${k}</button>
+        <button class="btn mb-btn" data-preview="${k}">${previewOpen[k]?"Hide moves":"See moves"}</button>
+      </div>
+      ${previewOpen[k]?`<ul class="mb-list">${s.exercises.map(e=>`<li><div>${esc(e.name)}</div><span>${esc(e.target)}</span></li>`).join("")}</ul>`:""}
+    </div>`;
+  };
+  $("mb-view-home").innerHTML=`
+    <div class="mb-card mb-safety"><b>Safety.</b> ${esc(MB_SAFETY)}</div>
+    ${G&&G.stage!=="done"?`<div class="mb-card"><b>Session ${G.key} is ${G.stage==="checkin"?"finished":"in progress"}.</b><button class="btn btnp mb-btn" data-view="guide">${G.stage==="checkin"?"Add your check-in":"Back to the guide"}</button></div>`:""}
+    <p class="ps" style="margin:0">${hasLog?"Suggested next, based on your last check-in.":"Start with A. After that the app suggests whichever one you did less recently."}</p>
+    ${card("A")}${card("B")}`;
+}
+const previewOpen={};
+
+function renderGuide(){
+  const el=$("mb-view-guide");
+  if(!G){
+    el.innerHTML=`<div class="mb-empty"><b>No session running</b><span>Pick Session A or B on the Sessions tab to start the guide.</span><button class="btn btnp mb-btn" data-view="home">Choose a session</button></div>`;
+    return;
+  }
+  if(G.stage==="checkin"){renderCheckin(el);return}
+  const it=G.items[G.i],ex=it.ex,exs=MB_SESSIONS[G.key].exercises,gap=G.phase==="gap";
+  const prev=G.i>0?G.items[G.i-1]:null;
+  let phaseLabel="Go";
+  if(gap){
+    if(it.ij===0)phaseLabel="Get ready";
+    else if(it.iv.side&&prev&&prev.iv.side!==it.iv.side)phaseLabel=`Switch: ${it.iv.side}`;
+    else if(it.iv.set&&prev&&prev.iv.set!==it.iv.set)phaseLabel="Rest, next set";
+    else phaseLabel="Next position";
+  }
+  const nextIt=gap?null:G.items[G.i+1];
+  const upNext=nextIt?(nextIt.ex===ex?`Next: ${esc(nextIt.iv.label||ex.name)}`:`Up next: <b>${esc(nextIt.ex.name)}</b>`):(gap?"":"Last move, then your check-in.");
+  const paced=ex.reps!=null;
+  $("mb-view-guide").innerHTML=`
+    <div class="mb-card mb-now ${gap?"gap":"work"} ${G.run?"":"paused"}">
+      <div class="mb-top"><span class="mb-eyebrow">Move ${it.ei+1} of ${exs.length} · Session ${G.key}</span>
+        <button class="mb-undo" data-end="1" style="padding:4px 0">End session</button></div>
+      <div class="mb-phase">${esc(phaseLabel)}</div>
+      <h2 class="mb-name">${esc(ex.name)}</h2>
+      <div class="mb-chips">${chips(ex.areas,"g")}</div>
+      ${it.iv.label?`<div class="mb-side">${esc(it.iv.label)}</div>`:""}
+      <div class="mb-time" id="mb-time">${fmt(G.tLeft)}</div>
+      <div class="mb-target">${esc(ex.target)}${paced&&!gap?" · paced timer, tap Skip when you finish the reps":""}</div>
+      ${gap?`<button class="btn btnp mb-btn" data-ctl="now">Start now</button>`:""}
+      <p class="mb-cue">${esc(ex.cue)}</p>
+      <p class="mb-feel"><b>Feel it here:</b> ${esc(ex.feel)}</p>
+      ${ex.safety?`<p class="mb-warn">${esc(ex.safety)}</p>`:""}
+      ${upNext?`<p class="mb-upnext">${upNext}</p>`:""}
+    </div>
+    <div class="mb-progress"><div class="mb-bar"><i id="mb-bar"></i></div><div id="mb-remain"></div></div>`;
+  updateClock();
+}
+function renderCheckin(el){
+  const row=(k,label,hint)=>`<div><div class="mb-ci-lab">${label}<span>${hint}</span></div><div class="mb-scale">${[1,2,3,4,5].map(n=>`<button data-ci="${k}:${n}" aria-pressed="${G.ci[k]===n}">${n}</button>`).join("")}</div></div>`;
+  const ready=G.ci.shins&&G.ci.back&&G.ci.overall;
+  el.innerHTML=`<div class="mb-card">
+    <h2>${G.finished?"Session done":"Session ended"}</h2>
+    <p class="ps" style="margin:0">${G.finished?"All moves complete.":`${doneCount()} of ${MB_SESSIONS[G.key].exercises.length} moves done.`} How do you feel? 1 = sore or bad, 5 = great.</p>
+    ${row("shins","Shins","1 sore · 5 great")}
+    ${row("back","Lower back","1 sore · 5 great")}
+    ${row("overall","Overall","1 rough · 5 great")}
+    <textarea class="inp" id="mb-note" placeholder="Optional note, e.g. left shin tight after calf raises">${esc(G.note)}</textarea>
+    <div class="mb-row"><button class="btn btnp mb-btn" data-save="1" ${ready?"":"disabled"} style="flex:1">Save check-in</button><button class="btn mb-btn" data-discard="1">Skip check-in</button></div>
+  </div>`;
+}
+function renderMap(){
+  const cov={};MB_AREAS.forEach(([id])=>cov[id]=[]);
+  for(const k of ["A","B"])MB_SESSIONS[k].exercises.forEach(e=>e.areas.forEach(a=>{(cov[a]||(cov[a]=[])).push({k,name:e.name,target:e.target})}));
+  const missing=MB_AREAS.filter(([id])=>!cov[id].length);
+  $("mb-view-map").innerHTML=`<p class="ps" style="margin:0">Every body area and the moves in A and B that cover it.${missing.length?` <b style="color:var(--red)">Not covered: ${missing.map(m=>esc(m[1])).join(", ")}.</b>`:""}</p>`+
+    MB_AREAS.map(([id,label])=>{const l=cov[id];return `<div class="mb-card mb-area ${l.length?"":"none"}"><h3>${esc(label)}<span class="cnt">${l.length} move${l.length===1?"":"s"}</span></h3>
+      ${l.length?`<ul class="mb-list">${l.map(x=>`<li><div><span class="mb-badge ${x.k==="B"?"b":""}">${x.k}</span>${esc(x.name)}</div><span>${esc(x.target)}</span></li>`).join("")}</ul>`:`<p class="ps">No move covers this yet.</p>`}</div>`}).join("");
+}
+function renderHist(){
+  const list=[...getLog()].sort((a,b)=>b.createdAt-a.createdAt);
+  const el=$("mb-view-hist");
+  if(!list.length){el.innerHTML=`<div class="mb-empty"><b>No check-ins yet</b><span>Finish a session and save your shins / back / overall score. It will show up here.</span></div>`;return}
+  const avg=k=>{const r=list.slice(0,5).map(x=>x[k]).filter(Boolean);return r.length?(r.reduce((a,b)=>a+b,0)/r.length).toFixed(1):"–"};
+  const weekAgo=Date.now()-7*864e5,week=list.filter(x=>x.createdAt>=weekAgo).length;
+  const cls=n=>n<=2?"lo":n===3?"mid":"hi";
+  el.innerHTML=`<div class="mb-tiles">
+      <div class="mc"><div class="ml">Last 7 days</div><div class="mv">${week}</div></div>
+      <div class="mc"><div class="ml">Shins (last 5)</div><div class="mv">${avg("shins")}</div></div>
+      <div class="mc"><div class="ml">Back (last 5)</div><div class="mv">${avg("back")}</div></div></div>`+
+    list.map(x=>`<div class="mb-card mb-entry"><div class="mb-eh"><b>Session ${esc(x.session)} · ${esc(MB_SESSIONS[x.session]?MB_SESSIONS[x.session].name:"")}</b><span>${esc(niceDate(x.date))}</span></div>
+      <div class="mb-row"><span class="mb-pill ${cls(x.shins)}">Shins ${x.shins}/5</span><span class="mb-pill ${cls(x.back)}">Back ${x.back}/5</span><span class="mb-pill ${cls(x.overall)}">Overall ${x.overall}/5</span></div>
+      ${x.total?`<div class="ps" style="margin:0">${x.done}/${x.total} moves</div>`:""}
+      ${x.note?`<div style="font-size:14px">${esc(x.note)}</div>`:""}
+      <button class="mb-undo" data-del="${esc(x.id)}">Delete</button></div>`).join("");
+}
+
+/* ---------- navigation inside the page ---------- */
+function showView(v){
+  view=v;
+  for(const b of root.querySelectorAll(".mb-tabs button"))b.setAttribute("aria-selected",b.dataset.view===v);
+  for(const s of ["home","guide","map","hist"])$("mb-view-"+s).hidden=s!==v;
+  if(v==="home")renderHome();
+  if(v==="guide")renderGuide();
+  if(v==="map")renderMap();
+  if(v==="hist")renderHist();
+  syncDock();
+  const m=document.querySelector(".main");if(m)m.scrollTo({top:0});
+}
+
+/* ---------- events ---------- */
+let endArmed=false,delArm={};
+root.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t||!root.contains(t))return;
+  if(t.dataset.view){showView(t.dataset.view);return}
+  if(t.dataset.start){startSession(t.dataset.start);return}
+  if(t.dataset.preview){previewOpen[t.dataset.preview]=!previewOpen[t.dataset.preview];renderHome();return}
+  if(t.dataset.ctl){control(t.dataset.ctl);return}
+  if(t.dataset.end){
+    if(!endArmed){endArmed=true;t.textContent="Tap again to end";setTimeout(()=>{endArmed=false;if(t.isConnected)t.textContent="End session"},3000);return}
+    endArmed=false;clearInterval(tInt);unlockScreen();G.stage="checkin";G.run=false;G.finished=false;renderGuide();syncDock();return}
+  if(t.dataset.ci){const[k,n]=t.dataset.ci.split(":");G.ci[k]=+n;renderGuide();return}
+  if(t.dataset.save){
+    const rec={id:"m-"+Date.now(),date:today(),createdAt:Date.now(),session:G.key,shins:G.ci.shins,back:G.ci.back,overall:G.ci.overall,note:(G.note||"").slice(0,500),done:doneCount(),total:MB_SESSIONS[G.key].exercises.length};
+    S.mobilityLog=[...getLog(),rec];saveState();G=null;showView("hist");return}
+  if(t.dataset.discard){G=null;showView("home");return}
+  if(t.dataset.del){const id=t.dataset.del;
+    if(!delArm[id]){delArm[id]=true;t.textContent="Tap again to delete";setTimeout(()=>{delArm[id]=false;if(t.isConnected)t.textContent="Delete"},3000);return}
+    S.mobilityLog=getLog().filter(x=>x.id!==id);saveState();renderHist();return}
+});
+root.addEventListener("input",e=>{if(e.target.id==="mb-note"&&G)G.note=e.target.value});
+$("mb-dock").addEventListener("click",e=>{const t=e.target.closest("button");if(t&&t.dataset.ctl)control(t.dataset.ctl)});
+
+/* ---------- entry point (called by nav) ---------- */
+window.renderMobilityPage=function(){showView(view)};
+})();
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -4882,10 +5419,11 @@ window.nav = function(id, el){
   document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
   closeFab();
   document.body.classList.toggle('on-golf',id==='golf');
+  document.body.classList.toggle('on-mobility',id==='mobility');
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,
-    calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage};
+    calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage,mobility:renderMobilityPage};
   handlers[id]?.();
 };
 
