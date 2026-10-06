@@ -1880,6 +1880,17 @@ function importantItems(){
     .sort((a,b)=>impPriority(a.i)-impPriority(b.i)||pos(impKey(a.i))-pos(impKey(b.i))||a.idx-b.idx)
     .map(x=>x.i);
 }
+// Ticking a task off here behaves exactly like ticking it on the Projects page (including the
+// "how long did it take?" time-log prompt) for project tasks; a manually-added pin has no
+// project behind it, so completing it simply clears it from the list.
+function completeImportant(id,ref){
+  if(ref){
+    const [pid,tid]=String(ref).split('-').map(Number);
+    toggleTodo(pid,tid);
+  } else {
+    removeImportant(id,null);
+  }
+}
 function cycleImportantPriority(key){
   if(!S.importantPriority)S.importantPriority={};
   const cur=S.importantPriority[key]||2;
@@ -1948,7 +1959,7 @@ function renderImportant(){
       </div>`:'';
     return `<div style="background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;">
-        <div style="width:7px;height:7px;border-radius:50%;background:${pr.color};min-width:7px"></div>
+        <div onclick="completeImportant(${i.ref?'null':i.id}, ${i.ref?`'${i.ref}'`:'null'})" title="Mark complete" style="width:15px;height:15px;min-width:15px;border:1.5px solid ${pr.color};border-radius:4px;cursor:pointer"></div>
         <span style="flex:1;font-size:13px">${i.text}${badge}</span>
         <span class="tag tp">${i.source}</span>
         <button class="tag ${pr.tag}" style="border:none;cursor:pointer;font-family:inherit" onclick="cycleImportantPriority('${key}')" title="Tap to change priority">${pr.label}</button>
@@ -2581,6 +2592,7 @@ function toggleTodo(pid,tid){
   }
   saveState();
   renderProjects();
+  renderImportant(); // keep the Important page in step when completing from either place
   // If just marked done and there are time projects, ask how long it took
   if(t.done && S.timeProjects.length>0){
     S.activeModal={type:'taskTime',pid,tid,pname:p.name,defaultProjId:p.id};
