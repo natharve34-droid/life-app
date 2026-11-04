@@ -5475,7 +5475,8 @@ window.renderMobilityPage=function(){showView(view)};
 // missing task by seedId and never overwrites what you have ticked or switched on/off.
 // GROOMING-PURE-BEGIN  (no DOM and no S in this block: it is unit-tested by grooming.test.js)
 const GROOM_PLAN={
-  start:'2026-11-09',weeks:12,category:'Grooming',
+  // start = Monday of week 1 (calendar weeks); begin = the day you actually started (tonight, a few days earlier). rev bumps refresh saved tasks.
+  rev:2,start:'2026-11-09',begin:'2026-11-04',weeks:12,category:'Grooming',
   reminders:[
     {key:'morning',time:'07:30',title:'Morning routine',label:'Morning'},
     {key:'night',time:'22:15',title:'Night routine',label:'Night'},
@@ -5484,33 +5485,33 @@ const GROOM_PLAN={
   // The "doctor" item was merged into the week-1 milestone (same day, same task); its note is on ms-w1.
   items:[
     {id:'am-rinse',short:'Rinse face',title:'Rinse face (cleanser only after sweat)',group:'morning',time:'07:30',duration_min:0.5,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-05'}},
     {id:'am-niacinamide',short:'Niacinamide',title:'Niacinamide, 2–3 drops',group:'morning',time:'07:30',duration_min:0.33,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-05'}},
     {id:'am-spf',short:'SPF + lip balm',title:'SPF 50 face & neck + SPF lip balm',group:'morning',time:'07:30',duration_min:0.75,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'},notes:'Reapply every 2 hours outdoors.'},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-05'},notes:'Reapply every 2 hours outdoors.'},
     {id:'am-hair',short:'Hair',title:'Hair: wave cream + root mousse, rough-dry forward, pinch of matte paste',group:'morning',time:'07:30',duration_min:4,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'},notes:'On damp hair. Dry the crown from behind so it lies forward. No wet gel, no salt spray.'},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-05'},notes:'On damp hair. Dry the crown from behind so it lies forward. No wet gel, no salt spray.'},
     {id:'beard-oil',short:'Beard oil',title:'Beard: 3–4 drops of oil, brush down; balm on longer days',group:'morning',time:'07:30',duration_min:1,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-05'}},
     // Switched off until you turn it on in the item's detail view ("only if doctor agrees").
     {id:'minox',short:'Minoxidil',title:'Minoxidil 5% on scalp (only if doctor agrees)',group:'morning',time:'07:30 and 22:15',duration_min:1,active:false,
       schedule:{type:'daily',times_per_day:2,from:'2026-11-16'},notes:'Twice daily on a dry scalp. Extra shedding in weeks 2–8 is expected.'},
     {id:'pm-cleanse',short:'Cleanser',title:'Gentle cleanser',group:'night',time:'22:15',duration_min:1,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-04'}},
     // Rule: azelaic acid never lands on a BHA night. BHA wins (see `excludes` and groomOccursOn).
     {id:'pm-azelaic',short:'Azelaic acid',title:'Azelaic acid 10%, pea-sized',group:'night',time:'22:15',duration_min:0.5,excludes:['pm-bha'],
       schedule:{type:'phased_weekly',phases:[
-        {from:'2026-11-09',to:'2026-11-22',days:['Mon','Wed','Fri','Sun']},
+        {from:'2026-11-04',to:'2026-11-22',days:['Mon','Wed','Fri','Sun']},
         {from:'2026-11-23',to:'2027-01-31',days:['Mon','Wed','Thu','Fri','Sun']}]},
       notes:'Never on BHA nights. If it stings, go back to every other night for a week.'},
     {id:'pm-bha',short:'BHA',title:'BHA 2% liquid exfoliant',group:'night',time:'22:15',duration_min:0.5,
       schedule:{type:'phased_weekly',phases:[{from:'2026-11-23',to:'2027-01-31',days:['Tue','Sat']}]},
       notes:'Replaces azelaic acid on these nights.'},
     {id:'pm-moist',short:'Moisturiser',title:'Night moisturiser',group:'night',time:'22:15',duration_min:0.5,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-04'}},
     {id:'sleep',short:'Lights out',title:'Lights out: 7.5–9 h window, same wake time',group:'night',time:'22:45',duration_min:0,
-      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-04'}},
     {id:'beard',short:'Beard trim',title:'Beard trim: 8 mm tache, 9–10 chin, 7–8 jaw, 6→4 cheeks, 6 sideburns, neck 0',group:'weekly',time:'22:15',duration_min:10,
       schedule:{type:'weekly',days:['Wed','Sun'],from:'2026-11-09'},
       notes:'Brush it dry first. Neckline two fingers above the Adam’s apple. Moustache to the lip line. Finish with the stray pass: comb out and snip only the tips poking past the shape.'},
@@ -5554,22 +5555,22 @@ const GROOM_PLAN={
 };
 // Shopping list derived from the plan. `by` = date you need it by; `optional` items depend on a choice.
 const GROOM_BUY=[
-  {id:'cleanser',name:'Gentle cleanser',by:'2026-11-09',note:'Night, and mornings after sweat'},
-  {id:'niacinamide',name:'Niacinamide serum',by:'2026-11-09'},
-  {id:'spf',name:'SPF 50 for face and neck',by:'2026-11-09'},
-  {id:'lip-spf',name:'SPF lip balm',by:'2026-11-09'},
-  {id:'moisturiser',name:'Night moisturiser',by:'2026-11-09'},
-  {id:'azelaic',name:'Azelaic acid 10%',by:'2026-11-09',note:'First night is Mon 9 Nov'},
-  {id:'wave-cream',name:'Wave cream',by:'2026-11-09'},
-  {id:'mousse',name:'Root mousse',by:'2026-11-09'},
-  {id:'matte-paste',name:'Matte paste',by:'2026-11-09'},
+  {id:'cleanser',name:'Gentle cleanser',by:'2026-11-04',note:'Night, and mornings after sweat'},
+  {id:'niacinamide',name:'Niacinamide serum',by:'2026-11-05'},
+  {id:'spf',name:'SPF 50 for face and neck',by:'2026-11-05'},
+  {id:'lip-spf',name:'SPF lip balm',by:'2026-11-05'},
+  {id:'moisturiser',name:'Night moisturiser',by:'2026-11-04'},
+  {id:'azelaic',name:'Azelaic acid 10%',by:'2026-11-04',note:'First night is tonight, Wed 4 Nov'},
+  {id:'wave-cream',name:'Wave cream',by:'2026-11-05'},
+  {id:'mousse',name:'Root mousse',by:'2026-11-05'},
+  {id:'matte-paste',name:'Matte paste',by:'2026-11-05'},
   {id:'keto',name:'Ketoconazole shampoo',by:'2026-11-09',note:'Wash day, Mon and Thu'},
   {id:'leave-in',name:'Leave-in conditioner',by:'2026-11-09'},
-  {id:'beard-oil',name:'Beard oil',by:'2026-11-09'},
-  {id:'beard-balm',name:'Beard balm',by:'2026-11-09',note:'For longer days'},
+  {id:'beard-oil',name:'Beard oil',by:'2026-11-05'},
+  {id:'beard-balm',name:'Beard balm',by:'2026-11-05',note:'For longer days'},
   {id:'beard-wash',name:'Beard wash',by:'2026-11-09'},
   {id:'beard-cond',name:'Beard conditioner',by:'2026-11-09'},
-  {id:'brush',name:'Beard brush and comb',by:'2026-11-09'},
+  {id:'brush',name:'Beard brush and comb',by:'2026-11-05'},
   {id:'trimmer',name:'Trimmer with guards',by:'2026-11-09',note:'4, 6, 7–8, 8 and 9–10 mm, plus neck at 0'},
   {id:'snips',name:'Small scissors or snips',by:'2026-11-09',note:'For the stray pass'},
   {id:'tweezers',name:'Tweezers',by:'2026-11-15',note:'Brows, first on Sun 15 Nov'},
@@ -5648,7 +5649,7 @@ function groomDur(min){if(!min)return '';return min<1?Math.round(min*60)+'s':(Ma
 // Builds the seed task list from the plan data (pure: no storage).
 function groomBuildSeed(plan){
   const cp=x=>x==null?x:JSON.parse(JSON.stringify(x)); // tasks must never share objects with the plan data
-  const mk=(seedId,o)=>Object.assign({id:'g:'+seedId,seedId,category:plan.category,createdAt:0,lastDoneWeek:null,done:{},active:true},o);
+  const mk=(seedId,o)=>Object.assign({id:'g:'+seedId,seedId,category:plan.category,createdAt:0,lastDoneWeek:null,done:{},active:true,rev:plan.rev||1},o);
   const tasks=plan.items.map(it=>mk(it.id,{
     text:it.title,short:it.short,group:it.group,time:it.time,durationMin:it.duration_min,schedule:cp(it.schedule),
     notes:it.notes||'',notesByDate:cp(it.notesByDate)||null,checklist:cp(it.checklist)||null,excludes:cp(it.excludes)||null,active:it.active!==false}));
@@ -5661,7 +5662,16 @@ function groomBuildSeed(plan){
 function groomMergeSeed(existing,plan){
   const list=[...(existing||[])];let changed=false;
   const have=new Set(list.filter(t=>t.seedId).map(t=>t.seedId));
-  groomBuildSeed(plan).forEach(t=>{if(!have.has(t.seedId)){t.createdAt=Date.now();list.push(t);have.add(t.seedId);changed=true;}});
+  const fresh={};groomBuildSeed(plan).forEach(t=>fresh[t.seedId]=t);
+  Object.keys(fresh).forEach(id=>{if(!have.has(id)){const t=fresh[id];t.createdAt=Date.now();list.push(t);have.add(id);changed=true;}});
+  // plan edited (rev went up): refresh the plan-owned fields of saved tasks, keep what you ticked and your on/off choice
+  list.forEach(t=>{
+    const f=t.seedId&&fresh[t.seedId];
+    if(f&&(t.rev||1)<(plan.rev||1)){
+      ['text','short','group','time','durationMin','schedule','notes','notesByDate','checklist','excludes'].forEach(k=>t[k]=f[k]);
+      t.rev=plan.rev||1;changed=true;
+    }
+  });
   const seen={},out=[];
   list.forEach(t=>{
     if(!t.seedId){out.push(t);return;}
@@ -5671,8 +5681,10 @@ function groomMergeSeed(existing,plan){
   return {list:out,changed};
 }
 function groomWeekOf(s,plan){
+  const begin=plan.begin||plan.start;
+  if(s<begin)return {state:'before',days:gDayNum(begin)-gDayNum(s)};
   const diff=gDayNum(s)-gDayNum(plan.start);
-  if(diff<0)return {state:'before',days:-diff};
+  if(diff<0)return {state:'lead',days:-diff};   // started, but before Monday of week 1
   const w=Math.floor(diff/7)+1;
   return w>plan.weeks?{state:'after',week:w}:{state:'in',week:w};
 }
@@ -5748,9 +5760,10 @@ function renderGroomingPage(){
   const s=GR.date,tasks=S.recurringTasks;
   const wk=groomWeekOf(s,GROOM_PLAN),tw=groomWeekOf(today,GROOM_PLAN);
   document.getElementById('gr-sub').textContent=tw.state==='before'
-    ?'Your 12-week plan starts '+groomNiceDate(GROOM_PLAN.start)+(tw.days===1?' (tomorrow)':' (in '+tw.days+' days)')
+    ?'Your 12-week plan starts '+groomNiceDate(GROOM_PLAN.begin||GROOM_PLAN.start)+(tw.days===1?' (tomorrow)':' (in '+tw.days+' days)')
+    :tw.state==='lead'?'Started. Week 1 begins '+groomNiceDate(GROOM_PLAN.start)+' ('+(tw.days===1?'tomorrow':'in '+tw.days+' days')+')'
     :tw.state==='in'?'Week '+tw.week+' of '+GROOM_PLAN.weeks:'12-week plan finished, routine continues';
-  const label=groomNiceDate(s)+(s===today?' · Today':'')+(wk.state==='in'?' · Week '+wk.week:wk.state==='before'?' · before the plan starts':'');
+  const label=groomNiceDate(s)+(s===today?' · Today':'')+(wk.state==='in'?' · Week '+wk.week:wk.state==='lead'?' · Starter days':wk.state==='before'?' · before the plan starts':'');
   const di=groomDayItems(tasks,s);
   let total=0,done=0,html='';
   const row=(x)=>{
@@ -5771,7 +5784,7 @@ function renderGroomingPage(){
     html+=`<div class="gr-sec"><div class="gr-sech"><b>${r.label}</b><span>${r.time}${mins?' · ~'+Math.max(1,Math.round(mins))+' min':''}</span></div>${list.map(row).join('')}</div>`;
   });
   if(di.any.length)html+=`<div class="gr-sec"><div class="gr-sech"><b>Any time today</b><span></span></div>${di.any.map(row).join('')}</div>`;
-  if(!html)html=`<div class="gr-empty">${wk.state==='before'?'Nothing scheduled yet. Your plan starts '+groomNiceDate(GROOM_PLAN.start)+'.':'Nothing scheduled for this day.'}</div>`;
+  if(!html)html=`<div class="gr-empty">${wk.state==='before'?'Nothing scheduled yet. Your plan starts '+groomNiceDate(GROOM_PLAN.begin||GROOM_PLAN.start)+'.':'Nothing scheduled for this day.'}</div>`;
   const prog=total?`<div class="gr-prog"><div class="pb"><div style="height:100%;width:${Math.round(done/total*100)}%;background:var(--blue);border-radius:4px"></div></div><span>${done}/${total} done</span></div>`:'';
   // coming up: dated tasks (barber, photos, milestones, tint) in the next 14 days from the viewed day
   const up=[];
