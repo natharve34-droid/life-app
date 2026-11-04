@@ -566,6 +566,55 @@
     body.on-mobility .sync-badge{bottom:150px;}
     .mb-time{font-size:76px;}
   }
+  /* ── GROOMING — scoped to #page-grooming / .gr-* ── */
+  #page-grooming{max-width:760px;padding-bottom:140px;}
+  #gr-body{display:grid;gap:14px;}
+  .gr-datebar{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;}
+  .gr-datebar .btn{min-width:48px;min-height:48px;justify-content:center;font-size:20px;}
+  .gr-datelabel{text-align:center;font:800 17px/1.2 var(--font-display);}
+  .gr-todaybtn{justify-self:center;}
+  .gr-prog{display:grid;gap:6px;font-size:12.5px;color:var(--text2);}
+  .gr-sec{background:var(--glass-bg);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow-sm);overflow:hidden;}
+  .gr-sech{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
+  .gr-sech b{font:800 16px var(--font-display);color:var(--text);}
+  .gr-row{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--border);}
+  .gr-row:last-child{border-bottom:0;}
+  .gr-row.done .gr-title{text-decoration:line-through;color:var(--text3);}
+  .gr-chk{flex:none;width:32px;height:32px;border-radius:9px;border:1.5px solid var(--border2);background:var(--bg);color:#fff;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+  .gr-chk[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);}
+  .gr-main{flex:1;min-width:0;cursor:pointer;padding:2px 0;}
+  .gr-title{font-size:14.5px;line-height:1.4;}
+  .gr-meta{font-size:12px;color:var(--text3);margin-top:2px;}
+  .gr-checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .gr-sub{min-height:40px;padding:6px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--bg2);font:600 13px inherit;font-family:inherit;color:var(--text);cursor:pointer;}
+  .gr-sub.on{background:var(--green-bg);border-color:var(--green);color:var(--green-text);}
+  .gr-empty{border:1px dashed var(--border2);border-radius:16px;padding:22px;text-align:center;color:var(--text2);font-size:14px;}
+  .gr-card{margin:0;}
+  .gr-up{display:grid;grid-template-columns:6.2em 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;cursor:pointer;}
+  .gr-up:last-child{border-bottom:0;}
+  .gr-up span{font-weight:700;color:var(--blue);}
+  .gr-off{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:14px;cursor:pointer;}
+  .gr-off input{width:22px;height:22px;margin-top:1px;accent-color:var(--blue);flex:none;}
+  .gr-off small{display:block;color:var(--text3);font-size:12px;}
+  .gr-dtitle{font-size:15px;line-height:1.45;font-weight:600;margin-bottom:10px;}
+  .gr-dmeta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .gr-dmeta .tag:not(.tb){background:var(--bg2);color:var(--text2);}
+  .gr-dsec{margin-top:10px;font-size:13.5px;line-height:1.5;}
+  .gr-dsec b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:2px;}
+  .gr-dnote{background:var(--amber-bg);color:var(--amber-text);border-radius:10px;padding:8px 10px;}
+  .gr-dnote b{color:inherit;}
+  .gr-buyh{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:12px 0 2px;}
+  .gr-buy{display:flex;gap:12px;align-items:flex-start;padding:9px 0;font-size:14.5px;cursor:pointer;border-bottom:1px solid var(--border);}
+  .gr-buy input{width:24px;height:24px;margin-top:1px;accent-color:var(--blue);flex:none;}
+  .gr-buy span{flex:1;min-width:0;}
+  .gr-buy em{font-style:normal;color:var(--text3);font-size:12px;}
+  .gr-buy small{display:block;color:var(--text3);font-size:12px;margin-top:1px;}
+  .gr-buy.got span{text-decoration:line-through;color:var(--text3);}
+  .gr-due{flex:none;font-size:11px;font-weight:800;border-radius:6px;padding:3px 7px;}
+  .gr-due.overdue{background:var(--red-bg);color:var(--red-text);}
+  .gr-due.soon{background:var(--amber-bg);color:var(--amber-text);}
+  .gr-bought summary{cursor:pointer;font-size:13px;color:var(--text2);padding:10px 0 2px;}
+  @media(max-width:720px){#page-grooming{padding-bottom:110px;}}
 </style>
 </head>
 <body>
@@ -602,6 +651,7 @@
     -->
     <div class="ni" onclick="nav('golf',this)"><span class="ni-ico">⚑</span>Golf</div>
     <div class="ni" onclick="nav('mobility',this)"><span class="ni-ico">⟲</span>Mobility</div>
+    <div class="ni" onclick="nav('grooming',this)"><span class="ni-ico">✂</span>Grooming</div>
     <div class="ni" onclick="nav('weight',this)"><span class="ni-ico">◉</span>Weight tracker</div>
     <div class="ni" onclick="nav('time',this)"><span class="ni-ico">◷</span>Time tracker</div>
   </div>
@@ -782,6 +832,12 @@
 <div id="page-wishlist" class="page">
   <div class="ph rb"><div><div class="pt">Wishlist</div></div><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div>
   <div class="g2" id="wish-list"></div>
+</div>
+
+<!-- GROOMING -->
+<div id="page-grooming" class="page">
+  <div class="ph"><div class="pt">Grooming</div><div class="ps" id="gr-sub"></div></div>
+  <div id="gr-body"></div>
 </div>
 
 <!-- MOBILITY -->
@@ -1256,7 +1312,8 @@ const DEFAULT_STATE = {
   datesPromptEnabled:true,
   importantPriority:{}, // item key → 1 High / 2 Medium / 3 Low (see impKey)
   importantOrder:[],    // item keys; manual order within a priority
-  recurringTasks:[],  // {id,text,createdAt,lastDoneWeek} — lastDoneWeek is an ISO week key ('2026-W39'); done for the week when it matches the current one, resets automatically otherwise
+  groomBought:{},     // to-buy ticks for the Grooming page: {itemId:true} (items are GROOM_BUY)
+  recurringTasks:[],  // Grooming plan tasks also live here (they carry a `schedule`, see GROOMING). {id,text,createdAt,lastDoneWeek} — lastDoneWeek is an ISO week key ('2026-W39'); done for the week when it matches the current one, resets automatically otherwise
 };
 
 // ── ONEDRIVE SYNC ──
@@ -1279,7 +1336,7 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
   'foodDiary','foodLibrary','nutritionGoals',
   'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder',
-  'golfSessions','golfPicks','mobilityLog'];
+  'golfSessions','golfPicks','mobilityLog','groomBought'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -2284,7 +2341,8 @@ function renderRecurringTasks(){
   const el=document.getElementById('recurring-list');if(!el)return;
   if(!S.recurringTasks)S.recurringTasks=[];
   const wk=currentWeekKey();
-  el.innerHTML=S.recurringTasks.length?S.recurringTasks.map(t=>{
+  const plain=plainRecurring();
+  el.innerHTML=plain.length?plain.map(t=>{
     const done=t.lastDoneWeek===wk;
     return `<div class="pi">
       <div class="fl" style="gap:9px;flex:1">
@@ -3234,9 +3292,11 @@ function initDatesNotifications(){
   LN.addListener('localNotificationActionPerformed',(action)=>{
     const plannedId=action?.notification?.extra?.plannedId;
     if(action.actionId==='told'&&plannedId)markToldHer(plannedId);
+    else if(action?.notification?.extra?.groom)navById('grooming');
     else navById('dates'); // plain tap — just bring them to the Dates page to decide
   });
   scheduleMondayPrompt();
+  scheduleGroomingReminders();
 }
 
 // ── HOME-SCREEN WIDGET ──
@@ -3282,8 +3342,8 @@ function buildWidgetSummary(){
   // it drops off the widget until it resets next week.
   items.push({type:'section',label:'RECURRING'});
   const wk=currentWeekKey();
-  const pendingRecurring=(S.recurringTasks||[]).filter(t=>t.lastDoneWeek!==wk);
-  if((S.recurringTasks||[]).length===0){
+  const pendingRecurring=plainRecurring().filter(t=>t.lastDoneWeek!==wk);
+  if(plainRecurring().length===0){
     items.push({type:'row',leading:'',text:'No recurring tasks set up',color:'#8B8B9C'});
   } else if(pendingRecurring.length){
     pendingRecurring.forEach(t=>items.push({type:'row',leading:'○',text:t.text,color:'#4F46E5'}));
@@ -5408,6 +5468,404 @@ $("mb-dock").addEventListener("click",e=>{const t=e.target.closest("button");if(
 window.renderMobilityPage=function(){showView(view)};
 })();
 
+// ── GROOMING ──
+// Grooming plan. It extends S.recurringTasks (see DEFAULT_STATE) instead of adding a second store:
+// a task with a `schedule` is a scheduled routine task; a task without one is the old weekly-reset
+// checklist item and behaves exactly as before. Edit the plan data below; the seed adds any
+// missing task by seedId and never overwrites what you have ticked or switched on/off.
+// GROOMING-PURE-BEGIN  (no DOM and no S in this block: it is unit-tested by grooming.test.js)
+const GROOM_PLAN={
+  start:'2026-11-09',weeks:12,category:'Grooming',
+  reminders:[
+    {key:'morning',time:'07:30',title:'Morning routine',label:'Morning'},
+    {key:'night',time:'22:15',title:'Night routine',label:'Night'},
+    {key:'bedtime',time:'22:45',title:'Lights out',label:'Lights out'}
+  ],
+  // The "doctor" item was merged into the week-1 milestone (same day, same task); its note is on ms-w1.
+  items:[
+    {id:'am-rinse',short:'Rinse face',title:'Rinse face (cleanser only after sweat)',group:'morning',time:'07:30',duration_min:0.5,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    {id:'am-niacinamide',short:'Niacinamide',title:'Niacinamide, 2–3 drops',group:'morning',time:'07:30',duration_min:0.33,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    {id:'am-spf',short:'SPF + lip balm',title:'SPF 50 face & neck + SPF lip balm',group:'morning',time:'07:30',duration_min:0.75,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'},notes:'Reapply every 2 hours outdoors.'},
+    {id:'am-hair',short:'Hair',title:'Hair: wave cream + root mousse, rough-dry forward, pinch of matte paste',group:'morning',time:'07:30',duration_min:4,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'},notes:'On damp hair. Dry the crown from behind so it lies forward. No wet gel, no salt spray.'},
+    {id:'beard-oil',short:'Beard oil',title:'Beard: 3–4 drops of oil, brush down; balm on longer days',group:'morning',time:'07:30',duration_min:1,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    // Switched off until you turn it on in the item's detail view ("only if doctor agrees").
+    {id:'minox',short:'Minoxidil',title:'Minoxidil 5% on scalp (only if doctor agrees)',group:'morning',time:'07:30 and 22:15',duration_min:1,active:false,
+      schedule:{type:'daily',times_per_day:2,from:'2026-11-16'},notes:'Twice daily on a dry scalp. Extra shedding in weeks 2–8 is expected.'},
+    {id:'pm-cleanse',short:'Cleanser',title:'Gentle cleanser',group:'night',time:'22:15',duration_min:1,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    // Rule: azelaic acid never lands on a BHA night. BHA wins (see `excludes` and groomOccursOn).
+    {id:'pm-azelaic',short:'Azelaic acid',title:'Azelaic acid 10%, pea-sized',group:'night',time:'22:15',duration_min:0.5,excludes:['pm-bha'],
+      schedule:{type:'phased_weekly',phases:[
+        {from:'2026-11-09',to:'2026-11-22',days:['Mon','Wed','Fri','Sun']},
+        {from:'2026-11-23',to:'2027-01-31',days:['Mon','Wed','Thu','Fri','Sun']}]},
+      notes:'Never on BHA nights. If it stings, go back to every other night for a week.'},
+    {id:'pm-bha',short:'BHA',title:'BHA 2% liquid exfoliant',group:'night',time:'22:15',duration_min:0.5,
+      schedule:{type:'phased_weekly',phases:[{from:'2026-11-23',to:'2027-01-31',days:['Tue','Sat']}]},
+      notes:'Replaces azelaic acid on these nights.'},
+    {id:'pm-moist',short:'Moisturiser',title:'Night moisturiser',group:'night',time:'22:15',duration_min:0.5,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    {id:'sleep',short:'Lights out',title:'Lights out: 7.5–9 h window, same wake time',group:'night',time:'22:45',duration_min:0,
+      schedule:{type:'daily',times_per_day:1,from:'2026-11-09'}},
+    {id:'beard',short:'Beard trim',title:'Beard trim: 8 mm tache, 9–10 chin, 7–8 jaw, 6→4 cheeks, 6 sideburns, neck 0',group:'weekly',time:'22:15',duration_min:10,
+      schedule:{type:'weekly',days:['Wed','Sun'],from:'2026-11-09'},
+      notes:'Brush it dry first. Neckline two fingers above the Adam’s apple. Moustache to the lip line. Finish with the stray pass: comb out and snip only the tips poking past the shape.'},
+    {id:'neck',short:'Neckline',title:'Neckline touch-up',group:'weekly',time:'07:30',duration_min:2,
+      schedule:{type:'weekly',days:['Fri'],from:'2026-11-09'}},
+    {id:'brows',short:'Brows',title:'Brow tidy',group:'weekly',time:'22:15',duration_min:3,
+      schedule:{type:'weekly',days:['Sun'],from:'2026-11-09'},notes:'Tweeze between the brows only.'},
+    {id:'wash',short:'Wash day',title:'Wash day: ketoconazole shampoo (3–5 min), leave-in on hair, beard wash + conditioner',group:'weekly',time:'07:30',duration_min:6,
+      schedule:{type:'weekly',days:['Mon','Thu'],from:'2026-11-09'}},
+    // The first four visits each have their own instruction (notesByDate); after that it repeats every 5 weeks.
+    {id:'barber',short:'Barber visit',title:'Barber visit',group:'barber & photos',time:'any time that day',duration_min:40,
+      schedule:{type:'specific_dates',dates:['2026-12-05','2027-01-02','2027-01-30','2027-03-06'],then_repeat_every_weeks:5},
+      notes:'Then every 5–6 weeks.',
+      notesByDate:{
+        '2026-12-05':'Wk 4: sides and neck only.',
+        '2027-01-02':'Wk 8: sides tidy, crown 5 mm shorter, point-cut wisps.',
+        '2027-01-30':'Wk 12: point-cut fringe edges, keep length.',
+        '2027-03-06':'Wk 17: full longer textured crop (top 6–7 cm, fringe point-cut, longest in the middle, crown 3–4 cm with no thinning scissors, sides scissor or #3 to #2 with no fade).'}},
+    // The app cannot hold photo attachments, so this is a checklist (the crown has its own tick).
+    {id:'photos',short:'Progress photos',title:'Progress photos: front, both profiles, crown',group:'barber & photos',time:'any time that day',duration_min:5,
+      schedule:{type:'specific_dates',dates:['2026-11-15','2026-12-13','2027-01-10','2027-01-31']},
+      checklist:['Front','Left profile','Right profile','Crown'],notes:'Same daylight spot, rear camera at eye level.'},
+    {id:'beard-dye',short:'Beard tint',title:'Beard tint, light or medium brown',group:'optional',time:'any time that day',duration_min:15,active:false,
+      schedule:{type:'specific_dates',dates:['2026-12-20','2027-01-10','2027-01-31'],then_repeat_every_weeks:3},
+      notes:'Patch-test 48 hours before every use. Petroleum jelly on the skin edges. Shortest time on the box the first time.'}
+  ],
+  milestones:[
+    {week:1,date:'2026-11-09',title:'Book a GP or dermatologist about the thinning. Baseline photos: front, both profiles, crown. Start SPF in the morning and cleanser + moisturiser at night. Brow tidy and neckline.',notes:'Bring the crown photo.'},
+    {week:2,date:'2026-11-16',title:'Doctor visit; start what they advise. Azelaic acid on Mon, Wed, Fri and Sun nights.'},
+    {week:3,date:'2026-11-23',title:'Azelaic most nights, BHA on Tue and Sat. Beard trims Wed and Sun.'},
+    {week:4,date:'2026-11-30',title:'Barber: sides and neck only, top untouched. Same wake time every day.'},
+    {week:5,date:'2026-12-07',title:'Progress photos. Leave-in conditioner on wash days.'},
+    {week:6,date:'2026-12-14',title:'Beard reaches the fuller lengths; trim to the table and start the stray pass. Optional: first beard tint (patch-test 48 h before).'},
+    {week:7,date:'2026-12-21',title:'Photo practice: rear camera, eye level, window light, about 1.5 m away.'},
+    {week:8,date:'2026-12-28',title:'Barber: sides tidy, crown 5 mm shorter, point-cut wisps. Compare crown photos with week 1.'},
+    {week:9,date:'2027-01-04',title:'Progress photos. Pores clearer? If the azelaic acid still stings, keep it to every other night.'},
+    {week:10,date:'2027-01-11',title:'Beard check. If the cheeks still feel sparse, ask your doctor about beard minoxidil.'},
+    {week:11,date:'2027-01-18',title:'Optional: dental hygiene visit; gradual tan before any event (no sunbeds).'},
+    {week:12,date:'2027-01-25',title:'Barber: point-cut the fringe edges and keep the length. Final photos to compare with week 1. The full longer cut comes at week 16–18.'}
+  ]
+};
+// Shopping list derived from the plan. `by` = date you need it by; `optional` items depend on a choice.
+const GROOM_BUY=[
+  {id:'cleanser',name:'Gentle cleanser',by:'2026-11-09',note:'Night, and mornings after sweat'},
+  {id:'niacinamide',name:'Niacinamide serum',by:'2026-11-09'},
+  {id:'spf',name:'SPF 50 for face and neck',by:'2026-11-09'},
+  {id:'lip-spf',name:'SPF lip balm',by:'2026-11-09'},
+  {id:'moisturiser',name:'Night moisturiser',by:'2026-11-09'},
+  {id:'azelaic',name:'Azelaic acid 10%',by:'2026-11-09',note:'First night is Mon 9 Nov'},
+  {id:'wave-cream',name:'Wave cream',by:'2026-11-09'},
+  {id:'mousse',name:'Root mousse',by:'2026-11-09'},
+  {id:'matte-paste',name:'Matte paste',by:'2026-11-09'},
+  {id:'keto',name:'Ketoconazole shampoo',by:'2026-11-09',note:'Wash day, Mon and Thu'},
+  {id:'leave-in',name:'Leave-in conditioner',by:'2026-11-09'},
+  {id:'beard-oil',name:'Beard oil',by:'2026-11-09'},
+  {id:'beard-balm',name:'Beard balm',by:'2026-11-09',note:'For longer days'},
+  {id:'beard-wash',name:'Beard wash',by:'2026-11-09'},
+  {id:'beard-cond',name:'Beard conditioner',by:'2026-11-09'},
+  {id:'brush',name:'Beard brush and comb',by:'2026-11-09'},
+  {id:'trimmer',name:'Trimmer with guards',by:'2026-11-09',note:'4, 6, 7–8, 8 and 9–10 mm, plus neck at 0'},
+  {id:'snips',name:'Small scissors or snips',by:'2026-11-09',note:'For the stray pass'},
+  {id:'tweezers',name:'Tweezers',by:'2026-11-15',note:'Brows, first on Sun 15 Nov'},
+  {id:'minox',name:'Minoxidil 5%',by:'2026-11-16',optional:true,note:'Only if your doctor agrees'},
+  {id:'bha',name:'BHA 2% liquid exfoliant',by:'2026-11-23',note:'First night is Tue 24 Nov'},
+  {id:'tint',name:'Beard tint kit (light or medium brown)',by:'2026-12-17',optional:true,note:'First date Sun 20 Dec; patch-test 48 hours before'},
+  {id:'jelly',name:'Petroleum jelly',by:'2026-12-17',optional:true,note:'For the skin edges when tinting'}
+];
+const GROOM_DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const GROOM_NID_BASE=950000000, GROOM_NID_SPAN=1000000, GROOM_WINDOW_DAYS=14; // above toNotifId()'s range, below the Monday prompt id
+// Days as whole numbers (UTC) so date maths never drifts with timezones or DST.
+function gDayNum(s){const [y,m,d]=s.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5);}
+function gDateStr(n){const d=new Date(n*864e5);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+function gWeekday(s){return GROOM_DAYS[new Date(gDayNum(s)*864e5).getUTCDay()];}
+// Does this task's own schedule land on date s? (ignores the azelaic/BHA rule)
+function groomOccursRaw(task,s){
+  const sc=task&&task.schedule;if(!sc)return false;
+  if(sc.type==='daily')return s>=sc.from&&(!sc.to||s<=sc.to);
+  if(sc.type==='weekly')return s>=sc.from&&(!sc.to||s<=sc.to)&&sc.days.includes(gWeekday(s));
+  if(sc.type==='phased_weekly')return sc.phases.some(p=>s>=p.from&&s<=p.to&&p.days.includes(gWeekday(s)));
+  if(sc.type==='specific_dates'){
+    if(sc.dates.includes(s))return true;
+    if(sc.then_repeat_every_weeks){
+      const last=[...sc.dates].sort().pop();
+      if(s>last)return (gDayNum(s)-gDayNum(last))%(7*sc.then_repeat_every_weeks)===0;
+    }
+  }
+  return false;
+}
+// Occurs on s, after applying `excludes`: a task never lands on a day an (active) excluded task does.
+function groomOccursOn(task,s,all){
+  if(task.active===false||!groomOccursRaw(task,s))return false;
+  for(const ex of task.excludes||[]){
+    const o=(all||[]).find(t=>t.seedId===ex);
+    if(o&&o.active!==false&&groomOccursRaw(o,s))return false;
+  }
+  return true;
+}
+function groomTimes(task){return String(task.time||'').match(/\d{1,2}:\d{2}/g)||[];}
+// Active tasks due on s, bucketed by reminder slot; `any` = "any time that day".
+function groomDayItems(tasks,s){
+  const out={};GROOM_PLAN.reminders.forEach(r=>out[r.key]=[]);out.any=[];
+  tasks.filter(t=>t.schedule&&groomOccursOn(t,s,tasks)).forEach(t=>{
+    const times=groomTimes(t);
+    if(!times.length){out.any.push({task:t,ti:0});return;}
+    times.forEach((tm,ti)=>{
+      const slot=GROOM_PLAN.reminders.find(r=>r.time===tm);
+      (slot?out[slot.key]:out.any).push({task:t,ti});
+    });
+  });
+  return out;
+}
+// Done-state key: date, plus #t<n> for a second daily time and #c<n> for a checklist tick.
+function groomDoneKey(s,ti,ci){return s+(ti?'#t'+ti:'')+(ci!=null?'#c'+ci:'');}
+function groomIsDone(task,s,ti){
+  const d=task.done||{};
+  if(task.checklist&&task.checklist.length)return task.checklist.every((_,i)=>d[groomDoneKey(s,ti,i)]);
+  return !!d[groomDoneKey(s,ti)];
+}
+// One grouped reminder per slot with something due; any-time tasks (barber, photos, milestones) ride on the morning one.
+function groomReminders(tasks,s){
+  const di=groomDayItems(tasks,s),out=[];
+  GROOM_PLAN.reminders.forEach((r,slotIdx)=>{
+    const names=di[r.key].map(x=>x.task.short||x.task.text);
+    if(r.key==='morning'&&di.any.length)names.push('Also today: '+di.any.map(x=>x.task.short||x.task.text).join(', '));
+    if(names.length)out.push({slotIdx,time:r.time,title:r.title,body:names.join(' · ')});
+  });
+  return out;
+}
+function groomNextDates(task,from,n,all){
+  const out=[],start=gDayNum(from);
+  for(let i=0;i<800&&out.length<n;i++){const s=gDateStr(start+i);if(groomOccursOn(task,s,all))out.push(s);}
+  return out;
+}
+function groomDur(min){if(!min)return '';return min<1?Math.round(min*60)+'s':(Math.round(min)+' min');}
+// Builds the seed task list from the plan data (pure: no storage).
+function groomBuildSeed(plan){
+  const cp=x=>x==null?x:JSON.parse(JSON.stringify(x)); // tasks must never share objects with the plan data
+  const mk=(seedId,o)=>Object.assign({id:'g:'+seedId,seedId,category:plan.category,createdAt:0,lastDoneWeek:null,done:{},active:true},o);
+  const tasks=plan.items.map(it=>mk(it.id,{
+    text:it.title,short:it.short,group:it.group,time:it.time,durationMin:it.duration_min,schedule:cp(it.schedule),
+    notes:it.notes||'',notesByDate:cp(it.notesByDate)||null,checklist:cp(it.checklist)||null,excludes:cp(it.excludes)||null,active:it.active!==false}));
+  plan.milestones.forEach(m=>tasks.push(mk('ms-w'+m.week,{
+    text:'Week '+m.week+': '+m.title,short:'Week '+m.week+' milestone',group:'milestones',time:'any time that day',durationMin:0,
+    schedule:{type:'specific_dates',dates:[m.date]},notes:m.notes||'',notesByDate:null,checklist:null,excludes:null})));
+  return tasks;
+}
+// Adds missing seeded tasks and drops duplicates (two devices seeding before their first sync). Pure: returns {list,changed}.
+function groomMergeSeed(existing,plan){
+  const list=[...(existing||[])];let changed=false;
+  const have=new Set(list.filter(t=>t.seedId).map(t=>t.seedId));
+  groomBuildSeed(plan).forEach(t=>{if(!have.has(t.seedId)){t.createdAt=Date.now();list.push(t);have.add(t.seedId);changed=true;}});
+  const seen={},out=[];
+  list.forEach(t=>{
+    if(!t.seedId){out.push(t);return;}
+    if(seen[t.seedId]){seen[t.seedId].done=Object.assign({},t.done||{},seen[t.seedId].done||{});changed=true;return;}
+    seen[t.seedId]=t;out.push(t);
+  });
+  return {list:out,changed};
+}
+function groomWeekOf(s,plan){
+  const diff=gDayNum(s)-gDayNum(plan.start);
+  if(diff<0)return {state:'before',days:-diff};
+  const w=Math.floor(diff/7)+1;
+  return w>plan.weeks?{state:'after',week:w}:{state:'in',week:w};
+}
+// To-buy list: still-to-buy items grouped by need-by date (soonest first), and the bought ones.
+function groomBuyGroups(bought,today,list){
+  const items=(list||GROOM_BUY).map(i=>{
+    const days=gDayNum(i.by)-gDayNum(today);
+    return Object.assign({},i,{bought:!!(bought&&bought[i.id]),days,status:days<0?'overdue':days<=3?'soon':'ok'});
+  });
+  const groups=[];
+  items.filter(i=>!i.bought).sort((a,b)=>a.by.localeCompare(b.by)).forEach(i=>{
+    let g=groups[groups.length-1];if(!g||g.by!==i.by){g={by:i.by,items:[]};groups.push(g);}g.items.push(i);
+  });
+  return {groups,bought:items.filter(i=>i.bought),left:items.filter(i=>!i.bought).length,total:items.length};
+}
+// GROOMING-PURE-END
+// Seed: idempotent. Adds any missing seeded task, never touches existing ones; safe to call any number of times.
+function seedGrooming(){
+  if(!Array.isArray(S.recurringTasks))S.recurringTasks=[];
+  const r=groomMergeSeed(S.recurringTasks,GROOM_PLAN);
+  if(r.changed){S.recurringTasks=r.list;saveState();}
+}
+// The old weekly-reset checklist = tasks without a schedule. Grooming tasks are kept out of it.
+function plainRecurring(){return (S.recurringTasks||[]).filter(t=>!t.schedule);}
+const groomTasks=()=>(S.recurringTasks||[]).filter(t=>t.seedId&&t.schedule);
+
+/* ---------- Android reminders (grouped: one per slot per day, rolling window) ---------- */
+let _groomRemTimer=null;
+function scheduleGroomingReminders(){clearTimeout(_groomRemTimer);_groomRemTimer=setTimeout(groomScheduleNow,1500);}
+async function groomScheduleNow(){
+  if(!isAndroidApp()||!window.Capacitor?.Plugins?.LocalNotifications)return;
+  try{
+    seedGrooming();
+    const LN=window.Capacitor.Plugins.LocalNotifications;
+    const perm=await LN.checkPermissions();
+    if(perm.display!=='granted'){const r=await LN.requestPermissions();if(r.display!=='granted')return;}
+    const pending=await LN.getPending();
+    const old=(pending.notifications||[]).filter(n=>n.id>=GROOM_NID_BASE&&n.id<GROOM_NID_BASE+GROOM_NID_SPAN).map(n=>({id:n.id}));
+    if(old.length)await LN.cancel({notifications:old});
+    const now=new Date(),epoch=gDayNum('2026-01-01'),notifs=[];
+    for(let i=0;i<GROOM_WINDOW_DAYS;i++){
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),s=localDateStr(d);
+      groomReminders(S.recurringTasks,s).forEach(r=>{
+        const [h,m]=r.time.split(':').map(Number),at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),h,m,0);
+        if(at<=now)return;
+        notifs.push({id:GROOM_NID_BASE+(gDayNum(s)-epoch)*10+r.slotIdx,title:r.title,body:r.body,schedule:{at},extra:{groom:true}});
+      });
+    }
+    if(notifs.length)await LN.schedule({notifications:notifs});
+  }catch(e){console.error('grooming reminders:',e);}
+}
+
+/* ---------- page ---------- */
+const GR={date:null};
+const groomToday=()=>localDateStr(new Date());
+function groomNiceDate(s){return new Date(gDayNum(s)*864e5).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});}
+function groomEsc(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function groomScheduleText(t){
+  const sc=t.schedule;if(!sc)return '';
+  const from=d=>groomNiceDate(d);
+  if(sc.type==='daily')return (sc.times_per_day>1?sc.times_per_day+' times a day':'Every day')+', from '+from(sc.from);
+  if(sc.type==='weekly')return 'Every '+sc.days.join(', ')+', from '+from(sc.from);
+  if(sc.type==='phased_weekly')return sc.phases.map(p=>p.days.join(' ')+' ('+from(p.from)+' to '+from(p.to)+')').join(' then ');
+  if(sc.type==='specific_dates')return sc.dates.length===1?'One-off, '+from(sc.dates[0]):sc.dates.length+' set dates'+(sc.then_repeat_every_weeks?', then every '+sc.then_repeat_every_weeks+' weeks':'');
+  return '';
+}
+function groomSetDone(t,key,on){if(!t.done)t.done={};if(on)t.done[key]=true;else delete t.done[key];}
+
+function renderGroomingPage(){
+  seedGrooming();
+  const el=document.getElementById('gr-body');if(!el)return;
+  const today=groomToday();if(!GR.date)GR.date=today;
+  const s=GR.date,tasks=S.recurringTasks;
+  const wk=groomWeekOf(s,GROOM_PLAN),tw=groomWeekOf(today,GROOM_PLAN);
+  document.getElementById('gr-sub').textContent=tw.state==='before'
+    ?'Your 12-week plan starts '+groomNiceDate(GROOM_PLAN.start)+(tw.days===1?' (tomorrow)':' (in '+tw.days+' days)')
+    :tw.state==='in'?'Week '+tw.week+' of '+GROOM_PLAN.weeks:'12-week plan finished, routine continues';
+  const label=groomNiceDate(s)+(s===today?' · Today':'')+(wk.state==='in'?' · Week '+wk.week:wk.state==='before'?' · before the plan starts':'');
+  const di=groomDayItems(tasks,s);
+  let total=0,done=0,html='';
+  const row=(x)=>{
+    const t=x.task,ti=x.ti,isDone=groomIsDone(t,s,ti);total++;if(isDone)done++;
+    const note=t.notesByDate&&t.notesByDate[s]||t.notes;
+    const cl=t.checklist&&t.checklist.length;
+    const dd=t.done||{};
+    const meta=[t.group==='weekly'?'Weekly':'',(t.group==='milestones'?'Milestone':''),(t.group==='barber & photos'&&!cl?'Appointment':''),groomDur(t.durationMin),note?'ⓘ notes':''].filter(Boolean).join(' · ');
+    return `<div class="gr-row ${isDone?'done':''}">
+      <button class="gr-chk" data-tick="${groomEsc(t.id)}" data-ti="${ti}" aria-label="Mark done" aria-pressed="${isDone}">${isDone?'✓':''}</button>
+      <div class="gr-main" data-open="${groomEsc(t.id)}"><div class="gr-title">${groomEsc(t.text)}</div>${meta?`<div class="gr-meta">${groomEsc(meta)}</div>`:''}
+        ${cl?`<div class="gr-checks">${t.checklist.map((c,i)=>`<button class="gr-sub ${dd[groomDoneKey(s,ti,i)]?'on':''}" data-check="${groomEsc(t.id)}" data-ci="${i}" data-ti="${ti}">${dd[groomDoneKey(s,ti,i)]?'✓ ':''}${groomEsc(c)}</button>`).join('')}</div>`:''}
+      </div></div>`;
+  };
+  GROOM_PLAN.reminders.forEach(r=>{
+    const list=di[r.key];if(!list.length)return;
+    const mins=list.reduce((a,x)=>a+(x.task.durationMin||0),0);
+    html+=`<div class="gr-sec"><div class="gr-sech"><b>${r.label}</b><span>${r.time}${mins?' · ~'+Math.max(1,Math.round(mins))+' min':''}</span></div>${list.map(row).join('')}</div>`;
+  });
+  if(di.any.length)html+=`<div class="gr-sec"><div class="gr-sech"><b>Any time today</b><span></span></div>${di.any.map(row).join('')}</div>`;
+  if(!html)html=`<div class="gr-empty">${wk.state==='before'?'Nothing scheduled yet. Your plan starts '+groomNiceDate(GROOM_PLAN.start)+'.':'Nothing scheduled for this day.'}</div>`;
+  const prog=total?`<div class="gr-prog"><div class="pb"><div style="height:100%;width:${Math.round(done/total*100)}%;background:var(--blue);border-radius:4px"></div></div><span>${done}/${total} done</span></div>`:'';
+  // coming up: dated tasks (barber, photos, milestones, tint) in the next 14 days from the viewed day
+  const up=[];
+  groomTasks().filter(t=>t.active!==false&&t.schedule.type==='specific_dates').forEach(t=>{
+    groomNextDates(t,s,3,tasks).forEach(d=>{if(gDayNum(d)-gDayNum(s)<=14&&d!==s)up.push({d,t});});
+  });
+  up.sort((a,b)=>a.d.localeCompare(b.d)||a.t.seedId.localeCompare(b.t.seedId));
+  const upHtml=up.length?up.map(u=>`<div class="gr-up" data-open="${groomEsc(u.t.id)}" data-date="${u.d}"><span>${groomNiceDate(u.d)}</span><div>${groomEsc(u.t.group==='milestones'?u.t.text:u.t.short||u.t.text)}</div></div>`).join(''):'<div class="gr-meta">Nothing dated in the next two weeks.</div>';
+  const bg=groomBuyGroups(S.groomBought,today);
+  const buyRow=i=>`<label class="gr-buy ${i.bought?'got':''}"><input type="checkbox" data-buy="${groomEsc(i.id)}" ${i.bought?'checked':''}><span>${groomEsc(i.name)}${i.optional?' <em>(optional)</em>':''}${i.note?'<small>'+groomEsc(i.note)+'</small>':''}</span>${!i.bought&&i.status!=='ok'?'<b class="gr-due '+i.status+'">'+(i.status==='overdue'?'overdue':i.days===0?'today':'in '+i.days+'d')+'</b>':''}</label>`;
+  const buyHtml=`<div class="card gr-card"><div class="st">To buy <span class="gr-meta" style="font-weight:500">${bg.left?bg.left+' of '+bg.total+' left':'all bought'}</span></div>${
+    bg.groups.map(g=>`<div class="gr-buyh">Needed by ${groomEsc(groomNiceDate(g.by))}</div>${g.items.map(buyRow).join('')}`).join('')}${
+    bg.bought.length?`<details class="gr-bought"><summary>Bought (${bg.bought.length})</summary>${bg.bought.map(buyRow).join('')}</details>`:''}</div>`;
+  const off=groomTasks().filter(t=>t.active===false);
+  const offHtml=off.length?off.map(t=>`<label class="gr-off"><input type="checkbox" data-active="${groomEsc(t.id)}"><span>${groomEsc(t.short||t.text)}<small> ${groomEsc(groomScheduleText(t))}</small></span></label>`).join(''):'<div class="gr-meta">Everything is switched on.</div>';
+  el.innerHTML=`<div class="gr-datebar"><button class="btn" data-shift="-1" aria-label="Previous day">‹</button><div class="gr-datelabel">${groomEsc(label)}</div><button class="btn" data-shift="1" aria-label="Next day">›</button></div>
+    ${s!==today?'<button class="btn gr-todaybtn" data-shift="0">Back to today</button>':''}
+    ${prog}${html}
+    <div class="card gr-card"><div class="st">Coming up</div>${upHtml}</div>
+    ${buyHtml}
+    <div class="card gr-card"><div class="st">Switched off</div><div class="gr-meta" style="margin-bottom:8px">Tick to switch on. Switched-off items don't show up in your day or in reminders.</div>${offHtml}</div>
+    <div class="gr-meta" style="padding:4px 2px">${isAndroidApp()?'Reminders: 07:30, 22:15 and 22:45, scheduled for the next '+GROOM_WINDOW_DAYS+' days each time you open the app.':'Reminders only work in the Android app.'}</div>`;
+  scheduleGroomingReminders();
+}
+
+/* ---------- detail view (reuses the app's modal shell) ---------- */
+function openGroomDetail(id,date){
+  const t=S.recurringTasks.find(x=>x.id===id);if(!t)return;
+  const s=date||GR.date||groomToday();
+  S.activeModal={type:'groomDetail',id,date:s};
+  document.getElementById('modal-title').textContent=t.short&&t.group!=='milestones'?t.short:t.text.slice(0,60);
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.style.display='none';
+  const note=t.notesByDate&&t.notesByDate[s]||'';
+  const next=groomNextDates(t,s,5,S.recurringTasks);
+  const times=groomTimes(t);
+  document.getElementById('modal-body').innerHTML=`
+    <div class="gr-dtitle">${groomEsc(t.text)}</div>
+    <div class="gr-dmeta">
+      <span class="tag tb">${groomEsc(t.category||'Grooming')}</span>
+      ${t.group?`<span class="tag">${groomEsc(t.group)}</span>`:''}
+      ${times.length?`<span class="tag">${times.join(' + ')}</span>`:''}
+      ${t.durationMin?`<span class="tag">${groomDur(t.durationMin)}</span>`:''}
+    </div>
+    <div class="gr-dsec"><b>Schedule</b><div>${groomEsc(groomScheduleText(t))}</div></div>
+    ${note?`<div class="gr-dsec gr-dnote"><b>For ${groomEsc(groomNiceDate(s))}</b><div>${groomEsc(note)}</div></div>`:''}
+    ${t.notes?`<div class="gr-dsec"><b>Notes</b><div>${groomEsc(t.notes)}</div></div>`:''}
+    ${!t.notes&&!note?'<div class="gr-dsec"><b>Notes</b><div class="gr-meta">No notes for this one.</div></div>':''}
+    ${t.excludes?'<div class="gr-dsec"><b>Rule</b><div>Never on the same night as BHA.</div></div>':''}
+    <div class="gr-dsec"><b>Next dates</b><div>${next.length?next.map(d=>groomEsc(groomNiceDate(d))).join(' · '):'None coming up'}</div></div>
+    <label class="gr-off" style="margin-top:6px"><input type="checkbox" data-active-modal="${groomEsc(t.id)}" ${t.active!==false?'checked':''}><span>Switched on</span></label>`;
+  document.getElementById('modal').style.display='flex';
+}
+
+/* ---------- events ---------- */
+(function(){
+  const root=document.getElementById('page-grooming');if(!root)return;
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-shift],[data-tick],[data-check],[data-open]');if(!b)return;
+    const find=id=>S.recurringTasks.find(x=>x.id===id);
+    if(b.dataset.shift!==undefined){
+      const n=+b.dataset.shift;GR.date=n===0?groomToday():gDateStr(gDayNum(GR.date||groomToday())+n);renderGroomingPage();return;
+    }
+    if(b.dataset.tick){
+      const t=find(b.dataset.tick),ti=+b.dataset.ti;if(!t)return;
+      if(t.checklist&&t.checklist.length){
+        const all=groomIsDone(t,GR.date,ti);t.checklist.forEach((_,i)=>groomSetDone(t,groomDoneKey(GR.date,ti,i),!all));
+      }else groomSetDone(t,groomDoneKey(GR.date,ti),!groomIsDone(t,GR.date,ti));
+      saveState();renderGroomingPage();return;
+    }
+    if(b.dataset.check){
+      const t=find(b.dataset.check);if(!t)return;
+      const k=groomDoneKey(GR.date,+b.dataset.ti,+b.dataset.ci);groomSetDone(t,k,!(t.done||{})[k]);saveState();renderGroomingPage();return;
+    }
+    if(b.dataset.open)openGroomDetail(b.dataset.open,b.dataset.date||GR.date);
+  });
+  root.addEventListener('change',e=>{
+    if(e.target.dataset.buy){
+      const b=S.groomBought||(S.groomBought={});const id=e.target.dataset.buy;
+      if(e.target.checked)b[id]=true;else delete b[id];
+      saveState();renderGroomingPage();return;
+    }
+    const id=e.target.dataset.active;if(!id)return;
+    const t=S.recurringTasks.find(x=>x.id===id);if(!t)return;
+    t.active=e.target.checked;saveState();renderGroomingPage();
+  });
+  // detail modal's on/off switch lives outside the page, so listen on the modal body
+  document.getElementById('modal-body').addEventListener('change',e=>{
+    const id=e.target.dataset&&e.target.dataset.activeModal;if(!id)return;
+    const t=S.recurringTasks.find(x=>x.id===id);if(!t)return;
+    t.active=e.target.checked;saveState();
+    if(document.getElementById('page-grooming').classList.contains('active'))renderGroomingPage();
+  });
+})();
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -5423,7 +5881,7 @@ window.nav = function(id, el){
   const handlers={home:renderHome,notes:renderNotes,important:renderImportant,budget:renderBudget,
     bills:renderBills,savings:renderSavings,projects:renderProjects,wishlist:renderWishlist,
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,
-    calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage,mobility:renderMobilityPage};
+    calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage,mobility:renderMobilityPage,grooming:renderGroomingPage};
   handlers[id]?.();
 };
 
@@ -5504,6 +5962,7 @@ async function odMergeOrSeed(token){
 }
 
 // Init — render page immediately, then check if returning from MS login
+seedGrooming();
 renderHome();
 setTimeout(async()=>{
   try{
@@ -5516,7 +5975,7 @@ setTimeout(async()=>{
       pushWidgetData(); // show something immediately, before any network round-trip
       refreshWidgetAgendaThenPush(); // then fill in today's agenda once we know if we're signed in
       const token=await androidGetTokenSilent();
-      if(token){ await odMergeOrSeed(token); }
+      if(token){ await odMergeOrSeed(token); scheduleGroomingReminders(); }
       else { setSyncStatus('no-creds'); setTimeout(()=>setSyncStatus('idle'),6000); }
       return;
     }
