@@ -614,6 +614,23 @@
   .gr-due.overdue{background:var(--red-bg);color:var(--red-text);}
   .gr-due.soon{background:var(--amber-bg);color:var(--amber-text);}
   .gr-bought summary{cursor:pointer;font-size:13px;color:var(--text2);padding:10px 0 2px;}
+  .gr-badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--amber-bg);color:var(--amber-text);border-radius:5px;padding:2px 6px;margin-right:6px;}
+  .gr-wrow{display:flex;gap:12px;align-items:flex-start;padding:11px 8px 11px 10px;margin:0 -8px;border-bottom:1px solid var(--border);border-left:3px solid transparent;}
+  .gr-wrow:last-child{border-bottom:0;}
+  .gr-wrow.due{background:var(--amber-bg);border-left-color:var(--amber);border-radius:10px;}
+  .gr-chk.ghost{border-style:dashed;opacity:.35;background:transparent;}
+  .gr-wmain{flex:1;min-width:0;cursor:pointer;}
+  .gr-wtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .gr-wtop b{font-size:15px;}
+  .gr-wstat{font-style:normal;font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;}
+  .gr-wstat.due{color:var(--amber-text);}
+  .gr-wstat.ok{color:var(--green-text);}
+  .gr-wdays{display:flex;gap:5px;margin-top:8px;}
+  .gr-d{flex:1;max-width:40px;min-height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg2);color:var(--text3);font:700 12px inherit;font-family:inherit;border:1.5px solid transparent;}
+  .gr-d.on{background:var(--blue-bg);color:var(--blue-text);border-color:var(--blue);cursor:pointer;}
+  .gr-d.on.done{background:var(--green-bg);color:var(--green-text);border-color:var(--green);}
+  .gr-d.today{box-shadow:0 0 0 2px var(--text);}
+  .gr-d.sel.on{background:var(--blue);color:#fff;}
   @media(max-width:720px){#page-grooming{padding-bottom:110px;}}
 </style>
 </head>
@@ -5700,6 +5717,17 @@ function groomBuyGroups(bought,today,list){
   });
   return {groups,bought:items.filter(i=>i.bought),left:items.filter(i=>!i.bought).length,total:items.length};
 }
+// The seven dates (Mon..Sun) of the week containing s.
+function groomWeekDays(s){const n=gDayNum(s),dow=(new Date(n*864e5).getUTCDay()+6)%7;return Array.from({length:7},(_,i)=>gDateStr(n-dow+i));}
+// Weekly jobs at a glance for the week of s: due-on-s first, then soonest next date.
+function groomWeeklyOverview(tasks,s){
+  const days=groomWeekDays(s);
+  return tasks.filter(t=>t.schedule&&t.schedule.type==='weekly'&&t.active!==false).map(t=>{
+    const due=groomOccursOn(t,s,tasks);
+    return {task:t,due,done:due&&groomIsDone(t,s,0),next:groomNextDates(t,s,1,tasks)[0]||null,
+      days:days.map(d=>{const occ=groomOccursOn(t,d,tasks);return {d,occ,done:occ&&groomIsDone(t,d,0)};})};
+  }).sort((a,b)=>(b.due-a.due)||String(a.next||'9').localeCompare(String(b.next||'9'))||a.task.seedId.localeCompare(b.task.seedId));
+}
 // GROOMING-PURE-END
 // Seed: idempotent. Adds any missing seeded task, never touches existing ones; safe to call any number of times.
 function seedGrooming(){
@@ -5771,10 +5799,11 @@ function renderGroomingPage(){
     const note=t.notesByDate&&t.notesByDate[s]||t.notes;
     const cl=t.checklist&&t.checklist.length;
     const dd=t.done||{};
-    const meta=[t.group==='weekly'?'Weekly':'',(t.group==='milestones'?'Milestone':''),(t.group==='barber & photos'&&!cl?'Appointment':''),groomDur(t.durationMin),note?'ⓘ notes':''].filter(Boolean).join(' · ');
+    const badge=t.group==='weekly'?'<span class="gr-badge">Weekly</span>':'';
+    const meta=[(t.group==='milestones'?'Milestone':''),(t.group==='barber & photos'&&!cl?'Appointment':''),groomDur(t.durationMin),note?'ⓘ notes':''].filter(Boolean).join(' · ');
     return `<div class="gr-row ${isDone?'done':''}">
       <button class="gr-chk" data-tick="${groomEsc(t.id)}" data-ti="${ti}" aria-label="Mark done" aria-pressed="${isDone}">${isDone?'✓':''}</button>
-      <div class="gr-main" data-open="${groomEsc(t.id)}"><div class="gr-title">${groomEsc(t.text)}</div>${meta?`<div class="gr-meta">${groomEsc(meta)}</div>`:''}
+      <div class="gr-main" data-open="${groomEsc(t.id)}"><div class="gr-title">${groomEsc(t.text)}</div>${(badge||meta)?`<div class="gr-meta">${badge}${groomEsc(meta)}</div>`:''}
         ${cl?`<div class="gr-checks">${t.checklist.map((c,i)=>`<button class="gr-sub ${dd[groomDoneKey(s,ti,i)]?'on':''}" data-check="${groomEsc(t.id)}" data-ci="${i}" data-ti="${ti}">${dd[groomDoneKey(s,ti,i)]?'✓ ':''}${groomEsc(c)}</button>`).join('')}</div>`:''}
       </div></div>`;
   };
@@ -5793,6 +5822,22 @@ function renderGroomingPage(){
   });
   up.sort((a,b)=>a.d.localeCompare(b.d)||a.t.seedId.localeCompare(b.t.seedId));
   const upHtml=up.length?up.map(u=>`<div class="gr-up" data-open="${groomEsc(u.t.id)}" data-date="${u.d}"><span>${groomNiceDate(u.d)}</span><div>${groomEsc(u.t.group==='milestones'?u.t.text:u.t.short||u.t.text)}</div></div>`).join(''):'<div class="gr-meta">Nothing dated in the next two weeks.</div>';
+  const ov=groomWeeklyOverview(tasks,s),letters=['M','T','W','T','F','S','S'];
+  const wkRow=o=>{
+    const t=o.task,days=t.schedule.days.map(d=>d.slice(0,3)).join(' · ');
+    const stat=o.due?(o.done?'✓ Done':(s===today?'Due today':'Due '+groomNiceDate(s))):(o.next?'Next '+groomNiceDate(o.next):'Finished');
+    const cls=o.due?(o.done?'ok':'due'):'';
+    const chips=o.days.map((d,i)=>d.occ
+      ?`<button class="gr-d on ${d.done?'done':''} ${d.d===today?'today':''} ${d.d===s?'sel':''}" data-goto="${d.d}" aria-label="${groomEsc(groomNiceDate(d.d))}">${d.done?'✓':letters[i]}</button>`
+      :`<span class="gr-d ${d.d===today?'today':''}">${letters[i]}</span>`).join('');
+    return `<div class="gr-wrow ${o.due&&!o.done?'due':''}">
+      ${o.due?`<button class="gr-chk" data-tick="${groomEsc(t.id)}" data-ti="0" aria-label="Mark done" aria-pressed="${o.done}">${o.done?'✓':''}</button>`:'<span class="gr-chk ghost"></span>'}
+      <div class="gr-wmain" data-open="${groomEsc(t.id)}">
+        <div class="gr-wtop"><b>${groomEsc(t.short||t.text)}</b><em class="gr-wstat ${cls}">${groomEsc(stat)}</em></div>
+        <div class="gr-meta">${groomEsc(days)}${groomTimes(t).length?' · '+groomTimes(t).join(' + '):''}${t.durationMin?' · '+groomDur(t.durationMin):''}</div>
+        <div class="gr-wdays">${chips}</div></div></div>`;
+  };
+  const weeklyHtml=ov.length?`<div class="card gr-card"><div class="st">Weekly jobs <span class="gr-meta" style="font-weight:500">week of ${groomEsc(groomNiceDate(groomWeekDays(s)[0]))} · tap a day to jump to it</span></div>${ov.map(wkRow).join('')}</div>`:'';
   const bg=groomBuyGroups(S.groomBought,today);
   const buyRow=i=>`<label class="gr-buy ${i.bought?'got':''}"><input type="checkbox" data-buy="${groomEsc(i.id)}" ${i.bought?'checked':''}><span>${groomEsc(i.name)}${i.optional?' <em>(optional)</em>':''}${i.note?'<small>'+groomEsc(i.note)+'</small>':''}</span>${!i.bought&&i.status!=='ok'?'<b class="gr-due '+i.status+'">'+(i.status==='overdue'?'overdue':i.days===0?'today':'in '+i.days+'d')+'</b>':''}</label>`;
   const buyHtml=`<div class="card gr-card"><div class="st">To buy <span class="gr-meta" style="font-weight:500">${bg.left?bg.left+' of '+bg.total+' left':'all bought'}</span></div>${
@@ -5802,7 +5847,7 @@ function renderGroomingPage(){
   const offHtml=off.length?off.map(t=>`<label class="gr-off"><input type="checkbox" data-active="${groomEsc(t.id)}"><span>${groomEsc(t.short||t.text)}<small> ${groomEsc(groomScheduleText(t))}</small></span></label>`).join(''):'<div class="gr-meta">Everything is switched on.</div>';
   el.innerHTML=`<div class="gr-datebar"><button class="btn" data-shift="-1" aria-label="Previous day">‹</button><div class="gr-datelabel">${groomEsc(label)}</div><button class="btn" data-shift="1" aria-label="Next day">›</button></div>
     ${s!==today?'<button class="btn gr-todaybtn" data-shift="0">Back to today</button>':''}
-    ${prog}${html}
+    ${prog}${weeklyHtml}${html}
     <div class="card gr-card"><div class="st">Coming up</div>${upHtml}</div>
     ${buyHtml}
     <div class="card gr-card"><div class="st">Switched off</div><div class="gr-meta" style="margin-bottom:8px">Tick to switch on. Switched-off items don't show up in your day or in reminders.</div>${offHtml}</div>
@@ -5842,11 +5887,12 @@ function openGroomDetail(id,date){
 (function(){
   const root=document.getElementById('page-grooming');if(!root)return;
   root.addEventListener('click',e=>{
-    const b=e.target.closest('[data-shift],[data-tick],[data-check],[data-open]');if(!b)return;
+    const b=e.target.closest('[data-shift],[data-goto],[data-tick],[data-check],[data-open]');if(!b)return;
     const find=id=>S.recurringTasks.find(x=>x.id===id);
     if(b.dataset.shift!==undefined){
       const n=+b.dataset.shift;GR.date=n===0?groomToday():gDateStr(gDayNum(GR.date||groomToday())+n);renderGroomingPage();return;
     }
+    if(b.dataset.goto){GR.date=b.dataset.goto;renderGroomingPage();return;}
     if(b.dataset.tick){
       const t=find(b.dataset.tick),ti=+b.dataset.ti;if(!t)return;
       if(t.checklist&&t.checklist.length){
