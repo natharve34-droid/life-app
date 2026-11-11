@@ -189,7 +189,7 @@
   .wkb.active{background:var(--blue);color:var(--on-accent);border-color:var(--blue);font-weight:600;}
 
   /* BILL ROWS */
-  .bill-row{display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 62px 80px 54px;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+  .bill-row{display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 62px auto 54px;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
   .bill-row:last-child{border-bottom:none;}
 
   /* NOTES */
@@ -869,6 +869,8 @@
     </div>
   </div>
 
+  <input class="inp" id="notes-search" type="search" placeholder="Search notes…" oninput="onNotesSearch()" style="margin-bottom:14px" aria-label="Search notes">
+
   <!-- Tab switcher -->
   <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:0.5px solid var(--border);">
     <button id="notes-tab-daily" onclick="switchNotesTab('daily')" style="padding:8px 18px;font-size:13px;font-weight:600;background:none;border:none;border-bottom:2px solid var(--blue);color:var(--blue);cursor:pointer;font-family:inherit;">Daily</button>
@@ -893,7 +895,7 @@
 
   <div class="card" style="margin-top:16px">
     <div class="flb mb12">
-      <div><div class="st" style="margin:0">Recurring</div><div class="ps" style="margin-top:2px">Resets every week — tick it off, it's back next week</div></div>
+      <div><div class="st" style="margin:0">Recurring</div><div class="ps" style="margin-top:2px">Tick them off — each one comes back when it's next due</div></div>
       <button class="btn btnp" onclick="openModal('recurringTask')">+ Add</button>
     </div>
     <div id="recurring-list"></div>
@@ -1017,6 +1019,7 @@
   <div class="ph">
     <div class="pt">Mobility</div>
     <p class="ps">Two sessions, head to toe. Alternate A and B.</p>
+    <div id="mb-plan-days"></div>
   </div>
   <div class="mb-tabs" role="tablist">
     <button role="tab" id="mb-tab-home" aria-selected="true" data-view="home">Sessions</button>
@@ -1036,6 +1039,7 @@
     <span class="gf-eyebrow">Two sessions · 100 balls · 60 minutes each · 2 alignment sticks</span>
     <div class="pt" style="margin-top:6px">The 100-Ball Hour</div>
     <p class="ps">Alternate them. <b>A · Flip + posture</b> fixes the release with irons and ends on iron targets. <b>B · Wrists, turn + driver</b> fixes the backswing and ends on scored drives. Both sessions are built from your 11 drills.</p>
+    <div id="gf-plan-days"></div>
   </div>
 
   <div class="gf-tabs" role="tablist">
@@ -1255,13 +1259,19 @@
     <p style="font-size:13px;color:var(--text2);line-height:1.8">Click <strong>Sign in &amp; pull</strong> to load your latest data from OneDrive, or <strong>Sign in &amp; push</strong> to save your current data to OneDrive. Each button redirects you to Microsoft to sign in fresh — no password is remembered. Works identically on every device and browser. Signing in with Supabase (above) works the same way but with a normal email + password account instead, and becomes your active sync method until you sign in with the other one.</p>
   </div>
 
+  <div class="card mb16">
+    <div class="st">Preferences</div>
+    <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;cursor:pointer"><input type="checkbox" id="pref-time-prompt" style="width:18px;height:18px" onchange="S.timePrompt=this.checked;saveState();"> Ask how long a task took when I tick it off</label>
+  </div>
+
   <div class="card">
     <div class="st">Data management</div>
     <div class="fl" style="gap:8px;flex-wrap:wrap;">
       <button class="btn" onclick="exportData()">Export data as JSON</button>
+      <button class="btn" onclick="exportSyncBackups()">Export sync backup</button>
       <button class="btn btnd" onclick="clearAllData()">Clear all local data</button>
     </div>
-    <p style="font-size:12px;color:var(--text3);margin-top:10px">Export saves a backup file to your device. Clear removes the data stored on this device only — your synced copy is unaffected.</p>
+    <p style="font-size:12px;color:var(--text3);margin-top:10px">Export saves a backup file to your device. Export sync backup saves the copies kept whenever a sync replaced your data on this device. Clear removes the data stored on this device only — your synced copy is unaffected.</p>
   </div>
 </div>
 
@@ -1275,6 +1285,7 @@
     </div>
   </div>
 
+  <div id="time-timer"></div>
   <div class="g3 mb16" id="time-metrics"></div>
 
   <div class="g2 mb16">
@@ -1349,6 +1360,8 @@
   <div class="fab-menu" id="fab-menu">
     <button class="fab-item" onclick="fabAction('expense')">€ Add expense</button>
     <button class="fab-item" onclick="fabAction('note')">✎ New note</button>
+    <button class="fab-item" onclick="fabAction('task')">★ New task</button>
+    <button class="fab-item" onclick="fabAction('weight')">◉ Log weight</button>
   </div>
   <button class="fab-main" id="fab-main" onclick="toggleFab()" aria-label="Quick actions">+</button>
 </div>
@@ -1414,10 +1427,11 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 // the date by a day for anyone in a positive UTC-offset timezone (e.g. Irish/UK
 // summer time), making "today" and per-day lookups land on the wrong cell.
 function localDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-const TODAY=new Date();
-const TODAYSTR=localDateStr(TODAY);
+// let, not const: refreshDayIfChanged() moves these on when the app is used past midnight.
+let TODAY=new Date();
+let TODAYSTR=localDateStr(TODAY);
 const mkKey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
-const curKey=mkKey(TODAY.getFullYear(),TODAY.getMonth()+1);
+let curKey=mkKey(TODAY.getFullYear(),TODAY.getMonth()+1);
 
 // ── STATE (loads from localStorage if available) ──
 const DEFAULT_STATE = {
@@ -1516,7 +1530,8 @@ const SYNC_KEYS=['bills','pockets','monthlyData','savings','projects','wishlist'
   'budgetStages','transactions','budgetStagesV2','savingsGoal','currentSavings','userName','weightGoal',
   'foodDiary','foodLibrary','nutritionGoals',
   'dateIdeas','plannedDates','datesWishlistMigrated','datesPromptEnabled','recurringTasks','importantPriority','importantOrder',
-  'golfSessions','golfPicks','mobilityLog','groomBought'];
+  'golfSessions','golfPicks','mobilityLog','groomBought',
+  'timePrompt','trainingPlan','importantDone'];
 
 const OD={
   clientId:'e3d165ec-893f-4454-9293-b4e6f588b87e',
@@ -1830,6 +1845,17 @@ function saveState() {
   } catch(e) {}
 }
 
+// Local-only save for automatic housekeeping (seeding, one-time migrations). Unlike saveState()
+// it does not bump S._ts and does not push, so on a fresh device housekeeping can never make
+// empty local data look newer than the synced copy.
+function saveStateQuiet(){
+  try{
+    const toSave=Object.assign({},S);delete toSave.activeModal;
+    LS.set('harvey-data',JSON.stringify(toSave));
+    pushWidgetData();
+  }catch(e){}
+}
+
 const S = loadState();
 // Set initial pocket amounts for current month if not set
 // monthlyData initialised empty per month via getMonthData()
@@ -1912,7 +1938,8 @@ async function sb2Push(data){
   try{
     const {data:{user}}=await SB2.client.auth.getUser();
     if(!user)return false;
-    await SB2.client.from('harvey_state').upsert({user_id:user.id,data,updated_at:new Date().toISOString()});
+    const {error}=await SB2.client.from('harvey_state').upsert({user_id:user.id,data,updated_at:new Date().toISOString()});
+    if(error){console.error('sb2 push:',error.message||error);return false;}
     return true;
   }catch(e){return false;}
 }
@@ -1929,12 +1956,41 @@ async function sb2AutoPush(data){
   if(ok2){setSyncStatus('saved');setTimeout(()=>setSyncStatus('idle'),3000);}
   else{setSyncStatus('error','✕ Sync failed');setTimeout(()=>setSyncStatus('idle'),5000);}
 }
+// ── SYNC BACKUPS ──
+// Before one copy of the data replaces the other, the copy being replaced is kept here (this
+// device only, not synced), newest first and size-capped, so it can be exported from Settings.
+const SYNC_BACKUP_KEY='harvey-sync-backups', SYNC_BACKUP_MAX=5, SYNC_BACKUP_BYTES=1500000;
+function keepSyncBackup(label,data){
+  if(!data)return;
+  try{
+    const copy=Object.assign({},data);delete copy.activeModal;
+    let list=[];try{list=JSON.parse(localStorage.getItem(SYNC_BACKUP_KEY)||'[]');}catch(e){}
+    if(!Array.isArray(list))list=[];
+    list.unshift({savedAt:new Date().toISOString(),label,data:copy});
+    list=list.slice(0,SYNC_BACKUP_MAX);
+    while(list.length>1&&JSON.stringify(list).length>SYNC_BACKUP_BYTES)list.pop();
+    for(;;){
+      try{localStorage.setItem(SYNC_BACKUP_KEY,JSON.stringify(list));return;}
+      catch(e){if(list.length<=1){console.error('sync backup too large to keep:',e);return;}list.pop();}
+    }
+  }catch(e){console.error('sync backup:',e);}
+}
+function exportSyncBackups(){
+  let list=[];try{list=JSON.parse(localStorage.getItem(SYNC_BACKUP_KEY)||'[]');}catch(e){}
+  if(!Array.isArray(list)||!list.length){alert('No sync backups yet. One is kept automatically whenever a sync replaces your data.');return;}
+  const a=document.createElement('a');
+  a.href='data:application/json,'+encodeURIComponent(JSON.stringify(list,null,2));
+  a.download='harvey-sync-backups-'+localDateStr(new Date())+'.json';a.click();
+}
+
 function sb2MergeRemote(remote){
   const localTs=S._ts||0, remoteTs=(remote&&remote._ts)||0;
   if(remote&&remoteTs>=localTs){
+    keepSyncBackup('This device, before Supabase replaced it',getStateToSave());
     SYNC_KEYS.forEach(k=>{if(remote[k]!==undefined)S[k]=remote[k];});
     S._ts=remoteTs;
     S.workoutDef=DEFAULT_STATE.workoutDef;
+    seedGrooming();
     try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
     renderHome();
     return true;
@@ -1963,13 +2019,17 @@ async function sb2DoSignIn(){
     if(!sb2MergeRemote(pull.data)){
       // Remote has data, but it looks older/different than what's on this device — ambiguous.
       // Never silently overwrite either side; ask.
-      const wantsRemote=confirm("This account already has data saved in the cloud, but this device's copy looks newer or different.\n\nOK = replace this device's data with the cloud version (recommended on a new device).\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
+      const wantsRemote=confirm("This account already has data saved in the cloud, but this device's copy looks newer or different.\n\nOK = replace this device's data with the cloud version (recommended on a new device).\nCancel = keep this device's data. Your next change on this device will overwrite the cloud copy.\n\nEither way, the copy that loses is kept as a backup (Settings › Export sync backup).");
       if(wantsRemote){
+        keepSyncBackup('This device, before Supabase replaced it',getStateToSave());
         SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
         S._ts=pull.data._ts||Date.now();
         S.workoutDef=DEFAULT_STATE.workoutDef;
+        seedGrooming();
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
         renderHome();
+      } else {
+        keepSyncBackup('Supabase copy, kept aside when you chose this device',pull.data);
       }
     }
   } else {
@@ -2018,9 +2078,11 @@ async function sb2DoPull(){
   const pull=await sb2Pull();
   if(!pull.ok){ if(msgEl){msgEl.textContent='✕ '+pull.error;msgEl.style.color='var(--red)';} return; }
   if(pull.data){
+    keepSyncBackup('This device, before Pull from Supabase',getStateToSave());
     SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
     if(pull.data._ts)S._ts=pull.data._ts;
     S.workoutDef=DEFAULT_STATE.workoutDef;
+    seedGrooming();
     try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
     renderHome();
     if(msgEl)msgEl.textContent='✓ Pulled latest data.';
@@ -2215,12 +2277,16 @@ function renderHome(){
   const totalIncome=md.income.reduce((a,i)=>a+i.amount,0);
   const totalBills=S.bills.filter(b=>b.active).reduce((a,b)=>a+b.amount,0);
   const allT=S.projects.flatMap(p=>p.todos);
-  document.getElementById('hm').innerHTML=`
-    <div class="mc"><div class="ml">Pockets (${MONTHS[d.getMonth()].slice(0,3)})</div><div class="mv">${euro(totalPockets)}</div></div>
-    <div class="mc"><div class="ml">Income (${MONTHS[d.getMonth()].slice(0,3)})</div><div class="mv">${euro(totalIncome)}</div></div>
-    <div class="mc"><div class="ml">Bills</div><div class="mv">${euro(totalBills)}</div></div>
-    <div class="mc"><div class="ml">Tasks done</div><div class="mv">${allT.filter(t=>t.done).length}/${allT.length}</div></div>`;
-  document.getElementById('h-bills').innerHTML=S.bills.filter(b=>b.active).slice(0,4).map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag tb">Due ${b.due}${ordinalSuffix(b.due)}</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
+  const sm=stageMoney(d);
+  const soonBills=S.bills.filter(b=>b.active&&!billPaidNext(b)&&daysUntilDue(b.due)<=7);
+  const dueList=allDueTasks().filter(x=>x.due<=TODAYSTR),overdue=dueList.filter(x=>x.due<TODAYSTR).length;
+  const tile=(page,label,value,sub,color)=>`<div class="mc" onclick="navById('${page}')" style="cursor:pointer"><div class="ml">${label}</div><div class="mv"${color?` style="color:${color}"`:''}>${value}</div><div class="ms">${sub}</div></div>`;
+  document.getElementById('hm').innerHTML=
+    tile('budget','Safe to spend today',sm&&sm.inc>0?euro(sm.perDay):'–',sm&&sm.inc>0?`${sm.st.name} · ${sm.daysLeft} day${sm.daysLeft===1?'':'s'} left`:'Add this month’s income',sm&&sm.left<0?'var(--red)':'')+
+    tile('budget','Left this stage',sm&&sm.inc>0?(sm.left<0?'-':'')+euro(Math.abs(sm.left)):'–',sm?sm.st.name:'No pay stage today',sm&&sm.left<0?'var(--red)':'')+
+    tile('bills','Bills next 7 days',euro(soonBills.reduce((a,b)=>a+b.amount,0)),soonBills.length?`${soonBills.length} unpaid`:'Nothing due','')+
+    tile('important','Tasks due',String(dueList.length),overdue?`${overdue} overdue`:dueList.length?'Due today':'Nothing due today',overdue?'var(--red)':'');
+  document.getElementById('h-bills').innerHTML=S.bills.filter(b=>b.active&&!billPaidNext(b)).sort((a,c)=>daysUntilDue(a.due)-daysUntilDue(c.due)).slice(0,4).map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag tb">Due ${b.due}${ordinalSuffix(b.due)}</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
   const tn=S.notes.find(n=>n.date===TODAYSTR);
   document.getElementById('h-note').innerHTML=tn?`<div style="font-size:13px;color:var(--text2);font-style:italic;line-height:1.5">"${tn.text}"</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Today</div>`:'<div style="font-size:13px;color:var(--text3)">No note yet for today.</div>';
   document.getElementById('h-proj').innerHTML=S.projects.length?`<div style="display:flex;flex-wrap:wrap;gap:16px">`+S.projects.map(p=>{
@@ -2253,7 +2319,8 @@ function renderHome(){
 function saveHomeNote(){
   const val=document.getElementById('h-note-inp').value.trim();if(!val)return;
   const ex=S.notes.findIndex(n=>n.date===TODAYSTR);
-  if(ex>=0)S.notes[ex].text=val;else S.notes.unshift({id:Date.now(),date:TODAYSTR,text:val});
+  // A second note for the same day is added below the first, never over it.
+  if(ex>=0)S.notes[ex].text=S.notes[ex].text+'\n\n'+val;else S.notes.unshift({id:Date.now(),date:TODAYSTR,text:val});
   document.getElementById('h-note-inp').value='';
   saveState();renderHome();
 }
@@ -2284,9 +2351,10 @@ function switchNotesTab(tab){
 function renderNotes(){
   _notesTab=_notesTab||'daily';
   switchNotesTab(_notesTab);
-  const sorted=[...S.notes].sort((a,b)=>b.date.localeCompare(a.date));
+  const sorted=[...S.notes].filter(n=>!_notesQ||(n.text||'').toLowerCase().includes(_notesQ)||n.date.includes(_notesQ)).sort((a,b)=>b.date.localeCompare(a.date));
   const el=document.getElementById('notes-list');
   if(!el)return;
+  if(sorted.length===0&&_notesQ){el.innerHTML=`<div style="text-align:center;padding:40px 24px;font-size:14px;color:var(--text3)">No daily notes match “${uiEsc(_notesQ)}”.</div>`;return;}
   if(sorted.length===0){
     el.innerHTML=`<div style="text-align:center;padding:48px 24px;">
       <div style="font-size:32px;margin-bottom:12px;opacity:0.3;">✎</div>
@@ -2329,8 +2397,11 @@ function renderProjectNotes(){
     return;
   }
   // Only show projects that have notes or allow adding
-  el.innerHTML=S.projects.map(p=>{
-    const notes=(S.projectNotes[p.id]||[]);
+  const q=_notesQ,match=(p,n)=>(n.title||'').toLowerCase().includes(q)||(n.body||'').toLowerCase().includes(q)||p.name.toLowerCase().includes(q);
+  const projs=q?S.projects.filter(p=>(S.projectNotes[p.id]||[]).some(n=>match(p,n))):S.projects;
+  if(q&&!projs.length){el.innerHTML=`<div style="text-align:center;padding:40px 24px;font-size:14px;color:var(--text3)">No project notes match “${uiEsc(q)}”.</div>`;return;}
+  el.innerHTML=projs.map(p=>{
+    const notes=(S.projectNotes[p.id]||[]).filter(n=>!q||match(p,n));
     const pnSafe=p.name.replace(/'/g,"\'");
     return `
     <div style="margin-bottom:20px;">
@@ -2366,6 +2437,7 @@ function deleteNote(id){S.notes=S.notes.filter(n=>n.id!==id);saveState();renderN
 function editNote(id){
   const n=S.notes.find(x=>x.id===id);if(!n)return;
   openModal('note');
+  S.activeModal.editId=id; // tells saveModal to replace this note's text rather than append
   document.getElementById('modal-title').textContent='Edit note';
   document.getElementById('m-date').value=n.date;
   document.getElementById('m-note').value=n.text;
@@ -2407,6 +2479,8 @@ function completeImportant(id,ref){
     const [pid,tid]=String(ref).split('-').map(Number);
     toggleTodo(pid,tid);
   } else {
+    const i=S.important.find(x=>x.id===id);
+    if(i)recordImportantDone(i.text,i.source);
     removeImportant(id,null);
   }
 }
@@ -2480,14 +2554,17 @@ function renderImportant(){
       <div style="display:flex;align-items:center;gap:9px;padding:9px 13px;">
         <div onclick="completeImportant(${i.ref?'null':i.id}, ${i.ref?`'${i.ref}'`:'null'})" title="Mark complete" style="width:15px;height:15px;min-width:15px;border:1.5px solid ${pr.color};border-radius:4px;cursor:pointer"></div>
         <span style="flex:1;font-size:13px">${i.text}${badge}</span>
-        <span class="tag tp">${i.source}</span>
+        <span class="tag tp">${i.source}</span>${dueTag(itemDue(i))}
         <button class="tag ${pr.tag}" style="border:none;cursor:pointer;font-family:inherit" onclick="cycleImportantPriority('${key}')" title="Tap to change priority">${pr.label}</button>
         <span style="display:inline-flex;flex-direction:column;line-height:1">${arrow(-1,canUp,'▲')}${arrow(1,canDown,'▼')}</span>
+        <button onclick="${i.ref?`editTodo(${pid},${tid})`:`editImportant(${i.id})`}" class="btn-icon" title="Edit">✎</button>
         <button onclick="removeImportant(${i.ref?'null':i.id}, ${i.ref?`'${i.ref}'`:'null'})" class="btn-icon" title="Remove from Important">✕</button>
       </div>
       ${subsHtml}
     </div>`;
   }).join(''):'<div style="color:var(--text3);font-size:13px;padding:24px 0;text-align:center">No important tasks yet. Star tasks in projects to pin them here.</div>';
+  const hist=S.importantDone||[];
+  if(hist.length)el.innerHTML+=`<details style="margin-top:10px"><summary style="font-size:12.5px;color:var(--text2);cursor:pointer;padding:6px 0">Done (${hist.length})</summary>${hist.map((h,n)=>`<div class="pi" style="opacity:.75"><div style="min-width:0"><span class="pn" style="text-decoration:line-through">${uiEsc(h.text)}</span><div style="font-size:11px;color:var(--text3);margin-top:2px">${uiEsc(h.source||'')}${h.source?' · ':''}done ${niceDay(h.completed)}</div></div><div class="fl" style="gap:2px"><button class="btn-icon" onclick="restoreImportantDone(${n})" title="Restore">↩</button><button class="btn-icon" onclick="deleteImportantDone(${n})" title="Remove from history">✕</button></div></div>`).join('')}</details>`;
   renderRecurringTasks();
 }
 // Removing a project-linked item un-stars the underlying task (it stays on the project,
@@ -2526,11 +2603,11 @@ function renderRecurringTasks(){
   const wk=currentWeekKey();
   const plain=plainRecurring();
   el.innerHTML=plain.length?plain.map(t=>{
-    const done=t.lastDoneWeek===wk;
+    const done=isRecurringDone(t),offDay=!done&&!isRecurringScheduledToday(t);
     return `<div class="pi">
       <div class="fl" style="gap:9px;flex:1">
         <div onclick="toggleRecurringTask(${t.id})" style="width:16px;height:16px;min-width:16px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;${done?'background:var(--blue);color:#fff;font-size:10px':'border:1.5px solid var(--border2)'}">${done?'✓':''}</div>
-        <span style="font-size:13px;${done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span>
+        <span style="font-size:13px;${done?'text-decoration:line-through;color:var(--text3)':offDay?'color:var(--text3)':''}">${t.text}</span><span style="font-size:11px;color:var(--text3)">${recurringLabel(t)}${offDay?' · not due today':''}</span>
       </div>
       <button class="btn-icon" onclick="deleteRecurringTask(${t.id})" title="Delete">✕</button>
     </div>`;
@@ -2538,8 +2615,8 @@ function renderRecurringTasks(){
 }
 function toggleRecurringTask(id){
   const t=S.recurringTasks.find(x=>x.id===id);if(!t)return;
-  const wk=currentWeekKey();
-  t.lastDoneWeek=(t.lastDoneWeek===wk)?null:wk;
+  if(recurringType(t)==='weekly'){const wk=currentWeekKey();t.lastDoneWeek=(t.lastDoneWeek===wk)?null:wk;}
+  else{const k=recurringPeriodKey(t);t.lastDoneKey=(t.lastDoneKey===k)?null:k;}
   saveState();renderRecurringTasks();
 }
 function deleteRecurringTask(id){
@@ -2574,7 +2651,7 @@ function renderBudget(){
       {id:2,name:'Stage 2',startDay:16,endDay:31},
     ];
     S.budgetStagesV2=true;
-    saveState();
+    saveStateQuiet();
   }
   buildMonthOptions('budget-month-sel');
   const [yr,mo]=S.budgetViewMonth.split('-').map(Number);
@@ -2617,11 +2694,15 @@ function renderBudget(){
         ${i.stageId!=null?`<span class="tag tp">${(S.budgetStages.find(s=>s.id===i.stageId)||{}).name||'—'}</span>`:(i.day?`<span class="tag tb">Day ${i.day}</span>`:'')}
         <span class="tag tg">${i.freq}</span>
         <span class="pv">${euro(i.amount)}</span>
+        <button class="btn-icon" onclick="editIncome(${i.id})" title="Edit">✎</button>
         <button class="btn-icon" onclick="removeMonthIncome('${S.budgetViewMonth}',${i.id})">✕</button>
       </div>
-    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No income logged for this month.</div>';
+    </div>`).join(''):(()=>{
+      const pk=prevMonthKey(S.budgetViewMonth),prev=S.monthlyData[pk],n=(prev&&prev.income||[]).length;
+      return '<div style="color:var(--text3);font-size:13px;padding:8px 0">No income logged for this month.</div>'+(n?`<button class="btn" onclick="copyIncomeFromLastMonth()">Copy ${n} income line${n===1?'':'s'} from ${monthName(pk)}</button>`:'');
+    })();
   document.getElementById('budget-bills-total').textContent=euro(totalBills);
-  document.getElementById('budget-bills-list').innerHTML=activeBills.map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag ${catTag(b.cat)}">${b.cat}</span><span style="font-size:12px;color:var(--text2)">Due ${b.due}${ordinalSuffix(b.due)}</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span></div></div>`).join('');
+  document.getElementById('budget-bills-list').innerHTML=activeBills.map(b=>`<div class="pi"><span class="pn">${b.name}</span><div class="fl"><span class="tag ${catTag(b.cat)}">${b.cat}</span><span style="font-size:12px;color:var(--text2)">Due ${b.due}${ordinalSuffix(b.due)}</span><span style="font-size:13px;font-weight:600">${euro(b.amount)}</span>${isBillPaid(b,S.budgetViewMonth)?`<button class="tag tg" style="border:none;cursor:pointer;font-family:inherit" onclick="toggleBillPaid(${b.id},'${S.budgetViewMonth}')" title="Tap to undo">✓ Paid</button>`:`<button class="tag" style="border:none;cursor:pointer;font-family:inherit;background:var(--bg2);color:var(--text2)" onclick="toggleBillPaid(${b.id},'${S.budgetViewMonth}')">Mark paid</button>`}</div></div>`).join('');
   document.getElementById('budget-summary').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="sum-box"><div class="sum-label">Total income</div><div class="sum-val" style="color:var(--green)">${euro(totalIncome)}</div></div>
@@ -2655,7 +2736,8 @@ function renderStages(){
     const isCurStage=isCurMonth&&today>=st.startDay&&today<=st.endDay;
     let safe='';
     if(isCurStage){
-      const daysLeft=Math.max(1,st.endDay-today+1);
+      const lastDay=Math.min(st.endDay,new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0).getDate()); // a stage ending on "31" ends on the 30th in a 30-day month
+      const daysLeft=Math.max(1,lastDay-today+1);
       safe=`<div style="font-size:11px;color:var(--text3);margin-top:5px;padding-top:5px;border-top:0.5px solid var(--border)">Safe to spend <strong style="color:${left>=0?'var(--green)':'var(--red)'}">${euro(Math.max(0,left)/daysLeft)}/day</strong> · ${daysLeft} day${daysLeft>1?'s':''} left</div>`;
     }
     return `<div class="mc" style="${isCurStage?'outline:1.5px solid var(--blue);outline-offset:-1px':''}">
@@ -2700,7 +2782,9 @@ function renderSpendingByPocket(){
   }).join('');
   const tb=S.pockets.reduce((a,p)=>a+getPB(st.id,p.id),0);
   const ta=stageTx.reduce((a,t)=>a+t.amount,0);
-  el.innerHTML=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${st.name} · days ${st.startDay}–${st.endDay>=31?'end':st.endDay}</div>`+rows+`
+  const pk=prevMonthKey(S.budgetViewMonth);
+  const copyBtn=!hasBudgets(S.monthlyData[S.budgetViewMonth])&&hasBudgets(S.monthlyData[pk])?`<div class="flb" style="gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:12px;background:var(--bg2);border-radius:var(--radius)"><span style="font-size:13px;color:var(--text2)">No pocket budgets set for this month yet.</span><button class="btn" onclick="copyBudgetsFromLastMonth()">Copy budgets from ${monthName(pk)}</button></div>`:'';
+  el.innerHTML=copyBtn+`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${st.name} · days ${st.startDay}–${st.endDay>=31?'end':st.endDay}</div>`+rows+`
     <div class="flb" style="margin-top:6px;padding-top:12px;border-top:0.5px solid var(--border)">
       <span style="font-size:13px;font-weight:600">${st.name} total — spent vs budget</span>
       <span style="font-size:13px;font-weight:600;color:${tb>0&&ta>tb?'var(--red)':'var(--text)'}">${euro(ta)} / ${euro(tb)}</span>
@@ -2720,7 +2804,7 @@ function renderTransactions(){
       <div style="width:9px;height:9px;border-radius:50%;background:${cat.color}"></div>
       <div><div style="font-size:13px">${t.note||cat.name}</div><div style="font-size:11px;color:var(--text3)">${cat.name} · ${fmtDate(t.date).replace(', '+new Date(t.date+'T12:00:00').getFullYear(),'')}</div></div>
       <span style="font-size:13px;font-weight:600">${euro(t.amount)}</span>
-      <button class="btn-icon" onclick="deleteTransaction(${t.id})">✕</button>
+      <div class="fl" style="gap:2px"><button class="btn-icon" onclick="editTransaction(${t.id})" title="Edit">✎</button><button class="btn-icon" onclick="deleteTransaction(${t.id})">✕</button></div>
     </div>`;
   }).join('')+(monthTx.length>40?`<div style="font-size:11px;color:var(--text3);text-align:center;padding-top:8px">Showing 40 of ${monthTx.length}</div>`:'');
 }
@@ -2805,7 +2889,9 @@ function renderBills(){
     <div class="mc"><div class="ml">Active bills</div><div class="mv">${active.length}</div><div class="ms">${inactive.length} paused</div></div>`;
   const billsNoteInp=document.getElementById('bills-note-inp');
   if(billsNoteInp&&document.activeElement!==billsNoteInp)billsNoteInp.value=getMonthData(curKey).billsNote||'';
-  document.getElementById('bills-list').innerHTML=S.bills.map(b=>`
+  // Active bills by next due date, then paused ones (also by due date)
+  const ordered=[...S.bills].sort((a,c)=>(c.active?1:0)-(a.active?1:0)||daysUntilDue(a.due)-daysUntilDue(c.due));
+  document.getElementById('bills-list').innerHTML=ordered.map(b=>`
     <div class="bill-row" style="${!b.active?'opacity:0.5':''}">
       <input class="inp" style="font-size:12px;padding:5px 8px;font-weight:500" value="${b.name}" onchange="editBill(${b.id},'name',this.value)">
       <input type="number" class="inp hide-mobile" style="font-size:12px;padding:5px 8px" value="${b.amount}" onchange="editBill(${b.id},'amount',this.value)">
@@ -2813,7 +2899,7 @@ function renderBills(){
         ${['Housing','Utilities','Entertainment','Health','Transport','Other'].map(c=>`<option${b.cat===c?' selected':''}>${c}</option>`).join('')}
       </select>
       <input type="number" class="inp hide-mobile" style="font-size:12px;padding:5px 8px;width:58px" value="${b.due}" min="1" max="31" onchange="editBill(${b.id},'due',this.value)">
-      <button onclick="toggleBillActive(${b.id})" class="btn" style="font-size:11px;white-space:nowrap;padding:5px 8px">${b.active?'Pause':'Resume'}</button>
+      <div class="fl" style="gap:4px">${b.active?(()=>{const n=billNextDue(b),paid=isBillPaid(b,n.key),mon=n.date.toLocaleDateString('en-IE',{month:'short'});return `<button onclick="toggleBillPaid(${b.id},'${n.key}')" class="btn ${paid?'tg':''}" style="font-size:11px;white-space:nowrap;padding:5px 8px" title="${paid?'Paid for '+mon+' — tap to undo':'Mark the '+mon+' payment as paid'}">${paid?'✓ Paid '+mon:'Mark paid'}</button>`;})():''}<button onclick="toggleBillActive(${b.id})" class="btn" style="font-size:11px;white-space:nowrap;padding:5px 8px">${b.active?'Pause':'Resume'}</button></div>
       <button onclick="deleteBill(${b.id})" class="btn btnd" style="font-size:11px;padding:5px 8px">Del</button>
     </div>`).join('');
 }
@@ -2830,7 +2916,7 @@ function renderSavings(){
   if(S.currentSavings==null){
     // First time seeing this feature — seed from the historical log so existing users don't lose their total
     S.currentSavings=S.savings.reduce((a,b)=>a+b.amount,0);
-    saveState();
+    saveStateQuiet();
   }
   const tot=S.currentSavings||0;
   const last=S.savings[S.savings.length-1]?.amount||0,prev=S.savings[S.savings.length-2]?.amount||0,diff=last-prev;
@@ -2854,7 +2940,7 @@ function renderSavings(){
     const blue=cssVar('--blue');
     charts['sav-chart']=new Chart(ctx,{type:'bar',data:{labels:S.savings.map(s=>s.label),datasets:[{label:'Saved',data:S.savings.map(s=>s.amount),backgroundColor:hexToRgba(blue,.75),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>'€'+v},grid:{color:chartGridColor()}},x:{ticks:{font:{size:11},color:chartTickColor()},grid:{display:false}}}}});
   });
-  document.getElementById('sav-list').innerHTML=[...S.savings].reverse().map(s=>`<div class="pi"><span class="pn">${s.label}</span><div class="fl"><span class="pv">${euro(s.amount)}</span><button class="btn-icon" onclick="S.savings=S.savings.filter(x=>x.id!==${s.id});saveState();renderSavings();">✕</button></div></div>`).join('');
+  document.getElementById('sav-list').innerHTML=[...S.savings].reverse().map(s=>`<div class="pi"><span class="pn">${s.label}</span><div class="fl"><span class="pv">${euro(s.amount)}</span><button class="btn-icon" onclick="deleteSaving(${s.id})">✕</button></div></div>`).join('');
 }
 
 function setSavingsGoal(val){
@@ -2939,6 +3025,7 @@ function renderProjects(){
             <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);">
               <div onclick="toggleSubtask(${p.id},${t.id},${s.id})" style="width:13px;height:13px;min-width:13px;border:1.5px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
               <span style="flex:1;font-size:12px;color:var(--text2);">${s.text}</span>
+              <button onclick="editSubtask(${p.id},${t.id},${s.id})" class="btn-icon" style="font-size:11px;" title="Edit">✎</button>
               <button onclick="deleteSubtask(${p.id},${t.id},${s.id})" class="btn-icon" style="font-size:11px;">✕</button>
             </div>`).join('')}
           ${doneSubs.length?`
@@ -2959,9 +3046,10 @@ function renderProjects(){
       <details style="border-bottom:0.5px solid var(--border);" ${(t.subtasks&&t.subtasks.length)?'open':''}>
         <summary style="display:flex;align-items:center;gap:9px;padding:8px 0;list-style:none;cursor:default;">
           <div onclick="event.stopPropagation();toggleTodo(${p.id},${t.id})" style="width:15px;height:15px;min-width:15px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;"></div>
-          <span style="flex:1;font-size:13px;cursor:pointer;" onclick="this.closest('details').open=!this.closest('details').open">${t.text}${t.subtasks&&t.subtasks.length?` <span style="font-size:11px;color:var(--text3);">(${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length})</span>`:''}</span>
+          <span style="flex:1;font-size:13px;cursor:pointer;" onclick="this.closest('details').open=!this.closest('details').open">${t.text}${t.subtasks&&t.subtasks.length?` <span style="font-size:11px;color:var(--text3);">(${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length})</span>`:''}</span>${dueTag(t.due)}
           <button onclick="event.stopPropagation();addSubtaskModal(${p.id},${t.id})" class="btn-icon" title="Add subtask" style="font-size:11px;color:var(--blue);">+ Sub</button>
           <button onclick="event.stopPropagation();pinTodo(${p.id},${t.id},'${pnSafe}','${p.color}')" class="btn-icon" style="color:${t.important?'var(--amber)':'var(--text3)'};">★</button>
+          <button onclick="event.stopPropagation();editTodo(${p.id},${t.id})" class="btn-icon" title="Edit">✎</button>
           <button onclick="event.stopPropagation();deleteTodo(${p.id},${t.id})" class="btn-icon">✕</button>
         </summary>
         ${renderSubtasks(t)}
@@ -3060,8 +3148,8 @@ function toggleSubtask(pid,tid,sid){
   s.done=!s.done;
   saveState();renderProjects();renderImportant();
   // If just marked done and there are time projects, ask how long it took
-  if(s.done && S.timeProjects.length>0){
-    const matchProj=S.timeProjects.find(tp=>tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+  if(s.done && S.timeProjects.length>0 && S.timePrompt!==false){
+    const matchProj=timeProjectFor(p); // linked time project first, then the old first-word name match
     const selProj=matchProj?matchProj.id:S.timeProjects[0].id;
     S.activeModal={type:'subtaskTime',pid,tid,sid,pname:p.name};
     document.getElementById('modal-title').textContent='Subtask completed!';
@@ -3106,19 +3194,23 @@ function editProjectNote(pid,nid){
 function toggleTodo(pid,tid){
   const p=S.projects.find(x=>x.id===pid),t=p.todos.find(x=>x.id===tid);
   t.done=!t.done;
-  // Completing a task removes it from the Important list automatically
+  const ref=`${pid}-${tid}`;
+  // Completing a task removes it from the Important list automatically (and keeps it in the Done history)
   if(t.done){
-    S.important=S.important.filter(x=>x.ref!==`${pid}-${tid}`);
+    if(t.important||S.important.some(x=>x.ref===ref))recordImportantDone(t.text,p.name,ref);
+    S.important=S.important.filter(x=>x.ref!==ref);
+  }else if(Array.isArray(S.importantDone)){
+    const k=S.importantDone.findIndex(x=>x.ref===ref);if(k>=0)S.importantDone.splice(k,1);
   }
   saveState();
   renderProjects();
   renderImportant(); // keep the Important page in step when completing from either place
   // If just marked done and there are time projects, ask how long it took
-  if(t.done && S.timeProjects.length>0){
+  if(t.done && S.timeProjects.length>0 && S.timePrompt!==false){
     S.activeModal={type:'taskTime',pid,tid,pname:p.name,defaultProjId:p.id};
     document.getElementById('modal-title').textContent='Task completed!';
     // Find matching time project by name, or use first
-    const matchProj=S.timeProjects.find(tp=>tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+    const matchProj=timeProjectFor(p); // linked time project first, then the old first-word name match
     const selProj=matchProj?matchProj.id:S.timeProjects[0].id;
     document.getElementById('modal-body').innerHTML=`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Nice work! How long did <strong>${t.text}</strong> take?</div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to time project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(tp=>`<option value="${tp.id}"${tp.id===selProj?' selected':''}>${tp.name}</option>`).join('')}</select></div>`;
     // Override save button label
@@ -3134,15 +3226,16 @@ function pinTodo(pid,tid,pname){
   else S.important=S.important.filter(x=>x.ref!==ref);
   saveState();renderProjects();
 }
-function addTodoModal(pid){S.activeModal={type:'todo',pid};document.getElementById('modal-title').textContent='Add task';document.getElementById('modal-body').innerHTML=`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`;document.getElementById('modal').style.display='flex';}
+function addTodoModal(pid){S.activeModal={type:'todo',pid};document.getElementById('modal-title').textContent='Add task';document.getElementById('modal-body').innerHTML=`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div><div class="fr"><label class="fl2">Due date (optional)</label><input type="date" class="inp" id="m-duedate"></div>`;document.getElementById('modal').style.display='flex';}
 
 // ── WISHLIST ──
 function renderWishlist(){
   checkDatesWishlistMigration();
   const cats=[...new Set(S.wishlist.map(w=>w.cat))];
   document.getElementById('wish-list').innerHTML=cats.map(cat=>{
-    const items=S.wishlist.filter(w=>w.cat===cat);
-    return `<div class="card mb12"><div class="flb mb12"><div class="st" style="margin:0">${cat}</div><span class="tag tb">${items.length}</span></div>${items.map(w=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);"><span style="font-size:15px">${w.ico}</span><span style="flex:1;font-size:13px">${w.name}</span><button class="btn-icon" onclick="S.wishlist=S.wishlist.filter(x=>x.id!==${w.id});saveState();renderWishlist();">✕</button></div>`).join('')}</div>`;
+    const items=S.wishlist.filter(w=>w.cat===cat).sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+    const open=items.filter(w=>!w.done),toGo=open.reduce((a,w)=>a+(+w.cost||0),0);
+    return `<div class="card mb12"><div class="flb mb12"><div class="st" style="margin:0">${cat}</div><div class="fl" style="gap:6px">${toGo?`<span class="tag tg">${euro(toGo)} to go</span>`:''}<span class="tag tb">${open.length}${open.length!==items.length?' of '+items.length:''}</span></div></div>${items.map(w=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);${w.done?'opacity:.6':''}"><div onclick="toggleWishDone(${w.id})" title="${w.done?'Mark not done':'Mark done'}" style="width:16px;height:16px;min-width:16px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;${w.done?'background:var(--blue);color:#fff;font-size:10px':'border:1.5px solid var(--border2)'}">${w.done?'✓':''}</div><span style="font-size:15px">${w.ico}</span><span style="flex:1;font-size:13px;${w.done?'text-decoration:line-through':''}">${w.name}${w.done&&w.doneAt?`<span style="font-size:11px;color:var(--text3)"> · done ${niceDay(w.doneAt)}</span>`:''}</span>${w.cost?`<span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">${euro(w.cost)}</span>`:''}${w.link?`<button class="btn-icon" onclick="openWishLink(${w.id})" title="Open link">↗</button>`:''}<button class="btn-icon" onclick="editWish(${w.id})" title="Edit">✎</button><button class="btn-icon" onclick="S.wishlist=S.wishlist.filter(x=>x.id!==${w.id});saveState();renderWishlist();">✕</button></div>`).join('')}</div>`;
   }).join('');
 }
 
@@ -3150,7 +3243,7 @@ function renderWishlist(){
 // One-time migration: the Wishlist "Other" category is retired now that Dates exists.
 function checkDatesWishlistMigration(){
   if(S.datesWishlistMigrated)return;
-  if(!S.wishlist.some(w=>w.cat==='Other')){S.datesWishlistMigrated=true;saveState();return;}
+  if(!S.wishlist.some(w=>w.cat==='Other')){S.datesWishlistMigrated=true;saveStateQuiet();return;}
   openModal('migrateOther');
 }
 
@@ -3239,6 +3332,7 @@ function cancelPlannedDate(plannedId){
   const p=S.plannedDates.find(x=>x.id===plannedId);
   if(p)cancelTellHerReminders(p);
   S.plannedDates=S.plannedDates.filter(x=>x.id!==plannedId);
+  scheduleMondayPrompt();
   saveState();renderDatesPage();
 }
 
@@ -3252,7 +3346,7 @@ function autoMarkPastDatesDone(){
       if(idea&&(!idea.lastDone||idea.lastDone<p.date)){idea.lastDone=p.date;changed=true;}
     }
   });
-  if(changed)saveState();
+  if(changed)saveStateQuiet();
 }
 
 // ── PLAN A DATE ──
@@ -3272,7 +3366,7 @@ async function renderPlanDateStep1(){
       ${DATE_COST_TAGS.map(t=>`<button type="button" class="wkb" onclick="pickTag('pd-budget-group',this,'${t.id}')">${t.label}</button>`).join('')}
     </div></div>
     <div class="fr"><label class="fl2">Which day are you free?</label><div class="fl" style="gap:6px;flex-wrap:wrap" id="pd-day-group" data-value="">
-      ${days.map(d=>`<button type="button" class="wkb" onclick="pickTag('pd-day-group',this,'${d.date}')">${d.label}${d.busy===false?' · free':d.busy===true?' · busy':''}</button>`).join('')}
+      ${days.map(d=>`<button type="button" class="wkb" onclick="pickTag('pd-day-group',this,'${d.date}')">${d.label}${d.busy===false?' · free':d.busy===true?' · busy evening':''}</button>`).join('')}
     </div></div>
     <div id="pd-step1-err" style="font-size:12px;color:var(--red);margin-top:2px"></div>
     <button class="btn btnp" style="width:100%;margin-top:10px" onclick="planDateShowSuggestions()">Show me ideas</button>`;
@@ -3288,8 +3382,7 @@ async function nextFreeDays(n){
     if(token){
       const start=new Date(),end=new Date();end.setDate(end.getDate()+n);
       const events=await fetchOutlookEvents(start,end,token);
-      const busyDates=new Set(events.map(e=>(e.start.dateTime||'').slice(0,10)));
-      days.forEach(d=>{d.busy=busyDates.has(d.date);});
+      days.forEach(d=>{d.busy=events.some(e=>eventOverlapsEvening(e,d.date));}); // all-day events and daytime ones leave the evening free
     }
   }catch(e){}
   return days;
@@ -3354,19 +3447,26 @@ async function confirmPlanDate(ideaId){
   S.plannedDates.push(planned);
   scheduleTellHerReminders(planned,idea);
   saveState();
-  // Best-effort: also add it to Outlook if signed in — never blocks the flow if not.
+  scheduleMondayPrompt();
+  // Also add it to Outlook if signed in. Not being signed in is fine; a failed attempt is reported.
+  let failMsg=null;
   try{
     const token=await getTokenSilent();
     if(token){
       const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
       const endD=new Date(date+'T00:00:00');endD.setDate(endD.getDate()+1);
-      await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      const res=await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
         body:JSON.stringify({subject:'Date: '+idea.name,isAllDay:true,start:{dateTime:date+'T00:00:00',timeZone:tz},end:{dateTime:localDateStr(endD)+'T00:00:00',timeZone:tz}})});
+      if(!res.ok)failMsg=await graphError(res);
     }
-  }catch(e){}
+  }catch(e){failMsg=(e&&e.message)||'Network error';}
   _planFlow=null;
-  closeModal();
   renderDatesPage();
+  if(failMsg){
+    document.getElementById('modal-body').innerHTML=`<div style="font-size:13px;line-height:1.6">The date is saved in your Dates plan, but it couldn't be added to your Outlook calendar (${uiEsc(failMsg)}). Add it there by hand if you need it.</div><button class="btn" style="width:100%;margin-top:12px" onclick="closeModal()">OK</button>`;
+    return;
+  }
+  closeModal();
 }
 
 // ── "TELL HER" REMINDERS ──
@@ -3451,15 +3551,18 @@ async function scheduleMondayPrompt(){
     const LN=window.Capacitor.Plugins.LocalNotifications;
     const perm=await LN.checkPermissions();
     if(perm.display!=='granted')await LN.requestPermissions();
-    const next=nextMondayEvening();
+    // Skip Mondays while a date is already planned: start from the first Monday after the last planned date.
+    await LN.cancel({notifications:[{id:MONDAY_PROMPT_ID}]}).catch(()=>{});
+    const next=nextMondayEvening(latestUpcomingDate());
     await LN.schedule({notifications:[{
       id:MONDAY_PROMPT_ID,title:'Plan a date? 💌',body:'Monday — a good day to line something up for you two.',
       schedule:{at:next,every:'week'},
     }]});
   }catch(e){console.error('monday prompt:',e);}
 }
-function nextMondayEvening(){
+function nextMondayEvening(after){
   const d=new Date();
+  if(after){const a=new Date(after+'T20:00:00');if(a>d)d.setTime(a.getTime());}
   const daysUntilMon=(1-d.getDay()+7)%7||7; // next Monday, always in the future
   d.setDate(d.getDate()+daysUntilMon);
   d.setHours(18,30,0,0);
@@ -3493,22 +3596,33 @@ let _widgetTodayEvents=[];
 // artificial cap on how much shows: every event with its time, every pinned important
 // task, every active bill. Sections are separated by small labels the widget's list
 // factory renders as its own row type.
-function buildWidgetSummary(){
+// The widget's content for one day (ds = YYYY-MM-DD). The native widget redraws every 30 minutes
+// from whatever the app last saved, so the app saves the next 7 days and the widget shows today's.
+function buildWidgetDay(ds){
+  const dd=new Date(ds+'T12:00:00');
   const items=[];
 
   // AGENDA — every one of today's events, with times, soonest first. All-day events show
   // "All day" instead of a clock time.
   items.push({type:'section',label:'AGENDA'});
   const todayEvents=[..._widgetTodayEvents]
-    .filter(e=>(e.start?.dateTime||'').slice(0,10)===TODAYSTR)
+    .filter(e=>e.start&&eventCoversDay(e,ds))
     .sort((a,b)=>(a.start.dateTime||'').localeCompare(b.start.dateTime||''));
   if(todayEvents.length){
     todayEvents.forEach(e=>{
-      const leading=e.isAllDay?'All day':new Date(e.start.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',hour12:false});
+      const t=eventTimeLabel(e,ds);
+      const leading=e.isAllDay||!t?'All day':t;
       items.push({type:'row',leading,text:e.subject||'(No title)',color:'#2747D4'});
     });
   } else {
     items.push({type:'row',leading:'',text:'Nothing on today',color:'#8B8B9C'});
+  }
+
+  // DUE — open tasks that are overdue or due today (only shown when there are some)
+  const dueW=allDueTasks().filter(x=>x.due<=ds);
+  if(dueW.length){
+    items.push({type:'section',label:'DUE'});
+    dueW.forEach(x=>items.push({type:'row',leading:x.due<ds?'Late':'Today',text:x.text,trailing:x.due<ds?niceDay(x.due):'',color:x.due<ds?'#B4231F':'#A8530A'}));
   }
 
   // IMPORTANT TASKS — all of them, not just a top few, in the same priority order as the
@@ -3524,28 +3638,22 @@ function buildWidgetSummary(){
   // RECURRING — only the ones still pending this week; once you tick one off in the app,
   // it drops off the widget until it resets next week.
   items.push({type:'section',label:'RECURRING'});
-  const wk=currentWeekKey();
-  const pendingRecurring=plainRecurring().filter(t=>t.lastDoneWeek!==wk);
+  const pendingRecurring=plainRecurring().filter(t=>recurringDueOn(t,dd));
   if(plainRecurring().length===0){
     items.push({type:'row',leading:'',text:'No recurring tasks set up',color:'#8B8B9C'});
   } else if(pendingRecurring.length){
     pendingRecurring.forEach(t=>items.push({type:'row',leading:'○',text:t.text,color:'#2747D4'}));
   } else {
-    items.push({type:'row',leading:'✓',text:'All done for the week',color:'#17753A'});
+    items.push({type:'row',leading:'✓',text:'All done for now',color:'#17753A'});
   }
 
   // BILLS — every active bill, soonest due first. One due today/tomorrow is flagged red
   // instead of the usual amber, so it actually stands out rather than blending in.
   items.push({type:'section',label:'BILLS'});
-  const todayDay=new Date().getDate();
-  const bills=(S.bills||[]).filter(b=>b.active!==false).sort((a,b)=>{
-    const da=(a.due-todayDay+31)%31,db=(b.due-todayDay+31)%31;
-    return da-db;
-  });
+  const bills=(S.bills||[]).filter(b=>b.active!==false&&!billPaidNext(b,dd)).sort((a,b)=>daysUntilDue(a.due,dd)-daysUntilDue(b.due,dd));
   if(bills.length){
     bills.forEach(b=>{
-      const daysUntilDue=(b.due-todayDay+31)%31;
-      const urgent=daysUntilDue<=1;
+      const urgent=daysUntilDue(b.due,dd)<=1;
       items.push({type:'row',leading:'',text:b.name,trailing:`€${Math.round(b.amount)} · ${b.due}${ordinalSuffix(b.due)}`,color:urgent?'#B4231F':'#A8530A'});
     });
   } else {
@@ -3555,18 +3663,31 @@ function buildWidgetSummary(){
   // NEXT DATE — one line, only if something's actually planned; skipped entirely otherwise
   // so it doesn't waste space on an empty state of its own. Kept last since it's the
   // "softer" item, after the day's actionable agenda/tasks/bills.
-  const upcoming=(S.plannedDates||[]).filter(p=>p.date>=TODAYSTR).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const upcoming=(S.plannedDates||[]).filter(p=>p.date>=ds).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const upcomingIdea=upcoming?S.dateIdeas.find(i=>i.id===upcoming.ideaId):null;
   if(upcoming&&upcomingIdea){
-    const dayLbl=upcoming.date===TODAYSTR?'Today':new Date(upcoming.date+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});
+    const dayLbl=upcoming.date===ds?'Today':new Date(upcoming.date+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});
     items.push({type:'section',label:'NEXT DATE'});
     items.push({type:'row',leading:'♥',text:upcomingIdea.name,trailing:dayLbl,color:'#6D4AD9'});
   }
 
   return {
-    dateLine:new Date().toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'}),
+    dateLine:dd.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'}),
     items,
   };
+}
+// Is a plain recurring task still to do on day d? (isRecurringDue() is the same check for today)
+function recurringDueOn(t,d){
+  const type=recurringType(t),r=t.repeat||{};
+  if(type==='weekdays'&&!(r.days||[]).includes(d.getDay()))return false;
+  if(type==='monthly'){const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();if(d.getDate()<Math.min(r.day||1,last))return false;}
+  return type==='weekly'?t.lastDoneWeek!==isoWeekKey(d):t.lastDoneKey!==recurringPeriodKey(t,d);
+}
+// Today's content at the top level (what older widget code reads), plus the next 7 days by date.
+function buildWidgetSummary(){
+  const today=localDateStr(new Date()),days={};
+  let ds=today;for(let k=0;k<7;k++){days[ds]=buildWidgetDay(ds);ds=nextDayStr(ds);}
+  return Object.assign({},days[today],{days});
 }
 function ordinalSuffix(n){
   if(n>=11&&n<=13)return 'th';
@@ -3582,7 +3703,8 @@ async function refreshWidgetAgendaThenPush(){
   try{
     const token=await getTokenSilent();
     if(token){
-      const start=new Date(),end=new Date();end.setDate(end.getDate()+1);
+      // today from midnight, plus the next 6 days, so each saved widget day has its agenda
+      const start=new Date();start.setHours(0,0,0,0);const end=new Date(start);end.setDate(end.getDate()+7);
       _widgetTodayEvents=await fetchOutlookEvents(start,end,token);
     }
   }catch(e){}
@@ -3895,10 +4017,15 @@ function renderWeightPage(){
   const latest=sorted[sorted.length-1]?.kg||0,first=sorted[0]?.kg||0;
   const goal=S.weightGoal||85;
   const lost=+(first-latest).toFixed(1),toGoal=+(latest-goal).toFixed(1);
+  const gained=lost<0;
+  // 7-day average: entries from the last 7 days (today and the six before)
+  const wkFrom=(()=>{const d=new Date();d.setDate(d.getDate()-6);return localDateStr(d);})();
+  const wk=sorted.filter(e=>e.date>=wkFrom&&e.date<=localDateStr(new Date()));
+  const avg7=wk.length?+(wk.reduce((a,e)=>a+e.kg,0)/wk.length).toFixed(1):null;
   document.getElementById('wt-metrics').innerHTML=`
-    <div class="mc"><div class="ml">Current</div><div class="mv">${latest} kg</div></div>
+    <div class="mc"><div class="ml">Current</div><div class="mv">${latest} kg</div><div class="ms">${avg7!=null?'7-day average '+avg7+' kg':'No entries in the last 7 days'}</div></div>
     <div class="mc"><div class="ml">Starting</div><div class="mv">${first} kg</div></div>
-    <div class="mc"><div class="ml">Lost so far</div><div class="mv" style="color:var(--green)">-${lost} kg</div></div>
+    <div class="mc"><div class="ml">${gained?'Gained so far':'Lost so far'}</div><div class="mv" style="color:${gained?'var(--text)':'var(--green)'}">${gained?'+'+Math.abs(lost):lost>0?'-'+lost:'0'} kg</div></div>
     <div class="mc"><div class="ml">To goal</div><div class="mv" style="color:${toGoal<=0?'var(--green)':'var(--blue)'}">${toGoal>0?toGoal+' kg':'Goal reached!'}</div></div>`;
   const totalPlan=+(first-goal).toFixed(1);
   const goalPct=sorted.length===0?0:(totalPlan>0?Math.min(100,Math.max(0,(lost/totalPlan)*100)):(latest<=goal?100:0));
@@ -3907,7 +4034,7 @@ function renderWeightPage(){
     <div class="fl" style="gap:18px;align-items:center;flex-wrap:wrap;margin-top:6px">
       ${progressRing(goalPct,{size:84,stroke:8,color:toGoal<=0?'var(--green)':'var(--blue)'})}
       <div style="flex:1;min-width:200px;font-size:13px;color:var(--text2);line-height:1.6">
-        ${sorted.length===0?'Log a weight entry to see your goal progress.':toGoal<=0?`<strong style="color:var(--green)">Goal reached!</strong> You're at ${latest} kg.`:`<strong>${toGoal} kg</strong> to go — you've lost ${lost} kg of the ${totalPlan} kg needed.`}
+        ${sorted.length===0?'Log a weight entry to see your goal progress.':toGoal<=0?`<strong style="color:var(--green)">Goal reached!</strong> You're at ${latest} kg.`:(gained?`<strong>${toGoal} kg</strong> to go — you're up ${Math.abs(lost)} kg since you started.`:`<strong>${toGoal} kg</strong> to go — you've lost ${lost} kg of the ${totalPlan} kg needed.`)}
       </div>
     </div>`;
   requestAnimationFrame(()=>{
@@ -3924,8 +4051,10 @@ function renderWeightPage(){
     const vals=sorted.map(d=>d.kg).concat([goal]);
     const minVal=Math.min(...vals),maxVal=Math.max(...vals);
     const pad=Math.max(1,(maxVal-minVal)*0.15);
-    const blue=cssVar('--blue'),green=cssVar('--green');
-    charts['wt-chart-main']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'Weight (kg)',data:sorted.map(d=>d.kg),borderColor:blue,backgroundColor:hexToRgba(blue,.12),tension:.4,pointRadius:4,fill:true},{label:'Goal',data:sorted.map(()=>goal),borderColor:green,borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+'kg'},grid:{color:chartGridColor()},min:minVal-pad,max:maxVal+pad},x:{ticks:{font:{size:10},color:chartTickColor()},grid:{display:false}}}}});
+    const blue=cssVar('--blue'),green=cssVar('--green'),amber=cssVar('--amber');
+    // rolling 7-day average at each entry: mean of the entries dated within the 6 days before it and that day
+    const roll=sorted.map(e=>{const d=new Date(e.date+'T12:00:00');d.setDate(d.getDate()-6);const from=localDateStr(d);const w=sorted.filter(x=>x.date>=from&&x.date<=e.date);return +(w.reduce((a,x)=>a+x.kg,0)/w.length).toFixed(2);});
+    charts['wt-chart-main']=new Chart(ctx,{type:'line',data:{labels:sorted.map(d=>d.date.slice(5)),datasets:[{label:'Weight (kg)',data:sorted.map(d=>d.kg),borderColor:blue,backgroundColor:hexToRgba(blue,.12),tension:.4,pointRadius:4,fill:true},{label:'7-day average',data:roll,borderColor:amber,pointRadius:0,borderWidth:2,tension:.3,fill:false},{label:'Goal',data:sorted.map(()=>goal),borderColor:green,borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12,color:chartTickColor()}}},scales:{y:{ticks:{font:{size:11},color:chartTickColor(),callback:v=>v+'kg'},grid:{color:chartGridColor()},min:minVal-pad,max:maxVal+pad},x:{ticks:{font:{size:10},color:chartTickColor()},grid:{display:false}}}}});
   });
   document.getElementById('wt-log').innerHTML=[...sorted].reverse().map(e=>`<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);align-items:center;"><span style="font-size:13px;color:var(--text2)">${fmtDate(e.date)}</span><span style="font-size:14px;font-weight:600;color:var(--blue)">${e.kg} kg</span><button class="btn-icon" onclick="deleteWeight(${e.id})">✕</button></div>`).join('');
 }
@@ -3940,14 +4069,14 @@ function openModal(type,extra){
   document.getElementById('modal-title').textContent=titles[type]||'Add';
   const bodies={
     pocket:`<div class="fr"><label class="fl2">Pocket name</label><input class="inp" id="m-name" placeholder="e.g. Holidays"></div>`,
-    spend:`<div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0.00" step="0.01" inputmode="decimal"></div><div class="fr"><label class="fl2">Pocket</label><select class="inp" id="m-tcat">${S.pockets.length?S.pockets.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''):'<option value="">Add a pocket first</option>'}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note (optional)</label><input class="inp" id="m-tnote" placeholder="e.g. Tesco, lunch"></div>`,
+    spend:`<div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0.00" step="0.01" inputmode="decimal"></div><div class="fr"><label class="fl2">Pocket</label><select class="inp" id="m-tcat">${S.pockets.length?S.pockets.map(c=>`<option value="${c.id}"${String(c.id)===LS.get('harvey-last-pocket')?' selected':''}>${c.name}</option>`).join(''):'<option value="">Add a pocket first</option>'}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note (optional)</label><input class="inp" id="m-tnote" placeholder="e.g. Tesco, lunch"></div>`,
 
     income:`<div class="fr"><label class="fl2">Source name</label><input class="inp" id="m-name" placeholder="e.g. Salary"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Which stage?</label><select class="inp" id="m-istage">${S.budgetStages.map(s=>`<option value="${s.id}">${s.name} (days ${s.startDay}–${s.endDay>=31?'end':s.endDay})</option>`).join('')}</select></div><div class="fr"><label class="fl2">Frequency</label><select class="inp" id="m-freq"><option>Monthly</option><option>Weekly</option><option>Variable</option></select></div>`,
     bill:`<div class="fr"><label class="fl2">Name</label><input class="inp" id="m-name" placeholder="e.g. Netflix"></div><div class="fr"><label class="fl2">Amount (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div><div class="fr"><label class="fl2">Due day</label><input type="number" class="inp" id="m-due" placeholder="1–31" min="1" max="31"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Housing</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Transport</option><option>Other</option></select></div>`,
     saving:`<div class="fr"><label class="fl2">Label (e.g. May 2026)</label><input class="inp" id="m-label" placeholder="Month Year"></div><div class="fr"><label class="fl2">Amount saved (€)</label><input type="number" class="inp" id="m-amount" placeholder="0"></div>`,
     project:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-name" placeholder="e.g. Client App"></div>`,
-    wish:`<div class="fr"><label class="fl2">What do you want to do?</label><input class="inp" id="m-name" placeholder="e.g. Visit Lisbon"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Travel</option><option>Skills</option><option>Personal</option><option>Fitness</option></select></div>`,
-    important:`<div class="fr"><label class="fl2">Task</label><input class="inp" id="m-text" placeholder="Important task..."></div><div class="fr"><label class="fl2">Source</label><input class="inp" id="m-src" placeholder="e.g. Work, Personal"></div>`,
+    wish:`<div class="fr"><label class="fl2">What do you want to do?</label><input class="inp" id="m-name" placeholder="e.g. Visit Lisbon"></div><div class="fr"><label class="fl2">Category</label><select class="inp" id="m-cat"><option>Travel</option><option>Skills</option><option>Personal</option><option>Fitness</option></select></div><div class="fr"><label class="fl2">Cost in € (optional)</label><input type="number" class="inp" id="m-wcost" placeholder="0" step="0.01" inputmode="decimal"></div><div class="fr"><label class="fl2">Link (optional)</label><input class="inp" id="m-wlink" placeholder="https://…" inputmode="url"></div>`,
+    important:`<div class="fr"><label class="fl2">Task</label><input class="inp" id="m-text" placeholder="Important task..."></div><div class="fr"><label class="fl2">Source</label><input class="inp" id="m-src" placeholder="e.g. Work, Personal"></div><div class="fr"><label class="fl2">Due date (optional)</label><input type="date" class="inp" id="m-duedate"></div>`,
     note:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Note</label><textarea class="inp" id="m-note" placeholder="Write your note..."></textarea></div>`,
     workout:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Session type</label><select class="inp" id="m-type"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></div><div class="fr"><label class="fl2">Notes</label><input class="inp" id="m-notes" placeholder="How did it go?"></div>`,
     weight:`<div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-date" value="${TODAYSTR}"></div><div class="fr"><label class="fl2">Weight (kg)</label><input type="number" class="inp" id="m-kg" placeholder="e.g. 90.5" step="0.1"></div>`,
@@ -3955,7 +4084,7 @@ function openModal(type,extra){
     timeLog:`<div class="fr"><label class="fl2">Project</label><select class="inp" id="m-tproj">${S.timeProjects.map(p=>`<option value="${p.id}" style="color:${p.color}">● ${p.name}</option>`).join('')}</select></div><div class="fr"><label class="fl2">Date</label><input type="date" class="inp" id="m-tdate" value="${TODAYSTR}"></div><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-tstart" value="09:00" oninput="ttRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-tend" value="10:00" oninput="ttRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="ttApplyPreset(15)">15m</button><button class="wkb" onclick="ttApplyPreset(30)">30m</button><button class="wkb" onclick="ttApplyPreset(45)">45m</button><button class="wkb" onclick="ttApplyPreset(60)">1h</button><button class="wkb" onclick="ttApplyPreset(90)">1h 30m</button><button class="wkb" onclick="ttApplyPreset(120)">2h</button></div></div><div id="tt-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div><div class="fr"><label class="fl2">Notes (optional)</label><input class="inp" id="m-tnotes" placeholder="What did you work on?"></div>`,
     timeProject:`<div class="fr"><label class="fl2">Project name</label><input class="inp" id="m-tpname" placeholder="e.g. Client work"></div><div class="fr"><label class="fl2">Colour</label><select class="inp" id="m-tpcolor"><option value="#185FA5">Blue</option><option value="#1D9E75">Green</option><option value="#BA7517">Amber</option><option value="#D85A30">Orange</option><option value="#534AB7">Purple</option><option value="#D4537E">Pink</option><option value="#A32D2D">Red</option></select></div>`,
     taskTime:`<div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Task completed: <strong id="m-taskname"></strong></div><div class="fr"><label class="fl2">Time spent</label><div class="g2" style="gap:8px"><input type="number" class="inp" id="m-th" placeholder="hrs" min="0" style="text-align:center"><input type="number" class="inp" id="m-tm" placeholder="mins" min="0" max="59" style="text-align:center"></div></div><div class="fr"><label class="fl2">Log to project</label><select class="inp" id="m-ttproj">${S.timeProjects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
-    todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div>`,
+    todo:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-text" placeholder="What needs doing?"></div><div class="fr"><label class="fl2">Due date (optional)</label><input type="date" class="inp" id="m-duedate"></div>`,
     calEvent:`<div class="fr"><label class="fl2">Title</label><input class="inp" id="m-etitle" placeholder="e.g. Dentist appointment"></div><div class="g2" style="gap:8px;margin-bottom:11px;align-items:end"><div><label class="fl2">Date</label><input type="date" class="inp" id="m-edate" value="${(extra&&extra.date)||TODAYSTR}"></div><label style="display:flex;align-items:center;gap:7px;cursor:pointer;height:44px;padding-left:2px"><input type="checkbox" id="m-eallday" onchange="toggleAllDayFields()" style="width:auto;cursor:pointer"> All-day</label></div><div id="m-etime-wrap"><div class="g2" style="gap:8px;margin-bottom:9px;"><div><label class="fl2">Start time</label><input type="time" class="inp" id="m-estart" value="09:00" oninput="evRecalc()"></div><div><label class="fl2">End time</label><input type="time" class="inp" id="m-eend" value="10:00" oninput="evRecalc()"></div></div><div class="fr" style="margin-bottom:6px"><label class="fl2">Quick duration</label><div class="fl" style="gap:6px;flex-wrap:wrap"><button class="wkb" onclick="evApplyPreset(15)">15m</button><button class="wkb" onclick="evApplyPreset(30)">30m</button><button class="wkb" onclick="evApplyPreset(45)">45m</button><button class="wkb" onclick="evApplyPreset(60)">1h</button><button class="wkb" onclick="evApplyPreset(90)">1h 30m</button><button class="wkb" onclick="evApplyPreset(120)">2h</button></div></div><div id="ev-duration-preview" style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px"></div></div><div class="fr"><label class="fl2">Location (optional)</label><input class="inp" id="m-eloc" placeholder="e.g. Office"></div><div class="fr" style="margin-bottom:0"><label class="fl2">Repeats</label><select class="inp" id="m-erepeat" onchange="toggleRecurrenceEnd()"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fr" id="m-erepeat-end-row" style="display:none;margin-top:11px"><label class="fl2">Repeat until (optional)</label><input type="date" class="inp" id="m-eruntil"></div>`,
     dateIdea:(()=>{
       const idea=(extra&&extra.editId)?S.dateIdeas.find(i=>i.id===extra.editId):null;
@@ -3976,7 +4105,10 @@ function openModal(type,extra){
     })(),
     migrateOther:`<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your Wishlist's "Other" category is being retired now that Dates exists. Pick which of these should move into Date ideas — anything left unchecked will be removed.</p>
       <div id="mo-list">${S.wishlist.filter(w=>w.cat==='Other').map(w=>`<label style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" class="mo-item-cb" data-id="${w.id}" data-name="${w.name.replace(/"/g,'&quot;')}" checked style="width:auto"><span style="font-size:13px">${w.name}</span></label>`).join('')}</div>`,
-    recurringTask:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-rtext" placeholder="e.g. Take out the bins"></div>`,
+    recurringTask:`<div class="fr"><label class="fl2">Task name</label><input class="inp" id="m-rtext" placeholder="e.g. Take out the bins"></div>
+      <div class="fr"><label class="fl2">Repeats</label><select class="inp" id="m-rrep" onchange="recRepeatUI()"><option value="weekly">Every week (any day)</option><option value="daily">Every day</option><option value="weekdays">On set weekdays</option><option value="monthly">Every month</option></select></div>
+      <div class="fr" id="m-rdays" style="display:none;gap:6px;flex-wrap:wrap">${[1,2,3,4,5,6,0].map(d=>`<button type="button" class="wkb" data-day="${d}" onclick="this.classList.toggle('active')">${DOW_SHORT[d]}</button>`).join('')}</div>
+      <div class="fr" id="m-rday-wrap" style="display:none"><label class="fl2">Day of the month</label><input type="number" class="inp" id="m-rday" min="1" max="31" value="${new Date().getDate()}"></div>`,
   };
   document.getElementById('modal-body').innerHTML=bodies[type]||'';
   document.getElementById('modal').style.display='flex';
@@ -4046,7 +4178,9 @@ async function saveModal(){
     saveState();renderBudget();
   } else if(m.type==='income'){
     const n=g('m-name'),a=parseFloat(g('m-amount'))||0,f=g('m-freq'),stageId=parseInt(g('m-istage'),10)||(S.budgetStages[0]?.id??1);if(!n)return;
-    getMonthData(S.budgetViewMonth||curKey).income.push({id:Date.now(),name:n,amount:a,freq:f,stageId});
+    const md=getMonthData(S.budgetViewMonth||curKey),ed=m.editId!=null?md.income.find(x=>x.id===m.editId):null;
+    if(ed){Object.assign(ed,{name:n,amount:a,freq:f,stageId});delete ed.day;}
+    else md.income.push({id:Date.now(),name:n,amount:a,freq:f,stageId});
     saveState();renderBudget();
   } else if(m.type==='bill'){
     const n=g('m-name'),a=parseFloat(g('m-amount'))||0,d=parseInt(g('m-due'))||1,c=g('m-cat');if(!n)return;
@@ -4054,20 +4188,35 @@ async function saveModal(){
     saveState();renderBills();
   } else if(m.type==='saving'){
     const l=g('m-label'),a=parseFloat(g('m-amount'))||0;if(!l)return;
-    S.savings.push({id:Date.now(),label:l,amount:a});saveState();renderSavings();
+    S.savings.push({id:Date.now(),label:l,amount:a});
+    S.currentSavings=+((+S.currentSavings||0)+a).toFixed(2); // an entry is an amount added
+    saveState();renderSavings();
   } else if(m.type==='project'){
     const n=g('m-name');if(!n)return;
     S.projects.push({id:Date.now(),name:n,color:pcolors[S.projects.length%pcolors.length],todos:[]});saveState();renderProjects();
   } else if(m.type==='wish'){
     const n=g('m-name'),c=g('m-cat');if(!n)return;
-    S.wishlist.push({id:Date.now(),name:n,cat:c,ico:wicos[c]||'★'});saveState();renderWishlist();
+    const ed=m.editId!=null?S.wishlist.find(x=>x.id===m.editId):null;
+    const cost=parseFloat(g('m-wcost')),link=normaliseLink(g('m-wlink'));
+    const extra=w=>{if(cost>0)w.cost=cost;else delete w.cost;if(link)w.link=link;else delete w.link;return w;};
+    if(ed){Object.assign(ed,{name:n,cat:c,ico:wicos[c]||ed.ico||'★'});extra(ed);}
+    else S.wishlist.push(extra({id:Date.now(),name:n,cat:c,ico:wicos[c]||'★'}));
+    saveState();renderWishlist();
   } else if(m.type==='important'){
     const t=g('m-text'),src=g('m-src')||'Manual';if(!t)return;
-    S.important.push({id:Date.now(),text:t,source:src});saveState();renderImportant();
+    const ed=m.editId!=null?S.important.find(x=>x.id===m.editId&&!x.ref):null;
+    const due=g('m-duedate');
+    if(ed){Object.assign(ed,{text:t,source:src});if(due)ed.due=due;else delete ed.due;}
+    else S.important.push(Object.assign({id:Date.now(),text:t,source:src},due?{due}:{}));
+    saveState();renderImportant();
   } else if(m.type==='note'){
     const d=g('m-date'),t=g('m-note');if(!d||!t)return;
-    const ex=S.notes.findIndex(n=>n.date===d);
-    if(ex>=0)S.notes[ex].text=t;else S.notes.unshift({id:Date.now(),date:d,text:t});
+    const edited=m.editId!=null?S.notes.find(n=>n.id===m.editId):null;
+    const other=S.notes.find(n=>n.date===d&&(!edited||n.id!==edited.id));
+    if(edited&&!other){edited.date=d;edited.text=t;}                       // edit: replace the text
+    else if(edited&&other){other.text=other.text+'\n\n'+t;S.notes=S.notes.filter(n=>n.id!==edited.id);} // edit moved onto a day that already has a note: join them
+    else if(other)other.text=other.text+'\n\n'+t;                         // new note for a day that has one: append
+    else S.notes.unshift({id:Date.now(),date:d,text:t});
     saveState();renderNotes();
   } else if(m.type==='workout'){
     const d=g('m-date'),tp=g('m-type'),nt=g('m-notes');if(!d)return;
@@ -4080,7 +4229,11 @@ async function saveModal(){
   } else if(m.type==='todo'){
     const t=g('m-text');if(!t)return;
     const p=S.projects.find(x=>x.id===m.pid);
-    p.todos.push({id:Date.now(),text:t,done:false,important:false,subtasks:[]});saveState();renderProjects();
+    const ed=m.editId!=null?p.todos.find(x=>x.id===m.editId):null;
+    const due=g('m-duedate');
+    if(ed){ed.text=t;if(due)ed.due=due;else delete ed.due;S.important.forEach(x=>{if(x.ref===`${p.id}-${ed.id}`)x.text=t;});}
+    else p.todos.push(Object.assign({id:Date.now(),text:t,done:false,important:false,subtasks:[]},due?{due}:{}));
+    saveState();renderProjects();renderImportant();
   }
   else if(m.type==='subtask'){
     const text=g('m-subtext');if(!text)return;
@@ -4088,7 +4241,8 @@ async function saveModal(){
     const t=p?.todos.find(x=>x.id===m.tid);
     if(!t)return;
     if(!t.subtasks)t.subtasks=[];
-    t.subtasks.push({id:Date.now(),text,done:false});
+    const ed=m.editId!=null?t.subtasks.find(x=>x.id===m.editId):null;
+    if(ed)ed.text=text;else t.subtasks.push({id:Date.now(),text,done:false});
     saveState();renderProjects();
   } else if(m.type==='subtaskTime'){
     const hrs=parseInt(g('m-th'))||0,mins=parseInt(g('m-tm'))||0;
@@ -4113,7 +4267,9 @@ async function saveModal(){
     const [eh,em]=end.split(':').map(Number);
     const mins=(eh*60+em)-(sh*60+sm);
     if(mins<=0){alert('End time must be after start time');return;}
-    S.timeLog.push({id:Date.now(),projectId:proj,date,start,end,mins,notes});
+    const ed=m.editId!=null?S.timeLog.find(x=>x.id===m.editId):null;
+    if(ed)Object.assign(ed,{projectId:proj,date,start,end,mins,notes});
+    else S.timeLog.push({id:Date.now(),projectId:proj,date,start,end,mins,notes});
     saveState();renderTimePage();
   } else if(m.type==='timeProject'){
     const name=g('m-tpname'),color=g('m-tpcolor');
@@ -4156,7 +4312,9 @@ async function saveModal(){
     const a=parseFloat(g('m-amount'))||0,cat=parseInt(g('m-tcat'),10),date=g('m-tdate')||TODAYSTR,note=g('m-tnote');
     if(a<=0)return;
     if(!cat){alert('Add a pocket first, then log spending against it.');return;}
-    S.transactions.push({id:Date.now(),amount:a,categoryId:cat,date,note});
+    const ed=m.editId!=null?S.transactions.find(x=>x.id===m.editId):null;
+    if(ed)Object.assign(ed,{amount:a,categoryId:cat,date,note});
+    else{S.transactions.push({id:Date.now(),amount:a,categoryId:cat,date,note});LS.set('harvey-last-pocket',String(cat));}
     saveState();renderBudget();
   } else if(m.type==='stages'){
     const rows=readStageRows();
@@ -4169,8 +4327,8 @@ async function saveModal(){
     const repeat=g('m-erepeat')||'none',until=g('m-eruntil');
     if(!title){alert('Give the event a title.');return;}
     if(!date){alert('Pick a date.');return;}
-    if(!isAllDay&&(!start||!end)){alert('Set a start and end time, or tick All-day.');return;}
-    if(!isAllDay&&start>=end){alert('End time must be after start time.');return;}
+    if(!m.multiDay&&!isAllDay&&(!start||!end)){alert('Set a start and end time, or tick All-day.');return;}
+    if(!m.multiDay&&!isAllDay&&start>=end){alert('End time must be after start time.');return;}
     const token=await getTokenSilent();
     if(!token){alert('Sign in on the Calendar page first, then add events.');closeModal();return;}
     const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -4183,6 +4341,21 @@ async function saveModal(){
       body={subject:title,start:{dateTime:`${date}T${start}:00`,timeZone:tz},end:{dateTime:`${date}T${end}:00`,timeZone:tz}};
     }
     if(loc)body.location={displayName:loc};
+    if(m.editId){
+      if(m.multiDay)body={subject:title};       // only title and location for events spanning several days
+      body.location={displayName:loc||''};      // an emptied location clears it
+      if(!body.isAllDay&&!m.multiDay)body.isAllDay=false;
+      const saveBtn=document.querySelector('#modal .fl-end .btnp');
+      if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
+      let failMsg=null;
+      try{
+        const res=await fetch('https://graph.microsoft.com/v1.0/me/events/'+encodeURIComponent(m.editId),{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!res.ok)failMsg=await graphError(res);
+      }catch(e){failMsg=(e&&e.message)||'Network error';}
+      if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Save';}
+      if(failMsg){showModalError("Couldn't update the event in Outlook: "+failMsg+'. Nothing was changed, so you can try again.');return;}
+      closeModal();refreshCalendarViews();return;
+    }
     if(repeat!=='none'){
       const d=new Date(date+'T12:00:00');
       const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -4194,9 +4367,15 @@ async function saveModal(){
       const range=until?{type:'endDate',startDate:date,endDate:until}:{type:'noEnd',startDate:date};
       body.recurrence={pattern,range};
     }
+    const saveBtn=document.querySelector('#modal .fl-end .btnp');
+    if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
+    let failMsg=null;
     try{
-      await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    }catch(e){}
+      const res=await fetch('https://graph.microsoft.com/v1.0/me/events',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!res.ok)failMsg=await graphError(res);
+    }catch(e){failMsg=(e&&e.message)||'Network error';}
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Save';}
+    if(failMsg){showModalError("Couldn't add the event to Outlook: "+failMsg+'. Nothing was saved, so you can try again.');return;}
     closeModal();refreshCalendarViews();return;
   } else if(m.type==='dateIdea'){
     const name=g('di-name');
@@ -4225,7 +4404,15 @@ async function saveModal(){
   } else if(m.type==='recurringTask'){
     const t=g('m-rtext');
     if(!t){alert('Give the task a name.');return;}
-    S.recurringTasks.push({id:Date.now(),text:t,createdAt:Date.now(),lastDoneWeek:null});
+    const type=g('m-rrep')||'weekly';
+    const task={id:Date.now(),text:t,createdAt:Date.now(),lastDoneWeek:null};
+    if(type==='weekdays'){
+      const days=[...document.querySelectorAll('#m-rdays .wkb.active')].map(b=>+b.dataset.day);
+      if(!days.length){alert('Pick at least one weekday.');return;}
+      task.repeat={type,days};
+    }else if(type==='monthly')task.repeat={type,day:Math.min(31,Math.max(1,parseInt(g('m-rday'),10)||1))};
+    else if(type==='daily')task.repeat={type};
+    S.recurringTasks.push(task);
     saveState();renderRecurringTasks();
   }
   closeModal();renderHome();
@@ -4234,6 +4421,7 @@ async function saveModal(){
 function getStateToSave(){const t=Object.assign({},S);delete t.activeModal;return t;}
 
 function renderSettings(){
+  const tpInp=document.getElementById('pref-time-prompt');if(tpInp)tpInp.checked=S.timePrompt!==false;
   const nameInp=document.getElementById('profile-name-inp');
   if(nameInp&&document.activeElement!==nameInp)nameInp.value=S.userName||'';
 
@@ -4318,10 +4506,11 @@ function clearAllData(){
 function renderTimePage(){
   if(!S.timeProjects)S.timeProjects=[];
   if(!S.timeLog)S.timeLog=[];
+  renderTimeTimer();
 
   const filter=document.getElementById('time-filter')?.value||'week';
   const now=new Date();
-  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay()+1);weekStart.setHours(0,0,0,0);
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0); // Monday, same rule as outlookWeekRange()
   const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
 
   const filtered=S.timeLog.filter(e=>{
@@ -4376,7 +4565,8 @@ function renderTimePage(){
       <div class="pi">
         <div class="fl">
           <div style="width:10px;height:10px;border-radius:50%;background:${p.color};min-width:10px"></div>
-          <span class="pn">${p.name}</span>
+          <div style="min-width:0"><span class="pn">${p.name}</span>
+            <div class="fl" style="gap:6px;margin-top:4px;flex-wrap:wrap"><select class="month-sel" style="font-size:12px;padding:4px 8px;min-height:0" onchange="setTimeProjectLink(${p.id},this.value)" aria-label="Linked work project"><option value="">Not linked to a work project</option>${S.projects.map(wp=>`<option value="${wp.id}"${p.workProjectId===wp.id?' selected':''}>Linked: ${uiEsc(wp.name)}</option>`).join('')}</select>${(()=>{if(p.workProjectId)return '';const sug=S.projects.find(wp=>p.name.toLowerCase().includes(wp.name.toLowerCase().split(' ')[0]));return sug?`<button class="btn" style="font-size:11.5px;padding:3px 8px;min-height:0" onclick="setTimeProjectLink(${p.id},${sug.id})">Link to ${uiEsc(sug.name)}?</button>`:'';})()}</div></div>
         </div>
         <div class="fl" style="gap:10px;">
           <span style="font-size:13px;font-weight:600;color:var(--blue)">${fmtHrs(projMins[p.id]||0)}</span>
@@ -4402,6 +4592,7 @@ function renderTimePage(){
         <span style="font-size:12px;color:var(--text2)">${e.start}–${e.end}</span>
         <div class="fl" style="gap:6px;">
           <span class="tag tb">${fmtHrs(e.mins)}</span>
+          <button onclick="editTimeEntry(${e.id})" class="btn-icon" title="Edit">✎</button>
           <button onclick="deleteTimeEntry(${e.id})" class="btn-icon">✕</button>
         </div>
       </div>`;
@@ -4463,12 +4654,40 @@ async function fetchOutlookEvents(start,end,token){
   const res=await fetch(url,{headers:{'Authorization':'Bearer '+token,'Prefer':`outlook.timezone="${tz}"`}});
   if(!res.ok)throw new Error('HTTP '+res.status);
   const data=await res.json();
-  return data.value||[];
+  const list=data.value||[];list.forEach(e=>{_calById[e.id]=e;}); // remembered so an event can be opened for editing
+  return list;
 }
 
-function eventChip(e){
-  const label=(e.isAllDay?'📌 ':'')+(e.subject||'(No title)');
-  return `<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px" title="${(e.subject||'').replace(/"/g,'&quot;')}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="deleteOutlookEvent('${e.id}')">✕</button></div>`;
+// Outlook times arrive in local time (see the Prefer header in fetchOutlookEvents), as
+// "YYYY-MM-DDTHH:MM:SS...", so plain string comparison orders them correctly.
+function nextDayStr(ds){const d=new Date(ds+'T12:00:00');d.setDate(d.getDate()+1);return localDateStr(d);}
+// Does the event cover any part of day ds? All-day and multi-day events cover every day they span
+// (an all-day event's end is the following midnight, so that day is not included).
+function eventCoversDay(e,ds){
+  // first 19 characters only: Graph adds ".0000000", which would make "…T00:00:00.0000000" sort after "…T00:00:00"
+  const st=((e.start&&e.start.dateTime)||'').slice(0,19),en=((e.end&&e.end.dateTime)||st).slice(0,19);
+  if(st.slice(0,10)===ds)return true;
+  return st<nextDayStr(ds)+'T00:00:00'&&en>ds+'T00:00:00';
+}
+// The days (YYYY-MM-DD) an event covers, oldest first.
+function eventDays(e){
+  const out=[];let ds=((e.start&&e.start.dateTime)||'').slice(0,10);
+  for(let i=0;ds&&i<400&&eventCoversDay(e,ds);i++){out.push(ds);ds=nextDayStr(ds);}
+  return out;
+}
+// Time to show beside an event on day ds: its start time on the day it starts, "→end" on the day a
+// longer event finishes, nothing for all-day events or days it fills completely.
+function eventTimeLabel(e,ds){
+  if(e.isAllDay)return '';
+  const st=e.start.dateTime||'',en=(e.end&&e.end.dateTime)||'';
+  if(st.slice(0,10)===ds)return st.slice(11,16);
+  if(en.slice(0,10)===ds&&en.slice(11,16)!=='00:00')return '→'+en.slice(11,16);
+  return '';
+}
+function eventChip(e,ds){
+  const t=ds?eventTimeLabel(e,ds):'';
+  const label=(e.isAllDay?'📌 ':'')+(t?`<span style="color:var(--text3);font-variant-numeric:tabular-nums">${t}</span> `:'')+uiEsc(e.subject||'(No title)');
+  return `<div style="font-size:11px;padding:3px 5px;background:var(--bg);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px" title="${uiEsc(e.subject||'')}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="editOutlookEvent('${uiEsc(e.id)}')" title="Edit">${label}</span><button class="btn-icon" style="font-size:10px;padding:0" onclick="deleteOutlookEvent('${uiEsc(e.id)}')">✕</button></div>`;
 }
 
 async function renderOutlookPage(){
@@ -4504,24 +4723,24 @@ async function renderOutlookWeek(token){
     const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
     gridEl.innerHTML=days.map(d=>{
       const ds=localDateStr(d);
-      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const dayEvents=events.filter(e=>eventCoversDay(e,ds));
       const isToday=ds===TODAYSTR;
       return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:8px 7px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:96px">
         <div class="flb" style="margin-bottom:6px">
           <div><div style="font-size:11px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:14px;font-weight:600">${d.getDate()}</div></div>
           <button class="btn-icon" style="font-size:14px;color:var(--blue)" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
         </div>
-        ${dayEvents.map(eventChip).join('')}
+        ${dayEvents.map(e=>eventChip(e,ds)).join('')}${dueChips(ds)}
       </div>`;
     }).join('');
 
-    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    const todayEvents=events.filter(e=>eventCoversDay(e,TODAYSTR));
     const mEl=document.getElementById('calendar-m');
     if(mEl)mEl.innerHTML=`
       <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
       <div class="mc"><div class="ml">This week</div><div class="mv">${events.length}</div></div>`;
   }catch(err){
-    gridEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
+    gridEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${uiEsc(err.message)}</div>`;
   }
 }
 
@@ -4550,26 +4769,26 @@ async function renderOutlookMonth(token){
     const cells=days.map(d=>{
       const ds=localDateStr(d);
       const inMonth=d.getMonth()===viewMonth.getMonth();
-      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const dayEvents=events.filter(e=>eventCoversDay(e,ds));
       const isToday=ds===TODAYSTR;
       return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:5px;min-height:68px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};opacity:${inMonth?1:.4}">
         <div class="flb" style="margin-bottom:3px">
           <span style="font-size:11px;font-weight:600">${d.getDate()}</span>
           <button class="btn-icon" style="font-size:11px;padding:0;color:var(--blue)" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
         </div>
-        ${dayEvents.slice(0,2).map(e=>`<div style="font-size:9.5px;padding:1px 3px;background:var(--bg);border-radius:4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.isAllDay?'📌 ':''}${e.subject||'(No title)'}</div>`).join('')}
-        ${dayEvents.length>2?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-2} more</div>`:''}
+        ${dayEvents.slice(0,2).map(e=>`<div onclick="editOutlookEvent('${uiEsc(e.id)}')" style="cursor:pointer;font-size:9.5px;padding:1px 3px;background:var(--bg);border-radius:4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${uiEsc(e.subject||'')}">${e.isAllDay?'📌 ':''}${uiEsc(e.subject||'(No title)')}</div>`).join('')}
+        ${dayEvents.length>2?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-2} more</div>`:''}${dueCountLine(ds)}
       </div>`;
     }).join('');
     monthGrid.innerHTML=header+cells;
 
-    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    const todayEvents=events.filter(e=>eventCoversDay(e,TODAYSTR));
     const mEl=document.getElementById('calendar-m');
     if(mEl)mEl.innerHTML=`
       <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
       <div class="mc"><div class="ml">This month</div><div class="mv">${events.length}</div></div>`;
   }catch(err){
-    monthGrid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:12px;padding:14px 0">Couldn't load events: ${err.message}</div>`;
+    monthGrid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--red);font-size:12px;padding:14px 0">Couldn't load events: ${uiEsc(err.message)}</div>`;
   }
 }
 
@@ -4583,19 +4802,23 @@ async function renderOutlookAgenda(token){
   try{
     const events=await fetchOutlookEvents(start,end,token);
     const mEl=document.getElementById('calendar-m');
-    const todayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===TODAYSTR);
+    const todayEvents=events.filter(e=>eventCoversDay(e,TODAYSTR));
     if(mEl)mEl.innerHTML=`
       <div class="mc"><div class="ml">Today</div><div class="mv">${todayEvents.length}</div></div>
       <div class="mc"><div class="ml">Next 30 days</div><div class="mv">${events.length}</div></div>`;
-    if(events.length===0){
+    const groups={};
+    const firstDay=localDateStr(start),lastDay=localDateStr(end);
+    allDueTasks().forEach(x=>{if(x.due>=firstDay&&x.due<lastDay&&!groups[x.due])groups[x.due]=[];});
+    if(events.length===0&&!Object.keys(groups).length){
       listEl.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0">No upcoming events in the next 30 days.</div>';
       return;
     }
-    const groups={};
     events.forEach(e=>{
-      const ds=(e.start.dateTime||'').slice(0,10);
-      if(!groups[ds])groups[ds]=[];
-      groups[ds].push(e);
+      eventDays(e).forEach(ds=>{
+        if(ds<firstDay||ds>=lastDay)return;
+        if(!groups[ds])groups[ds]=[];
+        groups[ds].push(e);
+      });
     });
     listEl.innerHTML=Object.keys(groups).sort().map(ds=>{
       const d=new Date(ds+'T12:00:00');
@@ -4605,15 +4828,16 @@ async function renderOutlookAgenda(token){
         ${groups[ds].map(e=>`
           <div class="pi">
             <div>
-              <span class="pn">${e.subject||'(No title)'}</span>
+              <span class="pn">${uiEsc(e.subject||'(No title)')}</span>
               ${e.isAllDay?'<span class="tag tp" style="margin-left:6px">All day</span>':`<div style="font-size:11px;color:var(--text3);margin-top:2px">${new Date(e.start.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})} – ${new Date(e.end.dateTime).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'})}</div>`}
             </div>
-            <button class="btn-icon" onclick="deleteOutlookEvent('${e.id}')">✕</button>
+            <div class="fl" style="gap:2px"><button class="btn-icon" onclick="editOutlookEvent('${uiEsc(e.id)}')" title="Edit">✎</button><button class="btn-icon" onclick="deleteOutlookEvent('${uiEsc(e.id)}')">✕</button></div>
           </div>`).join('')}
+        ${allDueTasks().filter(x=>x.due===ds).map(x=>`<div class="pi" style="cursor:pointer" onclick="navById('${x.page}')"><div><span class="pn">☐ ${uiEsc(x.text)}</span><div style="font-size:11px;color:var(--text3);margin-top:2px">Task due · ${uiEsc(x.source)}</div></div></div>`).join('')}
       </div>`;
     }).join('');
   }catch(err){
-    listEl.innerHTML=`<div style="text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${err.message}</div>`;
+    listEl.innerHTML=`<div style="text-align:center;color:var(--red);font-size:13px;padding:20px 0">Couldn't load events: ${uiEsc(err.message)}</div>`;
   }
 }
 
@@ -4621,10 +4845,24 @@ async function deleteOutlookEvent(id){
   if(!confirm('Remove this event from Outlook?'))return;
   const token=await getTokenSilent();
   if(!token)return;
+  let failMsg=null;
   try{
-    await fetch('https://graph.microsoft.com/v1.0/me/events/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-  }catch(e){}
+    const res=await fetch('https://graph.microsoft.com/v1.0/me/events/'+encodeURIComponent(id),{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    if(!res.ok)failMsg=await graphError(res);
+  }catch(e){failMsg=(e&&e.message)||'Network error';}
+  if(failMsg)alert("Couldn't remove the event from Outlook: "+failMsg);
   refreshCalendarViews();
+}
+
+// Reads Graph's error message from a failed response, falling back to the HTTP status.
+async function graphError(res){
+  try{const j=await res.json();if(j&&j.error&&j.error.message)return String(j.error.message).replace(/\.\s*$/,'');}catch(e){}
+  return 'HTTP '+res.status;
+}
+function showModalError(msg){
+  let el=document.getElementById('m-err');
+  if(!el){el=document.createElement('div');el.id='m-err';el.setAttribute('role','alert');el.style.cssText='color:var(--red);font-size:13px;margin-top:8px;line-height:1.5';document.getElementById('modal-body').appendChild(el);}
+  el.textContent=msg;
 }
 
 function refreshCalendarViews(){
@@ -4650,15 +4888,15 @@ async function renderHomeCalendarWeek(){
     const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
     el.innerHTML=days.map(d=>{
       const ds=localDateStr(d);
-      const dayEvents=events.filter(e=>(e.start.dateTime||'').slice(0,10)===ds);
+      const dayEvents=events.filter(e=>eventCoversDay(e,ds));
       const isToday=ds===TODAYSTR;
       return `<div style="border:0.5px solid ${isToday?'var(--blue)':'var(--border)'};border-radius:var(--radius);padding:7px 6px;background:${isToday?'var(--blue-bg)':'var(--bg2)'};min-height:80px">
         <div class="flb" style="margin-bottom:4px">
           <div><div style="font-size:10px;color:var(--text3)">${d.toLocaleDateString('en-IE',{weekday:'short'})}</div><div style="font-size:13px;font-weight:600">${d.getDate()}</div></div>
           <button class="btn-icon" style="font-size:12px;color:var(--blue);padding:0" onclick="openModal('calEvent',{date:'${ds}'})" title="Add">+</button>
         </div>
-        ${dayEvents.slice(0,3).map(e=>`<div style="font-size:10px;padding:2px 4px;background:var(--bg);border-radius:4px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(e.subject||'').replace(/"/g,'&quot;')}">${e.isAllDay?'📌 ':''}${e.subject||'(No title)'}</div>`).join('')}
-        ${dayEvents.length>3?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-3} more</div>`:''}
+        ${dayEvents.slice(0,3).map(e=>`<div style="font-size:10px;padding:2px 4px;background:var(--bg);border-radius:4px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${uiEsc(e.subject||'')}">${e.isAllDay?'📌 ':''}${uiEsc(e.subject||'(No title)')}</div>`).join('')}
+        ${dayEvents.length>3?`<div style="font-size:9px;color:var(--text3)">+${dayEvents.length-3} more</div>`:''}${dueCountLine(ds)}
       </div>`;
     }).join('');
   }catch(err){
@@ -5409,8 +5647,19 @@ const $=s=>document.getElementById(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const AREA=Object.fromEntries(MB_AREAS);
 const getLog=()=>Array.isArray(S.mobilityLog)?S.mobilityLog:[];
-let view="home", G=null;   // G = the session in progress (kept in memory only)
+let view="home", G=null;   // G = the session in progress; also saved on this device so closing the app keeps it
 let tInt=null, wake=null, actx=null;
+const MB_SAVE_KEY='harvey-mobility-session';let _mbSavedAt=0;
+function saveMb(){
+  if(!G)return;
+  try{
+    const tLeft=G.run?(G.tEnd-Date.now())/1000:G.tLeft;
+    localStorage.setItem(MB_SAVE_KEY,JSON.stringify({key:G.key,i:G.i,phase:G.phase,tLeft,stage:G.stage,ci:G.ci,note:G.note,startedAt:G.startedAt,finished:!!G.finished,savedAt:Date.now()}));
+    _mbSavedAt=Date.now();
+  }catch(e){}
+}
+function clearMb(){try{localStorage.removeItem(MB_SAVE_KEY);}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&G)saveMb()});
 
 /* ---------- building a session ---------- */
 function secsOf(ex){return ex.secs!=null?ex.secs:ex.reps*ex.tempo}
@@ -5449,7 +5698,7 @@ function suffixAfter(i){let s=0;for(let k=i+1;k<G.items.length;k++)s+=G.items[k]
 function remaining(){const it=G.items[G.i];return G.tLeft+(G.phase==="gap"?it.iv.secs:0)+suffixAfter(G.i)}
 function begin(i,phase){
   G.i=i;G.phase=phase;G.tLeft=phaseSecs();G.tEnd=Date.now()+G.tLeft*1000;G.run=true;
-  renderGuide();syncDock();
+  renderGuide();syncDock();saveMb();
 }
 function startSession(key){
   ensureAudio();
@@ -5462,6 +5711,7 @@ function startSession(key){
 function tick(){
   if(!G||G.stage!=="run")return;
   if(G.run)G.tLeft=(G.tEnd-Date.now())/1000;
+  if(G.run&&Date.now()-_mbSavedAt>5000)saveMb();
   if(G.tLeft<=0){advance();return}
   updateClock();
 }
@@ -5472,7 +5722,7 @@ function advance(){
 }
 function finish(){
   clearInterval(tInt);unlockScreen();
-  G.stage="checkin";G.run=false;G.finished=true;
+  G.stage="checkin";G.run=false;G.finished=true;saveMb();
   beeps(3,880);buzz([300,100,300,100,300]);
   renderGuide();syncDock();
 }
@@ -5484,7 +5734,7 @@ function goBack(){
 }
 function togglePause(){
   if(G.run){G.run=false}else{G.tEnd=Date.now()+G.tLeft*1000;G.run=true;lockScreen()}
-  syncDock();updateClock();
+  syncDock();updateClock();saveMb();
   const n=root.querySelector(".mb-now");if(n)n.classList.toggle("paused",!G.run);
 }
 function doneCount(){return G.finished?MB_SESSIONS[G.key].exercises.length:G.items[G.i].ei}
@@ -5634,20 +5884,28 @@ root.addEventListener("click",e=>{
   if(t.dataset.ctl){control(t.dataset.ctl);return}
   if(t.dataset.end){
     if(!endArmed){endArmed=true;t.textContent="Tap again to end";setTimeout(()=>{endArmed=false;if(t.isConnected)t.textContent="End session"},3000);return}
-    endArmed=false;clearInterval(tInt);unlockScreen();G.stage="checkin";G.run=false;G.finished=false;renderGuide();syncDock();return}
+    endArmed=false;clearInterval(tInt);unlockScreen();G.stage="checkin";G.run=false;G.finished=false;saveMb();renderGuide();syncDock();return}
   if(t.dataset.ci){const[k,n]=t.dataset.ci.split(":");G.ci[k]=+n;renderGuide();return}
   if(t.dataset.save){
     const rec={id:"m-"+Date.now(),date:today(),createdAt:Date.now(),session:G.key,shins:G.ci.shins,back:G.ci.back,overall:G.ci.overall,note:(G.note||"").slice(0,500),done:doneCount(),total:MB_SESSIONS[G.key].exercises.length};
-    S.mobilityLog=[...getLog(),rec];saveState();G=null;showView("hist");return}
-  if(t.dataset.discard){G=null;showView("home");return}
+    S.mobilityLog=[...getLog(),rec];saveState();G=null;clearMb();showView("hist");return}
+  if(t.dataset.discard){G=null;clearMb();showView("home");return}
   if(t.dataset.del){const id=t.dataset.del;
     if(!delArm[id]){delArm[id]=true;t.textContent="Tap again to delete";setTimeout(()=>{delArm[id]=false;if(t.isConnected)t.textContent="Delete"},3000);return}
     S.mobilityLog=getLog().filter(x=>x.id!==id);saveState();renderHist();return}
 });
-root.addEventListener("input",e=>{if(e.target.id==="mb-note"&&G)G.note=e.target.value});
+root.addEventListener("input",e=>{if(e.target.id==="mb-note"&&G){G.note=e.target.value;saveMb();}});
 $("mb-dock").addEventListener("click",e=>{const t=e.target.closest("button");if(t&&t.dataset.ctl)control(t.dataset.ctl)});
 
 /* ---------- entry point (called by nav) ---------- */
+// Bring back a session left open when the app was closed. It comes back paused.
+(function(){
+  let sv=null;try{sv=JSON.parse(localStorage.getItem(MB_SAVE_KEY)||'null');}catch(e){}
+  if(!sv||!MB_SESSIONS[sv.key])return;
+  const items=buildItems(sv.key),i=Math.min(Math.max(0,sv.i|0),items.length-1);
+  G={key:sv.key,items,i,phase:sv.phase==='work'?'work':'gap',tLeft:Math.max(1,+sv.tLeft||0),tEnd:0,run:false,stage:sv.stage==='checkin'?'checkin':'run',ci:sv.ci||{shins:0,back:0,overall:0},note:sv.note||'',startedAt:sv.startedAt||Date.now(),finished:!!sv.finished};
+  if(G.stage==='run'){clearInterval(tInt);tInt=setInterval(tick,250);}
+})();
 window.renderMobilityPage=function(){showView(view)};
 })();
 
@@ -5899,7 +6157,7 @@ function groomWeeklyOverview(tasks,s){
 function seedGrooming(){
   if(!Array.isArray(S.recurringTasks))S.recurringTasks=[];
   const r=groomMergeSeed(S.recurringTasks,GROOM_PLAN);
-  if(r.changed){S.recurringTasks=r.list;saveState();}
+  if(r.changed){S.recurringTasks=r.list;saveStateQuiet();}
 }
 // The old weekly-reset checklist = tasks without a schedule. Grooming tasks are kept out of it.
 function plainRecurring(){return (S.recurringTasks||[]).filter(t=>!t.schedule);}
@@ -6124,7 +6382,7 @@ function todayRows(){
     left(di.any).forEach(x=>rows.push({icon:x.task.group==='milestones'?'flag':'calendar',tone:'accent',title:x.task.group==='milestones'?(x.task.short||'Milestone'):(x.task.short||x.task.text),sub:x.task.group==='milestones'?x.task.text.replace(/^Week \d+: /,''):'Today',page:'grooming'}));
   }catch(e){}
   // Bills due in the next three days
-  (S.bills||[]).filter(b=>b.active).map(b=>({b,d:daysUntilDue(b.due,now)})).filter(x=>x.d<=3).sort((a,b)=>a.d-b.d)
+  (S.bills||[]).filter(b=>b.active&&!billPaidNext(b,now)).map(b=>({b,d:daysUntilDue(b.due,now)})).filter(x=>x.d<=3).sort((a,b)=>a.d-b.d)
     .forEach(x=>rows.push({icon:'receipt',tone:x.d<=1?'red':'amber',title:`${x.b.name} · ${euro(x.b.amount)}`,sub:x.d===0?'Due today':x.d===1?'Due tomorrow':`Due in ${x.d} days`,page:'bills'}));
   // A planned date in the next week
   (S.plannedDates||[]).filter(p=>p.date>=today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,2).forEach(p=>{
@@ -6147,13 +6405,18 @@ function todayRows(){
       }
     }
   }catch(e){}
+  // Golf / Mobility planned for today, and a mobility session left in progress
+  rows.push(...trainingRows(today));
   // Top pinned tasks
-  const imp=importantItems();
+  const dueNow=allDueTasks().filter(x=>x.due<=today);
+  dueNow.forEach(x=>rows.push({icon:'calendar',tone:x.due<today?'red':'amber',title:x.text,sub:(x.due<today?'Overdue since '+niceDay(x.due):'Due today')+' · '+x.source,page:x.page}));
+  const dueKeys=new Set(dueNow.map(x=>x.key));
+  const imp=importantItems().filter(i=>!dueKeys.has(impKey(i)));
   imp.slice(0,3).forEach(t=>rows.push({icon:'star',title:t.text,sub:`${IMP_PRIORITIES[impPriority(t)].label} priority · ${t.source}`,page:'important'}));
   if(imp.length>3)rows.push({icon:'star',title:`${imp.length-3} more pinned task${imp.length-3===1?'':'s'}`,sub:'Open Important',page:'important'});
   // Weekly recurring tasks still to do
-  const pend=plainRecurring().filter(t=>t.lastDoneWeek!==currentWeekKey());
-  if(pend.length)rows.push({icon:'repeat',title:`${pend.length} weekly task${pend.length===1?'':'s'} left`,sub:pend.slice(0,3).map(t=>t.text).join(', ')+(pend.length>3?'…':''),page:'important'});
+  const pend=plainRecurring().filter(t=>isRecurringDue(t));
+  if(pend.length)rows.push({icon:'repeat',title:`${pend.length} recurring task${pend.length===1?'':'s'} left`,sub:pend.slice(0,3).map(t=>t.text).join(', ')+(pend.length>3?'…':''),page:'important'});
   // Evening: a nudge to write today's note
   if(h>=18&&!(S.notes||[]).some(n=>n.date===today))rows.push({icon:'pencil',title:"Write today's note",sub:'A line about how today went',focus:'h-note-inp'});
   return rows;
@@ -6228,7 +6491,7 @@ function enhanceUI(root){
     if(!b.getAttribute('aria-label'))b.setAttribute('aria-label',b.getAttribute('title')||GLYPH_LABELS[name]||name);
     b.innerHTML=ic(name,pinned?'fill':'');
   });
-  (root||document).querySelectorAll('div[onclick*="toggleTodo("],div[onclick*="toggleSubtask("],div[onclick*="completeImportant("],div[onclick*="toggleRecurringTask("]').forEach(d=>{
+  (root||document).querySelectorAll('div[onclick*="toggleTodo("],div[onclick*="toggleSubtask("],div[onclick*="completeImportant("],div[onclick*="toggleRecurringTask("],div[onclick*="toggleWishDone("]').forEach(d=>{
     if(d.hasAttribute('data-tick-target'))return;
     d.setAttribute('data-tick-target','1');d.setAttribute('role','checkbox');d.setAttribute('tabindex','0');
     d.setAttribute('aria-checked',d.textContent.trim()==='✓'?'true':'false');
@@ -6282,6 +6545,322 @@ function enhanceUI(root){
   });
 })();
 
+// ── PHASE 3 HELPERS ──
+function prevMonthKey(key){const [y,m]=key.split('-').map(Number);const d=new Date(y,m-2,1);return mkKey(d.getFullYear(),d.getMonth()+1);}
+function monthName(key){const [y,m]=key.split('-').map(Number);return MONTHS[m-1];}
+// Budget: copy last month's income lines / per-pocket stage budgets into an empty month
+function copyIncomeFromLastMonth(){
+  const key=S.budgetViewMonth||curKey,prev=S.monthlyData[prevMonthKey(key)];
+  if(!prev||!(prev.income||[]).length)return;
+  const md=getMonthData(key),base=Date.now();
+  md.income=prev.income.map((i,n)=>Object.assign({},i,{id:base+n}));
+  saveState();renderBudget();
+}
+function copyBudgetsFromLastMonth(){
+  const key=S.budgetViewMonth||curKey,prev=S.monthlyData[prevMonthKey(key)];
+  if(!prev||!prev.pocketBudgets)return;
+  getMonthData(key).pocketBudgets=JSON.parse(JSON.stringify(prev.pocketBudgets));
+  saveState();renderBudget();
+}
+const hasBudgets=md=>!!(md&&md.pocketBudgets&&Object.values(md.pocketBudgets).some(st=>st&&Object.values(st).some(v=>+v>0)));
+// Bills: a per-month paid tick (monthlyData[YYYY-MM].billsPaid[billId]). It only hides the bill from
+// Today, Home and the widget; "Left" still counts every bill once (bill payments aren't logged as spending).
+function billNextDue(b,from){
+  const now=from||new Date(),days=daysUntilDue(b.due,now);
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+days);
+  return {days,date:d,key:mkKey(d.getFullYear(),d.getMonth()+1)};
+}
+function isBillPaid(b,key){const md=S.monthlyData&&S.monthlyData[key];return !!(md&&md.billsPaid&&md.billsPaid[b.id]);}
+function billPaidNext(b,from){return isBillPaid(b,billNextDue(b,from).key);}
+function toggleBillPaid(id,key){
+  const md=getMonthData(key);if(!md.billsPaid)md.billsPaid={};
+  if(md.billsPaid[id])delete md.billsPaid[id];else md.billsPaid[id]=true;
+  saveState();
+  const page=(document.querySelector('.page.active')||{}).id;
+  if(page==='page-bills')renderBills();else if(page==='page-budget')renderBudget();
+}
+// Savings: deleting an entry takes its amount back off "Current savings"
+function deleteSaving(id){
+  const e=S.savings.find(x=>x.id===id);if(!e)return;
+  S.savings=S.savings.filter(x=>x.id!==id);
+  if(S.currentSavings!=null)S.currentSavings=+(S.currentSavings-(e.amount||0)).toFixed(2);
+  saveState();renderSavings();
+}
+// Editing: each reuses the existing add form, prefilled, with editId set
+function editTodo(pid,tid){
+  const t=S.projects.find(x=>x.id===pid)?.todos.find(x=>x.id===tid);if(!t)return;
+  addTodoModal(pid);S.activeModal.editId=tid;
+  document.getElementById('modal-title').textContent='Edit task';document.getElementById('m-text').value=t.text;document.getElementById('m-duedate').value=t.due||'';
+}
+function editSubtask(pid,tid,sid){
+  const s=S.projects.find(x=>x.id===pid)?.todos.find(x=>x.id===tid)?.subtasks?.find(x=>x.id===sid);if(!s)return;
+  addSubtaskModal(pid,tid);S.activeModal.editId=sid;
+  document.getElementById('modal-title').textContent='Edit subtask';document.getElementById('m-subtext').value=s.text;
+}
+function editTransaction(id){
+  const t=S.transactions.find(x=>x.id===id);if(!t)return;
+  openModal('spend');S.activeModal.editId=id;
+  document.getElementById('modal-title').textContent='Edit spending';
+  document.getElementById('m-amount').value=t.amount;document.getElementById('m-tcat').value=t.categoryId;
+  document.getElementById('m-tdate').value=t.date;document.getElementById('m-tnote').value=t.note||'';
+}
+function editIncome(id){
+  const i=getMonthData(S.budgetViewMonth||curKey).income.find(x=>x.id===id);if(!i)return;
+  openModal('income');S.activeModal.editId=id;
+  document.getElementById('modal-title').textContent='Edit income';
+  document.getElementById('m-name').value=i.name;document.getElementById('m-amount').value=i.amount;
+  const st=i.stageId!=null?i.stageId:(S.budgetStages.find(s=>(i.day||1)>=s.startDay&&(i.day||1)<=s.endDay)||{}).id;
+  if(st!=null)document.getElementById('m-istage').value=st;
+  document.getElementById('m-freq').value=i.freq||'Monthly';
+}
+function minsToHHMM(m){m=Math.max(0,Math.min(1439,m));return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function editTimeEntry(id){
+  const e=S.timeLog.find(x=>x.id===id);if(!e)return;
+  openModal('timeLog');S.activeModal.editId=id;
+  document.getElementById('modal-title').textContent='Edit time';
+  const durationOnly=e.start===e.end; // entries logged from a completed task have no real start/end
+  document.getElementById('m-tproj').value=e.projectId;document.getElementById('m-tdate').value=e.date;
+  document.getElementById('m-tstart').value=durationOnly?'00:00':e.start;
+  document.getElementById('m-tend').value=durationOnly?minsToHHMM(e.mins):e.end;
+  document.getElementById('m-tnotes').value=e.notes||'';
+  ttRecalc();
+}
+function editWish(id){
+  const w=S.wishlist.find(x=>x.id===id);if(!w)return;
+  openModal('wish');S.activeModal.editId=id;
+  document.getElementById('modal-title').textContent='Edit wishlist item';
+  document.getElementById('m-name').value=w.name;
+  const sel=document.getElementById('m-cat');
+  if(![...sel.options].some(o=>o.value===w.cat)){const o=document.createElement('option');o.textContent=w.cat;sel.appendChild(o);}
+  sel.value=w.cat;
+  document.getElementById('m-wcost').value=w.cost||'';document.getElementById('m-wlink').value=w.link||'';
+}
+function editImportant(id){
+  const i=S.important.find(x=>x.id===id&&!x.ref);if(!i)return;
+  openModal('important');S.activeModal.editId=id;
+  document.getElementById('modal-title').textContent='Edit task';
+  document.getElementById('m-text').value=i.text;document.getElementById('m-src').value=i.source||'';document.getElementById('m-duedate').value=i.due||'';
+}
+// Time tracker: start/stop timer (kept on this device only; S.timeTimer is not in SYNC_KEYS)
+function renderTimeTimer(){
+  const el=document.getElementById('time-timer');if(!el)return;
+  const tt=S.timeTimer;
+  if(tt){
+    const p=S.timeProjects.find(x=>x.id===tt.projectId)||{name:'Unknown project',color:'#888'};
+    el.innerHTML=`<div class="card mb16"><div class="flb" style="flex-wrap:wrap;gap:10px">
+      <div class="fl" style="gap:10px;min-width:0"><div style="width:10px;height:10px;border-radius:50%;background:${p.color}"></div>
+        <div style="min-width:0"><div class="pn">${uiEsc(p.name)}${tt.notes?' · <span style="color:var(--text2);font-weight:400">'+uiEsc(tt.notes)+'</span>':''}</div><div class="ms">Started ${new Date(tt.startedAt).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit',hour12:false})}</div></div></div>
+      <div class="fl" style="gap:10px"><span class="mv" id="tt-elapsed" style="font-size:22px">${fmtElapsed(Date.now()-tt.startedAt)}</span>
+        <button class="btn btnp" onclick="stopTimeTimer()">Stop &amp; log</button><button class="btn" onclick="discardTimeTimer()">Discard</button></div></div></div>`;
+  } else if(S.timeProjects.length){
+    el.innerHTML=`<div class="card mb16"><div class="fl" style="gap:8px;flex-wrap:wrap">
+      <select class="inp" id="tt-proj" style="flex:1;min-width:150px;width:auto">${S.timeProjects.map(p=>`<option value="${p.id}">${uiEsc(p.name)}</option>`).join('')}</select>
+      <input class="inp" id="tt-notes" placeholder="What are you working on? (optional)" style="flex:2;min-width:180px;width:auto">
+      <button class="btn btnp" onclick="startTimeTimer()">Start timer</button></div></div>`;
+  } else el.innerHTML='';
+}
+function fmtElapsed(ms){const s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function startTimeTimer(){
+  const pid=parseInt(document.getElementById('tt-proj')?.value,10);if(!pid)return;
+  S.timeTimer={projectId:pid,startedAt:Date.now(),notes:(document.getElementById('tt-notes')?.value||'').trim()};
+  saveStateQuiet();renderTimeTimer();
+}
+function stopTimeTimer(){
+  const tt=S.timeTimer;if(!tt)return;
+  const st=new Date(tt.startedAt),en=new Date(),mins=Math.max(1,Math.round((en-st)/60000));
+  const hm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  S.timeLog.push({id:Date.now(),projectId:tt.projectId,date:localDateStr(st),start:hm(st),end:hm(en),mins,notes:tt.notes||''});
+  S.timeTimer=null;saveState();renderTimePage();
+}
+function discardTimeTimer(){if(!confirm('Discard this timer without logging it?'))return;S.timeTimer=null;saveStateQuiet();renderTimeTimer();}
+setInterval(()=>{const el=document.getElementById('tt-elapsed');if(el&&S.timeTimer)el.textContent=fmtElapsed(Date.now()-S.timeTimer.startedAt);},1000);
+// Notes search
+let _notesQ='';
+function onNotesSearch(){_notesQ=(document.getElementById('notes-search')?.value||'').trim().toLowerCase();renderNotes();renderProjectNotes();}
+// Outlook: edit an existing event (PATCH), using the same form as "Add event"
+const _calById={};
+function editOutlookEvent(id){
+  const e=_calById[id];if(!e)return;
+  const multi=eventDays(e).length>1;
+  openModal('calEvent',{date:(e.start.dateTime||'').slice(0,10)});
+  Object.assign(S.activeModal,{editId:id,multiDay:multi});
+  document.getElementById('modal-title').textContent='Edit event';
+  document.getElementById('m-etitle').value=e.subject||'';
+  document.getElementById('m-eloc').value=(e.location&&e.location.displayName)||'';
+  document.getElementById('m-eallday').checked=!!e.isAllDay;toggleAllDayFields();
+  if(!e.isAllDay){document.getElementById('m-estart').value=(e.start.dateTime||'').slice(11,16);document.getElementById('m-eend').value=(e.end.dateTime||'').slice(11,16);evRecalc();}
+  const rep=document.getElementById('m-erepeat');if(rep)rep.closest('.fr').style.display='none';
+  const repEnd=document.getElementById('m-erepeat-end-row');if(repEnd)repEnd.style.display='none';
+  if(multi){
+    ['m-edate','m-eallday','m-estart','m-eend'].forEach(i=>{const el=document.getElementById(i);if(el)el.disabled=true;});
+    document.querySelectorAll('#m-etime-wrap .wkb').forEach(b=>b.disabled=true);
+    const note=document.createElement('div');note.style.cssText='font-size:12.5px;color:var(--text2);margin:-4px 0 10px';
+    note.textContent='This event spans several days, so only its title and location can be changed here. Change its dates in Outlook.';
+    document.getElementById('m-etitle').closest('.fr').after(note);
+  }
+}
+
+// ── PHASE 4 HELPERS ──
+/* Due dates: optional "due" (YYYY-MM-DD) on project tasks (todo.due) and hand-made Important pins (pin.due). */
+function niceDay(ds){return new Date(ds+'T12:00:00').toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});}
+function dueTag(ds){
+  if(!ds)return '';
+  const t=localDateStr(new Date()),tm=nextDayStr(t);
+  const [cls,txt]=ds<t?['tr','Overdue · '+niceDay(ds)]:ds===t?['ta','Due today']:ds===tm?['tb','Due tomorrow']:['tb','Due '+niceDay(ds)];
+  return `<span class="tag ${cls}" style="white-space:nowrap">${txt}</span>`;
+}
+// Every open task that has a due date, keyed like importantItems() so the two can be matched.
+function allDueTasks(){
+  const out=[];
+  (S.projects||[]).forEach(p=>(p.todos||[]).forEach(t=>{if(!t.done&&t.due)out.push({key:'r:'+p.id+'-'+t.id,text:t.text,source:p.name,due:t.due,page:'projects'});}));
+  (S.important||[]).forEach(i=>{if(!i.ref&&i.due)out.push({key:'m:'+i.id,text:i.text,source:i.source,due:i.due,page:'important'});});
+  return out.sort((a,b)=>a.due.localeCompare(b.due));
+}
+function itemDue(i){
+  if(!i.ref)return i.due||'';
+  const [pid,tid]=String(i.ref).split('-').map(Number);
+  const t=(S.projects.find(x=>x.id===pid)||{todos:[]}).todos.find(x=>x.id===tid);
+  return (t&&t.due)||'';
+}
+function dueChips(ds){
+  return allDueTasks().filter(x=>x.due===ds).map(x=>`<div onclick="navById('${x.page}')" title="Task due" style="cursor:pointer;font-size:11px;padding:3px 5px;background:var(--amber-bg);color:var(--amber-text);border-radius:5px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">☐ ${uiEsc(x.text)}</div>`).join('');
+}
+function dueCountLine(ds){
+  const n=allDueTasks().filter(x=>x.due===ds).length;
+  return n?`<div style="font-size:9.5px;color:var(--amber-text);font-weight:600">${n} task${n===1?'':'s'} due</div>`:'';
+}
+
+/* Recurring tasks: optional "repeat" on plain recurring tasks. {type:'weekly'} (the default, unchanged
+   behaviour using lastDoneWeek), 'daily', 'weekdays' with days[0-6] (0 = Sunday), 'monthly' with day 1-31.
+   Non-weekly ones record completion in lastDoneKey (a date, or YYYY-MM for monthly). */
+function recurringType(t){return (t.repeat&&t.repeat.type)||'weekly';}
+function recurringPeriodKey(t,d){d=d||new Date();const r=recurringType(t);return r==='weekly'?isoWeekKey(d):r==='monthly'?mkKey(d.getFullYear(),d.getMonth()+1):localDateStr(d);}
+function isRecurringDone(t){return recurringType(t)==='weekly'?t.lastDoneWeek===currentWeekKey():t.lastDoneKey===recurringPeriodKey(t);}
+function isRecurringScheduledToday(t){
+  const r=t.repeat||{},d=new Date(),type=recurringType(t);
+  if(type==='weekdays')return (r.days||[]).includes(d.getDay());
+  if(type==='monthly'){const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()>=Math.min(r.day||1,last);}
+  return true;
+}
+function isRecurringDue(t){return isRecurringScheduledToday(t)&&!isRecurringDone(t);}
+const DOW_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function recurringLabel(t){
+  const r=t.repeat||{},type=recurringType(t);
+  if(type==='daily')return 'Daily';
+  if(type==='weekdays')return [1,2,3,4,5,6,0].filter(x=>(r.days||[]).includes(x)).map(x=>DOW_SHORT[x]).join(', ')||'No days set';
+  if(type==='monthly')return 'Monthly · '+(r.day||1)+ordinalSuffix(r.day||1);
+  return 'Weekly';
+}
+function recRepeatUI(){
+  const v=document.getElementById('m-rrep')?.value;
+  const days=document.getElementById('m-rdays'),dw=document.getElementById('m-rday-wrap');
+  if(days)days.style.display=v==='weekdays'?'flex':'none';
+  if(dw)dw.style.display=v==='monthly'?'':'none';
+}
+
+/* Golf and Mobility: planned days per week (S.trainingPlan = {golf:[0-6], mobility:[0-6]}, 0 = Sunday) */
+function renderTrainingPlan(kind){
+  const el=document.getElementById(kind==='golf'?'gf-plan-days':'mb-plan-days');if(!el)return;
+  const days=((S.trainingPlan||{})[kind])||[];
+  el.innerHTML=`<div class="fl" style="gap:6px;flex-wrap:wrap;margin-top:10px"><span style="font-size:12.5px;color:var(--text2);margin-right:2px">Planned days</span>${[1,2,3,4,5,6,0].map(d=>`<button type="button" class="wkb ${days.includes(d)?'active':''}" onclick="toggleTrainingDay('${kind}',${d})" aria-pressed="${days.includes(d)}">${DOW_SHORT[d]}</button>`).join('')}</div>`;
+}
+function toggleTrainingDay(kind,d){
+  if(!S.trainingPlan)S.trainingPlan={};
+  const cur=new Set(S.trainingPlan[kind]||[]);cur.has(d)?cur.delete(d):cur.add(d);
+  S.trainingPlan[kind]=[...cur].sort();
+  saveState();renderTrainingPlan(kind);
+}
+function trainingRows(today){
+  const rows=[],dow=new Date().getDay(),plan=S.trainingPlan||{};
+  const nextAB=list=>{const last=[...list].sort((a,b)=>b.createdAt-a.createdAt).find(x=>x.session==='A'||x.session==='B');return last?(last.session==='A'?'B':'A'):'A';};
+  let mbSaved=null;try{mbSaved=JSON.parse(localStorage.getItem('harvey-mobility-session')||'null');}catch(e){}
+  if(mbSaved&&mbSaved.key)rows.push({icon:'pulse',tone:'accent',title:'Mobility session '+mbSaved.key+(mbSaved.stage==='checkin'?' · check-in to save':' · in progress'),sub:'Pick up where you left off',page:'mobility'});
+  if((plan.golf||[]).includes(dow)&&!(S.golfSessions||[]).some(x=>x.date===today))
+    rows.push({icon:'flag',tone:'accent',title:'Golf · Session '+nextAB(S.golfSessions||[]),sub:'Planned for today',page:'golf'});
+  if((plan.mobility||[]).includes(dow)&&!(S.mobilityLog||[]).some(x=>x.date===today)&&!mbSaved)
+    rows.push({icon:'pulse',tone:'accent',title:'Mobility · Session '+nextAB(S.mobilityLog||[]),sub:'Planned for today',page:'mobility'});
+  return rows;
+}
+
+/* Home totals you act on */
+function stageMoney(now){
+  now=now||new Date();
+  const key=mkKey(now.getFullYear(),now.getMonth()+1),md=getMonthData(key),day=now.getDate();
+  const st=(S.budgetStages||[]).find(s=>day>=s.startDay&&day<=s.endDay);if(!st)return null;
+  const inc=md.income.filter(i=>i.stageId!=null?i.stageId===st.id:((i.day||1)>=st.startDay&&(i.day||1)<=st.endDay)).reduce((a,i)=>a+i.amount,0);
+  const bills=(S.bills||[]).filter(b=>b.active&&b.due>=st.startDay&&b.due<=st.endDay).reduce((a,b)=>a+b.amount,0);
+  const spent=txInMonth(key).filter(t=>{const d=dayOfMonth(t.date);return d>=st.startDay&&d<=st.endDay;}).reduce((a,t)=>a+t.amount,0);
+  const left=inc-bills-spent,lastDay=Math.min(st.endDay,new Date(now.getFullYear(),now.getMonth()+1,0).getDate()),daysLeft=Math.max(1,lastDay-day+1);
+  return {st,inc,left,daysLeft,perDay:Math.max(0,left)/daysLeft};
+}
+
+/* Wishlist: optional done / doneAt, cost (euro) and link */
+function toggleWishDone(id){
+  const w=S.wishlist.find(x=>x.id===id);if(!w)return;
+  w.done=!w.done;if(w.done)w.doneAt=localDateStr(new Date());else delete w.doneAt;
+  saveState();renderWishlist();
+}
+function openWishLink(id){
+  const w=S.wishlist.find(x=>x.id===id);if(!w||!w.link)return;
+  if(isAndroidApp()&&window.Capacitor?.Plugins?.Browser)window.Capacitor.Plugins.Browser.open({url:w.link});
+  else window.open(w.link,'_blank','noopener');
+}
+function normaliseLink(v){v=(v||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v))v='https://'+v;return v;}
+
+/* Dates: an evening is busy only if a timed event overlaps 18:00-23:00 */
+function eventOverlapsEvening(e,ds){
+  if(e.isAllDay)return false;
+  const st=((e.start&&e.start.dateTime)||'').slice(0,19),en=((e.end&&e.end.dateTime)||'').slice(0,19);
+  return st<ds+'T23:00:00'&&en>ds+'T18:00:00';
+}
+function latestUpcomingDate(){const today=localDateStr(new Date());return (S.plannedDates||[]).map(p=>p.date).filter(d=>d>=today).sort().pop()||null;}
+
+/* Important: history of completed pins (S.importantDone, newest first) */
+function recordImportantDone(text,source,ref){
+  if(!Array.isArray(S.importantDone))S.importantDone=[];
+  S.importantDone.unshift(Object.assign({text,source:source||'',completed:localDateStr(new Date())},ref?{ref}:{}));
+  S.importantDone=S.importantDone.slice(0,200);
+}
+function restoreImportantDone(idx){
+  const e=(S.importantDone||[])[idx];if(!e)return;
+  if(e.ref){
+    const [pid,tid]=String(e.ref).split('-').map(Number);
+    const t=(S.projects.find(x=>x.id===pid)||{todos:[]}).todos.find(x=>x.id===tid);
+    if(t&&t.done){toggleTodo(pid,tid);return;}              // reopening the task also clears this entry
+    S.importantDone.splice(idx,1);saveState();renderImportant();return;
+  }
+  S.important.push({id:Date.now(),text:e.text,source:e.source||'Manual'});
+  S.importantDone.splice(idx,1);saveState();renderImportant();
+}
+function deleteImportantDone(idx){(S.importantDone||[]).splice(idx,1);saveState();renderImportant();}
+
+/* Time projects linked to a work project (optional timeProjects[].workProjectId) */
+function setTimeProjectLink(id,val){
+  const tp=S.timeProjects.find(x=>x.id===id);if(!tp)return;
+  const v=parseInt(val,10);if(v)tp.workProjectId=v;else delete tp.workProjectId;
+  saveState();renderTimePage();
+}
+function timeProjectFor(p){
+  return S.timeProjects.find(tp=>tp.workProjectId===p.id)
+    ||S.timeProjects.find(tp=>!tp.workProjectId&&tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+}
+
+// ── NEW DAY ──
+// TODAY, TODAYSTR and curKey are set when the page loads. If the app is still open (or comes back
+// from the background) on a later day, move them on and redraw the page you're on.
+function refreshDayIfChanged(){
+  const now=new Date(),ds=localDateStr(now);
+  if(ds===TODAYSTR)return false;
+  TODAY=now;TODAYSTR=ds;curKey=mkKey(now.getFullYear(),now.getMonth()+1);
+  const page=document.querySelector('.page.active');
+  navById(page?page.id.replace('page-',''):'home');
+  if(isAndroidApp())refreshWidgetAgendaThenPush();else pushWidgetData();
+  return true;
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshDayIfChanged();});
+if(isAndroidApp()&&window.Capacitor?.Plugins?.App)window.Capacitor.Plugins.App.addListener('resume',()=>refreshDayIfChanged());
+setInterval(refreshDayIfChanged,60000); // a desktop tab can stay visible all night
+
 // Nav — includes settings
 window.nav = function(id, el){
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
@@ -6299,6 +6878,7 @@ window.nav = function(id, el){
     fitness:renderFitness,weight:renderWeightPage,settings:renderSettings,time:renderTimePage,
     calendar:renderOutlookPage,dates:renderDatesPage,golf:renderGolfPage,mobility:renderMobilityPage,grooming:renderGroomingPage};
   handlers[id]?.();
+  if(id==='golf'||id==='mobility')renderTrainingPlan(id);
 };
 
 function navById(id){
@@ -6328,6 +6908,12 @@ function fabAction(kind){
   } else if(kind==='note'){
     navById('notes');
     setTimeout(()=>openModal('note'),80);
+  } else if(kind==='task'){
+    navById('important');
+    setTimeout(()=>openModal('important'),80);
+  } else if(kind==='weight'){
+    navById('weight');
+    setTimeout(()=>openModal('weight'),80);
   }
 }
 document.addEventListener('click',(e)=>{
@@ -6351,21 +6937,27 @@ async function odMergeOrSeed(token){
     const localTs=S._ts||0;
     const remoteTs=pull.data._ts||0;
     if(remoteTs>=localTs){
+      keepSyncBackup('This device, before OneDrive replaced it',getStateToSave());
       SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
       S._ts=remoteTs;
       S.workoutDef=DEFAULT_STATE.workoutDef;
+      seedGrooming();
       try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
       renderHome();
     } else {
       // OneDrive has data, but it looks older/different than this device's copy — ambiguous.
       // Never silently overwrite either side; ask.
-      const wantsRemote=confirm("OneDrive has data saved, but this device's copy looks newer or different.\n\nOK = replace this device's data with the OneDrive version.\nCancel = keep this device's data as-is — nothing will be pushed automatically.");
+      const wantsRemote=confirm("OneDrive has data saved, but this device's copy looks newer or different.\n\nOK = replace this device's data with the OneDrive version.\nCancel = keep this device's data. Your next change on this device will overwrite the OneDrive copy.\n\nEither way, the copy that loses is kept as a backup (Settings › Export sync backup).");
       if(wantsRemote){
+        keepSyncBackup('This device, before OneDrive replaced it',getStateToSave());
         SYNC_KEYS.forEach(k=>{if(pull.data[k]!==undefined)S[k]=pull.data[k];});
         S._ts=remoteTs;
         S.workoutDef=DEFAULT_STATE.workoutDef;
+        seedGrooming();
         try{localStorage.setItem('harvey-data',JSON.stringify(getStateToSave()));}catch(e){}
         renderHome();
+      } else {
+        keepSyncBackup('OneDrive copy, kept aside when you chose this device',pull.data);
       }
     }
   } else {
