@@ -1004,7 +1004,7 @@
 
 <!-- WISHLIST -->
 <div id="page-wishlist" class="page">
-  <div class="ph rb"><div><div class="pt">Wishlist</div></div><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div>
+  <div class="ph rb"><div><div class="pt">Wishlist</div></div><div class="fl"><button class="btn" id="wish-export-btn" onclick="openWishExport()" style="display:none">Export as text</button><button class="btn btnp" onclick="openModal('wish')">+ Add</button></div></div>
   <div class="g2" id="wish-list"></div>
 </div>
 
@@ -3231,6 +3231,7 @@ function addTodoModal(pid){S.activeModal={type:'todo',pid};document.getElementBy
 // ── WISHLIST ──
 function renderWishlist(){
   checkDatesWishlistMigration();
+  const xb=document.getElementById('wish-export-btn');if(xb)xb.style.display=isAndroidApp()||!S.wishlist.length?'none':'';
   const cats=[...new Set(S.wishlist.map(w=>w.cat))];
   document.getElementById('wish-list').innerHTML=cats.map(cat=>{
     const items=S.wishlist.filter(w=>w.cat===cat).sort((a,b)=>(a.done?1:0)-(b.done?1:0));
@@ -6453,6 +6454,7 @@ function paletteItems(){
     A('Add to wishlist','bookmark',go('wishlist',()=>openModal('wish'))),
     A('Export data as JSON','download',()=>exportData(),'backup download'),
   ];
+  if(!isAndroidApp())items.push(A('Export wishlist as text','download',go('wishlist',()=>openWishExport()),'copy share list'));
   (S.projects||[]).slice(0,8).forEach(p=>items.push({group:'Actions',label:'Add task to '+p.name,icon:'plus',run:go('projects',()=>addTodoModal(p.id)),keys:'todo'}));
   PAL_PAGES.forEach(([id,label,icon])=>items.push({group:'Go to',label,icon,run:()=>navById(id),keys:id}));
   return items;
@@ -6843,6 +6845,80 @@ function setTimeProjectLink(id,val){
 function timeProjectFor(p){
   return S.timeProjects.find(tp=>tp.workProjectId===p.id)
     ||S.timeProjects.find(tp=>!tp.workProjectId&&tp.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]));
+}
+
+// ── WISHLIST EXPORT (PC only) ──
+// Pick items, then copy them as plain text or save a .txt file.
+function openWishExport(){
+  if(!S.wishlist.length)return;
+  S.activeModal={type:'wishExport'};
+  document.getElementById('modal-title').textContent='Export wishlist';
+  const saveBtn=document.querySelector('#modal .fl-end .btnp');if(saveBtn)saveBtn.style.display='none';
+  const anyDone=S.wishlist.some(w=>w.done);
+  const cats=[...new Set(S.wishlist.map(w=>w.cat))];
+  document.getElementById('modal-body').innerHTML=`
+    <div class="flb" style="flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <div class="fl" style="gap:6px"><button type="button" class="btn" style="font-size:12px;padding:4px 10px;min-height:0" onclick="wishExportSelect(true)">Select all</button><button type="button" class="btn" style="font-size:12px;padding:4px 10px;min-height:0" onclick="wishExportSelect(false)">None</button></div>
+      <div class="fl" style="gap:14px;font-size:12.5px;color:var(--text2)">
+        <label class="fl" style="gap:6px;cursor:pointer"><input type="checkbox" id="wx-details" checked onchange="wishExportRefresh()"> Costs and links</label>
+        ${anyDone?'<label class="fl" style="gap:6px;cursor:pointer"><input type="checkbox" id="wx-done" onchange="wishExportRefresh(true)"> Show done items</label>':''}
+      </div>
+    </div>
+    <div id="wx-list" style="max-height:38vh;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:4px 12px;margin-bottom:12px">
+      ${cats.map(c=>`<div class="wx-cat" style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:10px 0 4px">${uiEsc(c)}</div>${S.wishlist.filter(w=>w.cat===c).map(w=>`<label class="fl wx-row" data-done="${w.done?1:0}" style="gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;${w.done?'display:none':''}"><input type="checkbox" class="wx-cb" data-id="${w.id}" ${w.done?'':'checked'} onchange="wishExportRefresh()" style="width:18px;height:18px"><span style="flex:1;font-size:13.5px">${uiEsc(w.name)}</span>${w.cost?`<span style="font-size:12.5px;color:var(--text2)">${euro(w.cost)}</span>`:''}</label>`).join('')}`).join('')}
+    </div>
+    <label class="fl2" for="wx-text">Text <span id="wx-count" style="color:var(--text3)"></span></label>
+    <textarea class="inp" id="wx-text" readonly style="min-height:150px;font-size:13px"></textarea>
+    <div class="fl" style="gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button type="button" class="btn btnp" onclick="wishExportCopy()">Copy text</button>
+      <button type="button" class="btn" onclick="wishExportSave()">Save as .txt</button>
+      <span id="wx-msg" style="font-size:12.5px;color:var(--green)"></span>
+    </div>`;
+  document.getElementById('modal').style.display='flex';
+  wishExportRefresh();
+}
+function wishExportSelect(on){document.querySelectorAll('#wx-list .wx-row').forEach(r=>{if(r.style.display!=='none')r.querySelector('.wx-cb').checked=on;});wishExportRefresh();}
+function wishExportText(){
+  const ids=new Set([...document.querySelectorAll('#wx-list .wx-cb:checked')].filter(cb=>cb.closest('.wx-row').style.display!=='none').map(cb=>+cb.dataset.id));
+  const details=document.getElementById('wx-details')?.checked;
+  const picked=S.wishlist.filter(w=>ids.has(w.id));
+  const cats=[...new Set(picked.map(w=>w.cat))];
+  const lines=['Wishlist ('+new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'})+')'];
+  cats.forEach(c=>{
+    lines.push('',c);
+    picked.filter(w=>w.cat===c).forEach(w=>{
+      let l='- '+w.name+(w.done?' (done)':'');
+      if(details&&w.cost)l+=' — '+euro(w.cost);
+      lines.push(l);
+      if(details&&w.link)lines.push('  '+w.link);
+    });
+  });
+  return {text:picked.length?lines.join('\n'):'',n:picked.length};
+}
+function wishExportRefresh(doneToggled){
+  if(doneToggled){
+    const show=document.getElementById('wx-done')?.checked;
+    document.querySelectorAll('#wx-list .wx-row[data-done="1"]').forEach(r=>{r.style.display=show?'':'none';r.querySelector('.wx-cb').checked=!!show;});
+  }
+  const {text,n}=wishExportText();
+  document.getElementById('wx-text').value=text;
+  document.getElementById('wx-count').textContent='· '+n+' item'+(n===1?'':'s');
+  document.getElementById('wx-msg').textContent='';
+}
+async function wishExportCopy(){
+  const {text,n}=wishExportText(),msg=document.getElementById('wx-msg');
+  if(!n){msg.style.color='var(--red)';msg.textContent='Tick at least one item.';return;}
+  try{await navigator.clipboard.writeText(text);}
+  catch(e){const ta=document.getElementById('wx-text');ta.focus();ta.select();try{document.execCommand('copy');}catch(e2){}}
+  msg.style.color='var(--green)';msg.textContent='Copied '+n+' item'+(n===1?'':'s')+'.';
+}
+function wishExportSave(){
+  const {text,n}=wishExportText(),msg=document.getElementById('wx-msg');
+  if(!n){msg.style.color='var(--red)';msg.textContent='Tick at least one item.';return;}
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);
+  a.download='wishlist-'+localDateStr(new Date())+'.txt';a.click();
+  msg.style.color='var(--green)';msg.textContent='Saved.';
 }
 
 // ── NEW DAY ──
